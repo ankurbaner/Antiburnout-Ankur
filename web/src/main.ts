@@ -243,7 +243,10 @@ const render = (): void => {
 
   // Metrics
   setText("m-stretch", formatMinutes(t.currentStretchSeconds));
-  setText("m-stretch-sub", `since you were last idle for ${formatIdleThreshold(config.idleThresholdSeconds)}`);
+  setText(
+    "m-stretch-sub",
+    `since your last reset or ${formatIdleThreshold(monitor.effectiveThreshold(config.idleThresholdSeconds))} idle`,
+  );
   setText("m-today", formatMinutes(t.todayActiveSeconds));
   setText(
     "m-today-sub",
