@@ -131,4 +131,10 @@ describe("working hours", () => {
     expect(crossedWorkEnd(at(7, 23, 59), at(8, 0), 0)).toBe(true);
     expect(crossedWorkEnd(at(8, 0), at(8, 0, 1), 0)).toBe(false);
   });
+  it("never wraps up equal-endpoint all-day working hours", () => {
+    const at = (day: number, hour: number): number => new Date(2026, 10, day, hour).getTime();
+    expect(crossedWorkEnd(at(7, 8), at(7, 9), 540, 540)).toBe(false);
+    expect(crossedWorkEnd(at(7, 23), at(8, 0), 0, 0)).toBe(false);
+    expect(crossedWorkEnd(at(7, 8), at(7, 9), 540, 1320)).toBe(true);
+  });
 });

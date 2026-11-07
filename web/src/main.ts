@@ -355,7 +355,7 @@ const step = (): void => {
     state.goalNoticeDay = today;
     notice = `You've reached today's ${formatMinutes(config.dailyGoalMinutes * 60)} goal. A good time to start wrapping up.`;
   }
-  if (config.workHours && state.wrapUpNoticeDay !== today && crossedWorkEnd(previousTickMs, nowMs, config.workEndMinutes)) {
+  if (config.workHours && state.wrapUpNoticeDay !== today && crossedWorkEnd(previousTickMs, nowMs, config.workEndMinutes, config.workStartMinutes)) {
     state.wrapUpNoticeDay = today;
     notice = `It's ${formatTimeOfDay(config.workEndMinutes)}, the end of your working hours. Time to wrap up.`;
   }
