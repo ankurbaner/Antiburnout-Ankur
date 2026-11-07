@@ -1,9 +1,36 @@
 import { describe, expect, it } from "vitest";
-import { CARD_BANDS, isCardPracticeId, needsWater, selectCardPractice } from "../src/cards";
+import { CARD_BANDS, createPreviewSelector, isCardPracticeId, needsWater, selectCardPractice } from "../src/cards";
 import { MEETING_PRACTICES } from "../src/yoga";
 import { MEETING_PROTOCOL_ORDER, PROTOCOLS, nextProtocol } from "../src/protocols";
 
 describe("web yoga reminder cards", () => {
+  it.each([[0, false], [2700, false], [5401, false], [0, true]] as const)("cycles previews with a fixed last reminder at %s seconds with meeting=%s", (stretch, meeting) => {
+    const pool = meeting ? MEETING_PRACTICES : CARD_BANDS[stretch === 0 ? 0 : stretch === 2700 ? 1 : 2];
+    for (const saved of pool) {
+      const preview = createPreviewSelector();
+      const seen = new Set<string>();
+      let previous = saved.id;
+      for (let rotation = 0; rotation < pool.length * 3; rotation++) {
+        const practice = preview(stretch, meeting, saved.id, rotation);
+        expect(practice.id).not.toBe(previous);
+        seen.add(practice.id);
+        previous = practice.id;
+      }
+      expect(seen).toEqual(new Set(pool.map((practice) => practice.id)));
+    }
+  });
+  it("retains a separate preview cursor for each band and meeting mode", () => {
+    const preview = createPreviewSelector();
+    const seen = [new Set<string>(), new Set<string>(), new Set<string>(), new Set<string>()];
+    let rotation = 0;
+    for (let round = 0; round < 8; round++) {
+      for (const [index, stretch] of [1500, 3600, 7200].entries()) {
+        seen[index].add(preview(stretch, false, "meeting-eyes", rotation++).id);
+      }
+      seen[3].add(preview(1500, true, "meeting-eyes", rotation++).id);
+    }
+    expect(seen).toEqual([...CARD_BANDS, MEETING_PRACTICES].map((pool) => new Set(pool.map((practice) => practice.id))));
+  });
   it.each([[0, false], [2700, false], [5401, false], [0, true]] as const)("eventually visits every practice at %s seconds with meeting=%s", (stretch, meeting) => {
     const pool = meeting ? MEETING_PRACTICES : CARD_BANDS[stretch === 0 ? 0 : stretch === 2700 ? 1 : 2];
     for (const first of pool) {

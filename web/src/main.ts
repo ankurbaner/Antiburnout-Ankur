@@ -7,7 +7,7 @@ import "@fontsource/plus-jakarta-sans/700.css";
 import "./styles.css";
 
 import { tick } from "../../src/tracker";
-import { CardPractice, needsWater, selectCardPractice } from "./cards";
+import { CardPractice, createPreviewSelector, needsWater, selectCardPractice } from "./cards";
 import { ActivityMonitor, systemIdleSupported } from "./activity";
 import { playChime, unlockChime } from "./chime";
 import { initYoga } from "./yogaUI";
@@ -54,6 +54,7 @@ let lastTickMs = Date.now();
 /** Whether the previous step counted time; the first counting step credits nothing. */
 let wasCounting = false;
 let previewIndex = 0;
+const selectPreviewPractice = createPreviewSelector();
 let cardVisible = false;
 /** Previews don't count as done and don't move the schedule. */
 let cardIsPreview = false;
@@ -121,7 +122,9 @@ const renderCard = (practice: CardPractice, preview: boolean, stretch = state.tr
 };
 
 const showCard = (stretch: number, preview: boolean, advance = true): void => {
-  const practice = selectCardPractice(stretch, state.meetingMode, state.lastPracticeId, state.rotation + (preview ? previewIndex : 0));
+  const practice = preview
+    ? selectPreviewPractice(stretch, state.meetingMode, state.lastPracticeId, state.rotation + previewIndex)
+    : selectCardPractice(stretch, state.meetingMode, state.lastPracticeId, state.rotation);
   if (!preview) {
     state.lastPracticeId = practice.id;
     if (advance) state.rotation += 1;
