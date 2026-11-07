@@ -12,7 +12,7 @@
     "skipLibCheck": true,
     "noEmit": true,
     "isolatedModules": true,
-    "types": ["vite/client"]
+    "types": ["vite/client", "node"]
   },
   "include": ["src/**/*.ts", "tests/**/*.ts", "vite.config.ts", "../src/tracker.ts", "../src/exercises.ts", "../src/cardContent.ts"]
 }

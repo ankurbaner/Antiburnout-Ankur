@@ -26,6 +26,8 @@ import {
 } from "./storage";
 
 const TICK_MS = 1000;
+/** How often the 1-second loop writes to localStorage; user actions save immediately. */
+const PERSIST_MS = 5000;
 const BANDS: StretchBand[] = ["eyes", "eyes-posture", "eyes-posture-water", "eyes-posture-water-day"];
 /** Stretch lengths the "Preview a card" button cycles through, one per band. */
 const PREVIEW_STRETCHES = [25 * 60, 60 * 60, 120 * 60, 200 * 60];
@@ -54,7 +56,11 @@ let cardVisible = false;
 let cardIsPreview = false;
 let reset: { endsAt: number; protocol: Protocol; finished: boolean } | null = null;
 
-const persist = (): void => saveState(store, state);
+let lastPersistMs = 0;
+const persist = (): void => {
+  lastPersistMs = Date.now();
+  saveState(store, state);
+};
 
 /**
  * Start a new day's counters at local midnight. Runs on every step, even
@@ -267,7 +273,7 @@ const step = (): void => {
 
   updateReset(nowMs);
   render();
-  persist();
+  if (nowMs - lastPersistMs >= PERSIST_MS) persist();
 };
 
 const render = (): void => {
@@ -547,6 +553,10 @@ $("reset-data").addEventListener("click", () => {
   settingsDialog.close();
   hideCard();
   render();
+});
+window.addEventListener("pagehide", persist);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") persist();
 });
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && cardVisible) hideCard();
