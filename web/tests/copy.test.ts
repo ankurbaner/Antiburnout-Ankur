@@ -11,8 +11,9 @@ describe("simplified page copy", () => {
     expect(document.querySelector("#contact .contact-email")?.textContent).toBe("ankur.banerjee014@gmail.com");
   });
   it("places the silent breath guide before desk yoga", () => {
-    expect(document.querySelector(".hero + section")?.id).toBe("intention-panel");
-    expect(document.querySelector("#intention-panel + section")?.id).toBe("practice-of-the-day");
+    expect(document.querySelector(".hero + section")?.id).toBe("morning-note");
+    expect(document.querySelector("#morning-note + section")?.id).toBe("intention-panel");
+    expect(document.querySelector("#save-spot + section")?.id).toBe("practice-of-the-day");
     expect(document.querySelector("#practice-of-the-day + section")?.id).toBe("breathe");
     expect(document.querySelector("#breathe + section")?.id).toBe("yoga");
     expect(document.querySelector('.nav a[href="#yoga"]')?.textContent).toBe("Yoga");
@@ -36,6 +37,7 @@ describe("simplified page copy", () => {
     expect([...document.querySelectorAll("#settings input")].map((input) => input.getAttribute("name"))).toEqual([
       "reminderMinutes", "snoozeMinutes", "maxSnoozes", "chime", "meetingMode",
       "gentle-back", "gentle-neck", "gentle-wrists", "gentle-pregnancy",
+      "endOfDay", "endOfDayTime",
     ]);
     expect(document.querySelector("#settings")?.textContent).toContain("Quiet practices only (for meetings)");
     expect(document.querySelector("#reset #reset-action")).not.toBeNull();

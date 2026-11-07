@@ -6,4 +6,6 @@
 .day-note textarea { resize: vertical; }
 .day-note-actions, .intention-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
 .intention-chips .btn { white-space: normal; text-align: left; }
-#intention-saved p { overflow-wrap: anywhere; }
+#intention-saved p, #morning-text, #spot-intention { overflow-wrap: anywhere; }
+#spot-intention { margin-bottom: 14px; }
+.settings input[type="time"] { font: inherit; color: var(--ink); background: var(--canvas); border: 1px solid var(--border); border-radius: 10px; padding: 8px; max-width: 100%; }

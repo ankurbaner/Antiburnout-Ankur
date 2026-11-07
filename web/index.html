@@ -49,9 +49,13 @@
         <div class="hero-actions">
           <button class="btn btn-primary" type="button" data-action="start-reset">Take a 5-minute reset</button>
           <button class="btn btn-ghost" type="button" data-action="preview-card">Preview a card</button>
+          <button class="btn btn-ghost" type="button" id="save-spot-open">Save my spot</button>
         </div>
       </section>
 
+      <section class="wrap day-panel" id="morning-note" aria-label="Where you left off" hidden>
+        <div class="day-note"><p id="morning-text"></p><div class="day-note-actions"><button class="btn btn-ghost btn-sm" id="morning-done" type="button">Done</button></div></div>
+      </section>
       <section class="wrap day-panel" id="intention-panel" aria-label="Today's intention">
         <div class="day-note">
           <h2>Today's intention</h2>
@@ -66,6 +70,17 @@
             <div class="day-note-actions"><button class="btn btn-primary btn-sm" type="submit">Save</button><button class="btn btn-ghost btn-sm" id="intention-skip" type="button">Skip</button></div>
           </form>
           <div id="intention-saved" hidden><p id="intention-text"></p><button class="btn btn-ghost btn-sm" id="intention-edit" type="button">Edit</button></div>
+        </div>
+      </section>
+
+      <section class="wrap day-panel" id="save-spot" aria-labelledby="spot-title" hidden>
+        <div class="day-note">
+          <h2 id="spot-title">Save your spot for tomorrow</h2>
+          <p id="spot-intention" hidden></p>
+          <form id="spot-form">
+            <label>Where will you start tomorrow? <textarea id="spot-input" rows="1" maxlength="200" required></textarea></label>
+            <div class="day-note-actions"><button class="btn btn-primary btn-sm" type="submit">Save</button><button class="btn btn-ghost btn-sm" id="spot-skip" type="button">Not today</button></div>
+          </form>
         </div>
       </section>
 
@@ -188,6 +203,11 @@
           <label class="check"><input type="checkbox" name="gentle-neck" /> Neck</label>
           <label class="check"><input type="checkbox" name="gentle-wrists" /> Wrists</label>
           <label class="check"><input type="checkbox" name="gentle-pregnancy" /> Pregnancy</label>
+        </fieldset>
+        <fieldset class="settings-group">
+          <legend>End of day</legend>
+          <label class="check"><input type="checkbox" name="endOfDay" /> Show an end-of-day card</label>
+          <label>Time <input type="time" name="endOfDayTime" required /></label>
         </fieldset>
         <footer class="settings-foot">
           <button class="btn btn-link danger" type="button" id="reset-data">Clear all data</button>

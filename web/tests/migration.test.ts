@@ -31,7 +31,7 @@ it("drops retired config and paused state without losing reminders or quiet mode
     workHours: true, workStartMinutes: 540, workEndMinutes: 1080,
   }));
   const config = loadConfig(storage);
-  expect(config).toEqual({ idleThresholdSeconds: 60, reminderIntervalSeconds: 60, snoozeMinutes: 10, maxSnoozes: 3, chime: false, gentle: DEFAULT_GENTLE });
+  expect(config).toEqual({ idleThresholdSeconds: 60, reminderIntervalSeconds: 60, snoozeMinutes: 10, maxSnoozes: 3, chime: false, gentle: DEFAULT_GENTLE, endOfDay: true, endOfDayTime: "18:00" });
   saveConfig(storage, config);
   expect(storage.getItem("anti-burnout:config")).not.toMatch(/systemIdle|eyeBreak|headsUp|work/);
   storage.setItem("anti-burnout:state", JSON.stringify({
