@@ -27,8 +27,10 @@ export const CARD_BANDS = [
 export const isCardPracticeId = (value: unknown): value is string =>
   typeof value === "string" && [...CARD_BANDS.flat(), ...MEETING_PRACTICES].some((practice) => practice.id === value);
 
+export const needsWater = (stretch: number): boolean => stretch > 90 * 60;
+
 export const selectCardPractice = (stretch: number, meeting: boolean, previous: string | null, rotation = 0): CardPractice => {
-  const pool = meeting ? MEETING_PRACTICES : CARD_BANDS[stretch < 45 * 60 ? 0 : stretch <= 90 * 60 ? 1 : 2];
+  const pool = meeting ? MEETING_PRACTICES : CARD_BANDS[stretch < 45 * 60 ? 0 : needsWater(stretch) ? 2 : 1];
   const available = pool.filter((practice) => practice.id !== previous);
   const index = Number.isFinite(rotation) ? Math.abs(Math.floor(rotation)) % available.length : 0;
   return available[index];

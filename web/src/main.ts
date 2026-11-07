@@ -7,7 +7,7 @@ import "@fontsource/plus-jakarta-sans/700.css";
 import "./styles.css";
 
 import { tick } from "../../src/tracker";
-import { CardPractice, selectCardPractice } from "./cards";
+import { CardPractice, needsWater, selectCardPractice } from "./cards";
 import { ActivityMonitor, systemIdleSupported } from "./activity";
 import { playChime, unlockChime } from "./chime";
 import { initYoga } from "./yogaUI";
@@ -107,7 +107,7 @@ const renderCard = (practice: CardPractice, preview: boolean, stretch = state.tr
   li.textContent = practice.instruction;
   $("card-steps").replaceChildren(li);
   const footnote = state.meetingMode ? "Meeting mode: nothing anyone will notice"
-    : stretch > 90 * 60 ? "And drink a glass of water." : "Move gently and stop if anything hurts.";
+    : needsWater(stretch) ? "And drink a glass of water." : "Move gently and stop if anything hurts.";
   setText("card-footnote", footnote);
   $("card-footnote").hidden = false;
   $("card").hidden = false;

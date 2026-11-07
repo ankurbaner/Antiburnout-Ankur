@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { CARD_BANDS, isCardPracticeId, selectCardPractice } from "../src/cards";
+import { CARD_BANDS, isCardPracticeId, needsWater, selectCardPractice } from "../src/cards";
 import { MEETING_PRACTICES } from "../src/yoga";
 import { MEETING_PROTOCOL_ORDER, PROTOCOLS, nextProtocol } from "../src/protocols";
 
 describe("web yoga reminder cards", () => {
+  it.each([[-1, false], [5399, false], [5400, false], [5401, true]])("pairs standing practices with water only over 90 minutes (%s)", (stretch, water) => {
+    expect(needsWater(stretch)).toBe(water);
+    expect(CARD_BANDS[2].some((practice) => practice.id === selectCardPractice(stretch, false, null).id)).toBe(water);
+  });
   it.each([[0, 0], [44 * 60 + 59, 0], [45 * 60, 1], [90 * 60, 1], [90 * 60 + 1, 2], [200 * 60, 2]])(
     "selects the right band at %s seconds", (stretch, band) => {
       const ids = new Set(Array.from({ length: 12 }, (_, rotation) => selectCardPractice(stretch, false, null, rotation).id));
