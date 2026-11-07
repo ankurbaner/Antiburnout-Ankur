@@ -21,6 +21,5 @@ export const parseTimeOfDay = (value: string, fallback: number): number => {
 export const crossedWorkEnd = (previous: number, now: number, end: number): boolean => {
   const boundary = new Date(now);
   boundary.setHours(Math.floor(end / 60), end % 60, 0, 0);
-  if (boundary.getTime() > now) boundary.setDate(boundary.getDate() - 1);
   return previous < boundary.getTime() && boundary.getTime() <= now;
 };

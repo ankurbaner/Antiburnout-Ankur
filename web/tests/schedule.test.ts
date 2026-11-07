@@ -125,6 +125,10 @@ describe("working hours", () => {
     expect(crossedWorkEnd(at(7, 18), at(7, 18, 1), 1080)).toBe(false);
     expect(crossedWorkEnd(at(7, 19), at(7, 19), 1080)).toBe(false);
     expect(crossedWorkEnd(at(7, 23), at(8, 6), 360)).toBe(true);
-    expect(crossedWorkEnd(at(7, 17), at(8, 8), 1080)).toBe(true);
+    expect(crossedWorkEnd(at(7, 17), at(8, 8), 1080)).toBe(false);
+    expect(crossedWorkEnd(at(7, 23, 59), at(8, 0), 360)).toBe(false);
+    expect(crossedWorkEnd(at(7, 5), at(8, 0), 360)).toBe(false);
+    expect(crossedWorkEnd(at(7, 23, 59), at(8, 0), 0)).toBe(true);
+    expect(crossedWorkEnd(at(8, 0), at(8, 0, 1), 0)).toBe(false);
   });
 });

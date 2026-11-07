@@ -101,6 +101,8 @@ const rollDay = (now: Date): void => {
   state.history = state.history.filter((entry) => entry.day < today);
   state.cardsDoneToday = 0;
   state.resetsToday = 0;
+  state.goalNoticeDay = "";
+  state.wrapUpNoticeDay = "";
   $("day-notice").hidden = true;
   state.tracker = { ...state.tracker, todayActiveSeconds: 0, dayKey: today };
 };
@@ -254,22 +256,15 @@ const renderHistory = (): void => {
   });
   const maxSeconds = Math.max(1, ...days.map(({ entry }) => entry?.activeSeconds ?? 0));
   const chart = $("history-chart");
-  const signature = JSON.stringify([days, config.dailyGoalMinutes]);
-  if (chart.dataset.signature === signature) return;
-  chart.dataset.signature = signature;
-  chart.replaceChildren(...days.map(({ entry, day, label }) => {
-    const li = document.createElement("li");
-    li.dataset.day = day;
+  const signature = JSON.stringify([days.slice(0, 6), days[6].day, maxSeconds, config.dailyGoalMinutes]);
+  const updateColumn = (li: HTMLElement, { entry, label }: typeof days[number]): void => {
     const hasData = entry && (entry.activeSeconds > 0 || entry.cardsDone > 0 || entry.resets > 0);
     const description = hasData
       ? `${label}: ${formatMinutes(entry.activeSeconds)} active, ${entry.cardsDone} cards done, ${entry.resets} resets`
       : `${label}: no activity recorded`;
     li.title = description;
     li.setAttribute("aria-label", description);
-    const track = document.createElement("div");
-    track.className = "history-track";
-    const bar = document.createElement("div");
-    bar.className = "history-bar";
+    const bar = li.querySelector<HTMLElement>(".history-bar")!;
     bar.style.height = `${((entry?.activeSeconds ?? 0) / maxSeconds) * 100}%`;
     const metGoal = config.dailyGoalMinutes > 0 && (entry?.activeSeconds ?? 0) >= config.dailyGoalMinutes * 60;
     li.classList.toggle("goal-met", metGoal);
@@ -277,15 +272,30 @@ const renderHistory = (): void => {
       li.title += " · Goal met";
       li.setAttribute("aria-label", li.title);
     }
-    track.append(bar);
-    const dayLabel = document.createElement("span");
-    dayLabel.textContent = label;
-    const active = document.createElement("span");
-    active.className = "history-time";
+    const active = li.querySelector<HTMLElement>(".history-time")!;
     active.textContent = hasData ? formatMinutes(entry.activeSeconds) : "–";
-    li.append(track, dayLabel, active);
-    return li;
-  }));
+  };
+  if (chart.dataset.signature !== signature) {
+    chart.dataset.signature = signature;
+    chart.replaceChildren(...days.map((day) => {
+      const li = document.createElement("li");
+      li.dataset.day = day.day;
+      const track = document.createElement("div");
+      track.className = "history-track";
+      const bar = document.createElement("div");
+      bar.className = "history-bar";
+      track.append(bar);
+      const dayLabel = document.createElement("span");
+      dayLabel.textContent = day.label;
+      const active = document.createElement("span");
+      active.className = "history-time";
+      li.append(track, dayLabel, active);
+      updateColumn(li, day);
+      return li;
+    }));
+  } else {
+    updateColumn(chart.lastElementChild as HTMLElement, days[6]);
+  }
   $("history-goal-note").hidden = config.dailyGoalMinutes <= 0;
 };
 
@@ -340,14 +350,16 @@ const step = (): void => {
     else setText("eye-break-countdown", `${Math.ceil((eyeBreakEndsAt - nowMs) / 1000)} s`);
   }
   const today = dayKeyFor(now);
+  let notice: string | null = null;
   if (config.dailyGoalMinutes > 0 && state.tracker.todayActiveSeconds >= config.dailyGoalMinutes * 60 && state.goalNoticeDay !== today) {
     state.goalNoticeDay = today;
-    showNotice(`You've reached today's ${formatMinutes(config.dailyGoalMinutes * 60)} goal. A good time to start wrapping up.`);
+    notice = `You've reached today's ${formatMinutes(config.dailyGoalMinutes * 60)} goal. A good time to start wrapping up.`;
   }
   if (config.workHours && state.wrapUpNoticeDay !== today && crossedWorkEnd(previousTickMs, nowMs, config.workEndMinutes)) {
     state.wrapUpNoticeDay = today;
-    showNotice(`It's ${formatTimeOfDay(config.workEndMinutes)}, the end of your working hours. Time to wrap up.`);
+    notice = `It's ${formatTimeOfDay(config.workEndMinutes)}, the end of your working hours. Time to wrap up.`;
   }
+  if (notice !== null) showNotice(notice);
   updateReset(nowMs);
   render();
   if (nowMs - lastPersistMs >= PERSIST_MS) persist();
