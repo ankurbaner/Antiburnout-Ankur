@@ -104,22 +104,48 @@ const renderCard = (content: CardContent, preview: boolean): void => {
   cardIsPreview = preview;
 };
 
-const notify = (content: CardContent): void => {
-  if (!config.notifications || !("Notification" in window) || Notification.permission !== "granted") return;
-  if (document.visibilityState === "visible" && document.hasFocus()) return;
+const notificationsSupported = "Notification" in window;
+
+/** Some browsers (Chrome on Android) only allow notifications through a service worker. */
+const swRegistration: Promise<ServiceWorkerRegistration | null> =
+  notificationsSupported && "serviceWorker" in navigator
+    ? navigator.serviceWorker
+        .register("./sw.js")
+        .then(() => navigator.serviceWorker.ready)
+        .catch(() => null)
+    : Promise.resolve(null);
+
+const showNotification = async (title: string, body: string, tag: string): Promise<boolean> => {
+  const options: NotificationOptions = { body, tag, icon: "./favicon.svg" };
   try {
-    const n = new Notification(content.heading, {
-      body: content.steps.map((s) => `${s.icon} ${s.text}`).join("\n"),
-      tag: "anti-burnout-card",
-      icon: "./favicon.svg",
-    });
+    const reg = await swRegistration;
+    if (reg) {
+      await reg.showNotification(title, options);
+      return true;
+    }
+  } catch {
+    // fall through to the page-level constructor
+  }
+  try {
+    const n = new Notification(title, options);
     n.onclick = () => {
       window.focus();
       n.close();
     };
+    return true;
   } catch {
-    /* some platforms only allow notifications from a service worker */
+    return false;
   }
+};
+
+const notify = (content: CardContent): void => {
+  if (!config.notifications || !notificationsSupported || Notification.permission !== "granted") return;
+  if (document.visibilityState === "visible" && document.hasFocus()) return;
+  void showNotification(
+    content.heading,
+    content.steps.map((s) => `${s.icon} ${s.text}`).join("\n"),
+    "anti-burnout-card",
+  );
 };
 
 const showDueCard = (): void => {
@@ -313,8 +339,17 @@ const render = (): void => {
       : "This mode only sees this tab. When you switch to another tab or app, it assumes you're still working, so time spent there still counts.",
   );
   $("enable-system").hidden = systemOn || !systemIdleSupported();
-  $("enable-notify").hidden =
-    !("Notification" in window) || (config.notifications && Notification.permission === "granted");
+  const notifyBtn = $("enable-notify");
+  notifyBtn.hidden = !notificationsSupported;
+  if (notificationsSupported) {
+    const permission = Notification.permission;
+    notifyBtn.textContent =
+      permission === "denied"
+        ? "Notifications blocked: how to fix"
+        : config.notifications && permission === "granted"
+          ? "Send a test notification"
+          : "Turn on notifications";
+  }
 
   document.body.classList.toggle("locked", Boolean(reset));
 
@@ -346,10 +381,43 @@ const clampInt = (raw: string, min: number, max: number, fallback: number): numb
 };
 
 const enableNotifications = async (): Promise<boolean> => {
-  if (!("Notification" in window)) return false;
+  if (!notificationsSupported) return false;
   const permission =
     Notification.permission === "default" ? await Notification.requestPermission() : Notification.permission;
   return permission === "granted";
+};
+
+const setNotifyStatus = (text: string): void => {
+  const el = $("notify-status");
+  el.textContent = text;
+  el.hidden = false;
+};
+
+/** Explain the outcome of a notification request, and send a test one when allowed. */
+const reportNotifications = async (): Promise<void> => {
+  const permission = Notification.permission;
+  if (permission === "denied") {
+    setNotifyStatus(
+      "Your browser is blocking notifications for this site, so it can't ask again. To allow them, click the icon at the left of the address bar, set Notifications to Allow, then reload this page.",
+    );
+    return;
+  }
+  if (permission === "default") {
+    setNotifyStatus(
+      "Notifications weren't allowed. If no prompt appeared, look for a bell icon at the right of the address bar, or click the button again.",
+    );
+    return;
+  }
+  const sent = await showNotification(
+    "Notifications are on",
+    "Anti-Burnout cards will appear here when its tab is in the background.",
+    "anti-burnout-test",
+  );
+  setNotifyStatus(
+    sent
+      ? "Notifications are on, and a test notification has just been sent. Cards will now reach you when this tab is in the background. Didn't see it? Your computer may be hiding notifications from your browser: check Do Not Disturb / Focus, and the notification settings for your browser (Windows: Settings > System > Notifications; macOS: System Settings > Notifications)."
+      : "Notifications are allowed, but this browser couldn't show one. Try a different browser, or check your system's notification settings.",
+  );
 };
 
 const setSystemIdle = async (on: boolean): Promise<void> => {
@@ -403,9 +471,11 @@ settingsForm.addEventListener("submit", (e) => {
   render();
 
   void Promise.all([notifyPermission, systemResult]).then(([notifications, systemIdle]) => {
+    const turnedOn = notifications && !config.notifications;
     config = { ...config, notifications, systemIdle };
     saveConfig(store, config);
     render();
+    if (wantsNotify && (turnedOn || !notifications)) void reportNotifications();
   });
 });
 
@@ -471,6 +541,7 @@ $("enable-notify").addEventListener("click", async () => {
   config.notifications = await enableNotifications();
   saveConfig(store, config);
   render();
+  await reportNotifications();
 });
 $("reset-data").addEventListener("click", () => {
   if (!window.confirm("Clear all counters and settings stored in this browser?")) return;
