@@ -254,7 +254,11 @@ const step = (): void => {
   wasCounting = counting;
   if (counting) {
 
-    const result = tick(state.tracker, monitor.idleSeconds(nowMs), elapsed, dayKeyFor(now), config);
+    const result = tick(state.tracker, monitor.idleSeconds(nowMs), elapsed, dayKeyFor(now), {
+      ...config,
+      idleThresholdSeconds: monitor.effectiveThreshold(config.idleThresholdSeconds),
+    });
+
     state.tracker = result.state;
     // Stepping away already was the break, so a card left open is now stale.
     if (result.state.onBreak && cardVisible && !cardIsPreview) hideCard();

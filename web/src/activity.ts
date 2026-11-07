@@ -136,7 +136,16 @@ export class ActivityMonitor {
     return true;
   }
 
+  /**
+   * The idle threshold the tracker should use. Idle Detection can't report
+   * idle sooner than 60 seconds, so shorter thresholds are raised to match.
+   */
+  effectiveThreshold(configured: number): number {
+    return this.detector ? Math.max(this.thresholdSeconds, configured) : configured;
+  }
+
   /** Current idle seconds from the best available source. */
+
   idleSeconds(now = Date.now()): number {
     if (this.detector) {
       return systemIdleSeconds({
