@@ -13,6 +13,7 @@ import { initBreathe } from "./breatheUI";
 import { initDailyPractice } from "./dailyPracticeUI";
 import { TIME_LABELS, timeOfDay } from "./timeOfDay";
 import { GENTLE_AREAS, loadGentle } from "./gentle";
+import { initIntention } from "./intentionUI";
 import { playChime, unlockChime } from "./chime";
 import { initPracticeGroups, initYoga } from "./yogaUI";
 import { MEDITATION_PRACTICES } from "./meditation";
@@ -216,6 +217,7 @@ const updateReset = (now: number): void => {
 const step = (): void => {
   const nowMs = Date.now();
   const now = new Date(nowMs);
+  intention?.update(now);
   const sinceLastStep = (nowMs - lastTickMs) / 1000;
   lastTickMs = nowMs;
   rollDay(now);
@@ -346,6 +348,7 @@ $("reset-data").addEventListener("click", () => {
   clearAll(store);
   config = loadConfig(store);
   state = loadState(store, dayKeyFor(new Date()));
+  intention?.reload();
   initYoga(config.gentle);
   initDailyPractice(new Date(), config.gentle);
   updateBreatheGentle(config.gentle);
@@ -379,6 +382,7 @@ document.addEventListener("keydown", (e) => {
 });
 
 const updateBreatheGentle = initBreathe(config.gentle);
+const intention = initIntention(store);
 initDailyPractice(new Date(), config.gentle);
 initYoga(config.gentle);
 initPracticeGroups("meditation-practices", [{ id: "meditation", title: "Choose a quiet moment", practices: MEDITATION_PRACTICES }]);

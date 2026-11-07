@@ -52,6 +52,23 @@
         </div>
       </section>
 
+      <section class="wrap day-panel" id="intention-panel" aria-label="Today's intention">
+        <div class="day-note">
+          <h2>Today's intention</h2>
+          <form id="intention-form">
+            <label>One small thing for today <input id="intention-input" type="text" maxlength="120" required autocomplete="off" /></label>
+            <div class="intention-chips" aria-label="Suggestions">
+              <button class="btn btn-ghost btn-sm" type="button" data-intention>I'll take my breaks</button>
+              <button class="btn btn-ghost btn-sm" type="button" data-intention>One thing at a time</button>
+              <button class="btn btn-ghost btn-sm" type="button" data-intention>Kind to myself and others</button>
+              <button class="btn btn-ghost btn-sm" type="button" data-intention>Leave on time</button>
+            </div>
+            <div class="day-note-actions"><button class="btn btn-primary btn-sm" type="submit">Save</button><button class="btn btn-ghost btn-sm" id="intention-skip" type="button">Skip</button></div>
+          </form>
+          <div id="intention-saved" hidden><p id="intention-text"></p><button class="btn btn-ghost btn-sm" id="intention-edit" type="button">Edit</button></div>
+        </div>
+      </section>
+
       <section class="wrap" id="practice-of-the-day" aria-labelledby="daily-title">
         <h2 id="daily-title">Practice of the day</h2>
         <div id="daily-practice"></div>

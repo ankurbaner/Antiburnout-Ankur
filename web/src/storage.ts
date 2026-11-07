@@ -6,6 +6,7 @@ import { DEFAULT_CONFIG, TrackerState, createInitialState } from "../../src/trac
 import { ProtocolId, isProtocolId } from "./protocols";
 import { isCardPracticeId } from "./cards";
 import { DEFAULT_GENTLE, GentleSettings, loadGentle } from "./gentle";
+import { INTENTION_KEY } from "./intention";
 
 export interface WebConfig {
   idleThresholdSeconds: number;
@@ -163,4 +164,5 @@ export const saveState = (store: KV, state: WebState, now = Date.now()): void =>
 export const clearAll = (store: KV): void => {
   store.removeItem(CONFIG_KEY);
   store.removeItem(STATE_KEY);
+  store.removeItem(INTENTION_KEY);
 };
