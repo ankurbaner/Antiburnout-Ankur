@@ -1,8 +1,11 @@
+import type { PracticeTime } from "./timeOfDay";
+
 export interface CardPractice {
   id: string;
   title: string;
   english: string;
   instruction: string;
+  times?: PracticeTime[];
 }
 
 export const MEETING_PRACTICES: CardPractice[] = [

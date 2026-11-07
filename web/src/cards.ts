@@ -1,9 +1,10 @@
 import { CardPractice, MEETING_PRACTICES, YOGA_GROUPS } from "./yoga";
+import { PRACTICE_TIMES, PracticeTime } from "./timeOfDay";
 export type { CardPractice } from "./yoga";
 
 const yoga = (id: string, instruction: string): CardPractice => {
   const practice = YOGA_GROUPS.flatMap((group) => group.practices).find((item) => item.id === id)!;
-  return { ...practice, instruction };
+  return { ...practice, instruction, times: PRACTICE_TIMES[id] };
 };
 
 export const CARD_BANDS = [
@@ -29,8 +30,12 @@ export const isCardPracticeId = (value: unknown): value is string =>
 
 export const needsWater = (stretch: number): boolean => stretch > 90 * 60;
 
-const practicePool = (stretch: number, meeting: boolean): CardPractice[] =>
-  meeting ? MEETING_PRACTICES : CARD_BANDS[stretch < 45 * 60 ? 0 : needsWater(stretch) ? 2 : 1];
+export const practicePool = (stretch: number, meeting: boolean, time?: PracticeTime): CardPractice[] => {
+  if (meeting) return MEETING_PRACTICES;
+  const band = CARD_BANDS[stretch < 45 * 60 ? 0 : needsWater(stretch) ? 2 : 1];
+  const preferred = time ? band.filter((practice) => practice.times?.includes(time)) : band;
+  return preferred.length > 0 ? preferred : band;
+};
 
 const selectFromPool = (pool: CardPractice[], previous: string | null, rotation: number): CardPractice => {
   const previousIndex = pool.findIndex((practice) => practice.id === previous);
@@ -39,15 +44,16 @@ const selectFromPool = (pool: CardPractice[], previous: string | null, rotation:
   return pool[index];
 };
 
-export const selectCardPractice = (stretch: number, meeting: boolean, previous: string | null, rotation = 0): CardPractice =>
-  selectFromPool(practicePool(stretch, meeting), previous, rotation);
+export const selectCardPractice = (stretch: number, meeting: boolean, previous: string | null, rotation = 0, time?: PracticeTime): CardPractice =>
+  selectFromPool(practicePool(stretch, meeting, time), previous, rotation);
 
 export const createPreviewSelector = () => {
-  const previousByPool = new Map<CardPractice[], string>();
-  return (stretch: number, meeting: boolean, previous: string | null, rotation = 0): CardPractice => {
-    const pool = practicePool(stretch, meeting);
-    const practice = selectFromPool(pool, previousByPool.get(pool) ?? previous, rotation);
-    previousByPool.set(pool, practice.id);
+  const previousByPool = new Map<string, string>();
+  return (stretch: number, meeting: boolean, previous: string | null, rotation = 0, time?: PracticeTime): CardPractice => {
+    const pool = practicePool(stretch, meeting, time);
+    const key = `${meeting ? "meeting" : stretch < 2700 ? "short" : needsWater(stretch) ? "long" : "middle"}:${pool.map((practice) => practice.id).join(",")}`;
+    const practice = selectFromPool(pool, previousByPool.get(key) ?? previous, rotation);
+    previousByPool.set(key, practice.id);
     return practice;
   };
 };

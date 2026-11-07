@@ -11,6 +11,7 @@ import { CardPractice, createPreviewSelector, needsWater, selectCardPractice } f
 import { ActivityMonitor } from "./activity";
 import { initBreathe } from "./breatheUI";
 import { initDailyPractice } from "./dailyPracticeUI";
+import { TIME_LABELS, timeOfDay } from "./timeOfDay";
 import { playChime, unlockChime } from "./chime";
 import { initPracticeGroups, initYoga } from "./yogaUI";
 import { MEDITATION_PRACTICES } from "./meditation";
@@ -88,6 +89,8 @@ const rollDay = (now: Date): void => {
 const renderCard = (practice: CardPractice, preview: boolean, stretch = state.tracker.currentStretchSeconds): void => {
   cardStretch = stretch;
   setText("card-meta", "A quiet yoga break");
+  setText("card-time", state.meetingMode ? "" : TIME_LABELS[timeOfDay(new Date())]);
+  $("card-time").hidden = state.meetingMode;
   setText("card-chip", preview ? "Preview" : "1 min");
   setText("card-heading", `${practice.title} · ${practice.english}`);
   const li = document.createElement("li");
@@ -105,8 +108,8 @@ const renderCard = (practice: CardPractice, preview: boolean, stretch = state.tr
 
 const showCard = (stretch: number, preview: boolean, advance = true): void => {
   const practice = preview
-    ? selectPreviewPractice(stretch, state.meetingMode, state.lastPracticeId, state.rotation + previewIndex)
-    : selectCardPractice(stretch, state.meetingMode, state.lastPracticeId, state.rotation);
+    ? selectPreviewPractice(stretch, state.meetingMode, state.lastPracticeId, state.rotation + previewIndex, timeOfDay(new Date()))
+    : selectCardPractice(stretch, state.meetingMode, state.lastPracticeId, state.rotation, timeOfDay(new Date()));
   if (!preview) {
     state.lastPracticeId = practice.id;
     if (advance) state.rotation += 1;
