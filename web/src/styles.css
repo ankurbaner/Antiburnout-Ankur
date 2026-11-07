@@ -119,7 +119,9 @@ section { padding: 48px 0; }
 section h2 { font-size: clamp(30px, 3.6vw, 42px); }
 .section-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; }
 .section-head .muted { margin-top: 6px; }
-.today-controls { display: flex; align-items: center; gap: 10px; }
+.today-controls { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; max-width: 420px; }
+.today-controls-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+#source-text { font-size: 13.5px; color: var(--ink-muted); text-align: right; }
 
 .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .metric {
@@ -150,7 +152,8 @@ section h2 { font-size: clamp(30px, 3.6vw, 42px); }
 .source-note { margin-top: 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 14.5px; color: var(--ink-muted); }
 .source-note p { max-width: 640px; }
 .source-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-#notification-status:empty { display: none; }
+.source-actions:not(:has(button:not([hidden]))), #notification-status:empty { display: none; }
+.source-note:not(:has(button:not([hidden]))):has(#notification-status:empty) { display: none; }
 #notification-status { flex-basis: 100%; padding: 12px 14px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); color: var(--ink); max-width: 760px; }
 
 /* How */
@@ -249,6 +252,9 @@ input[type="number"] { width: 88px; }
   .reset-preview { grid-template-columns: 1fr; }
 }
 @media (max-width: 600px) {
+  .today .section-head { flex-direction: column; align-items: flex-start; }
+  .today-controls { align-items: flex-start; }
+  #source-text { text-align: left; }
   .nav { display: none; }
   .header-inner { justify-content: space-between; }
   .hero { padding-top: 44px; }
