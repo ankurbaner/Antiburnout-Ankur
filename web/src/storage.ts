@@ -3,7 +3,8 @@
  * nothing is ever sent anywhere.
  */
 import { DEFAULT_CONFIG, TrackerState, createInitialState } from "../../src/tracker";
-import { ProtocolId } from "./protocols";
+import { ProtocolId, isProtocolId } from "./protocols";
+import { isCardPracticeId } from "./cards";
 
 export interface WebConfig {
   idleThresholdSeconds: number;
@@ -14,7 +15,6 @@ export interface WebConfig {
   maxSnoozes: number;
   eyeBreaks: boolean;
   eyeBreakMinutes: number;
-  dailyGoalMinutes: number;
   workHours: boolean;
   workStartMinutes: number;
   workEndMinutes: number;
@@ -31,19 +31,11 @@ export const DEFAULT_WEB_CONFIG: WebConfig = {
   maxSnoozes: 2,
   eyeBreaks: false,
   eyeBreakMinutes: 10,
-  dailyGoalMinutes: 0,
   workHours: false,
   workStartMinutes: 540,
   workEndMinutes: 1080,
   systemIdle: false,
 };
-
-export interface HistoryEntry {
-  day: string;
-  activeSeconds: number;
-  cardsDone: number;
-  resets: number;
-}
 
 export interface WebState {
   tracker: TrackerState;
@@ -55,11 +47,11 @@ export interface WebState {
   resetsToday: number;
   snoozesInARow: number;
   lastEyeBreakAtStretch: number;
-  goalNoticeDay: string;
   wrapUpNoticeDay: string;
-  history: HistoryEntry[];
   lastProtocolId: ProtocolId | null;
   paused: boolean;
+  meetingMode: boolean;
+  lastPracticeId: string | null;
   /** Epoch ms of the last save, to detect an absence across a reload. */
   savedAt: number;
 }
@@ -77,11 +69,11 @@ export const initialWebState = (dayKey: string): WebState => ({
   resetsToday: 0,
   snoozesInARow: 0,
   lastEyeBreakAtStretch: 0,
-  goalNoticeDay: "",
   wrapUpNoticeDay: "",
-  history: [],
   lastProtocolId: null,
   paused: false,
+  meetingMode: false,
+  lastPracticeId: null,
   savedAt: 0,
 });
 
@@ -96,31 +88,6 @@ const noticeDay = (value: unknown): string => {
   const date = new Date(`${value}T00:00:00Z`);
   return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value ? value : "";
 };
-
-const isHistoryEntry = (value: unknown): value is HistoryEntry => {
-  if (!value || typeof value !== "object") return false;
-  const entry = value as Record<string, unknown>;
-  return noticeDay(entry.day) !== "" && isFiniteNumber(entry.activeSeconds) && entry.activeSeconds >= 0 &&
-    isFiniteNumber(entry.cardsDone) && Number.isInteger(entry.cardsDone) && entry.cardsDone >= 0 &&
-    isFiniteNumber(entry.resets) && Number.isInteger(entry.resets) && entry.resets >= 0;
-};
-
-const normalizeHistory = (entries: HistoryEntry[], today: string): HistoryEntry[] => {
-  const cutoff = new Date(`${today}T00:00:00Z`);
-  cutoff.setUTCDate(cutoff.getUTCDate() - 7);
-  const oldestDay = cutoff.toISOString().slice(0, 10);
-  const days = new Map<string, HistoryEntry>();
-  for (const entry of entries) {
-    if (isHistoryEntry(entry) && entry.day >= oldestDay && entry.day < today &&
-      (entry.activeSeconds > 0 || entry.cardsDone > 0 || entry.resets > 0)) {
-      days.set(entry.day, { day: entry.day, activeSeconds: entry.activeSeconds, cardsDone: entry.cardsDone, resets: entry.resets });
-    }
-  }
-  return [...days.values()].sort((a, b) => a.day.localeCompare(b.day)).slice(-7);
-};
-
-export const archiveDay = (history: HistoryEntry[], entry: HistoryEntry, today: string): HistoryEntry[] =>
-  normalizeHistory([...history, entry], today);
 
 const read = (store: KV, key: string): Record<string, unknown> | null => {
   try {
@@ -158,7 +125,7 @@ export const saveConfig = (store: KV, config: WebConfig): void => {
 
 /**
  * Load saved state for `dayKey`. Daily counters reset when the saved state is
- * from an earlier day, archiving that day's totals first.
+ * from an earlier day. Legacy history and goal fields are ignored.
  */
 export const loadState = (store: KV, dayKey: string): WebState => {
   const fresh = initialWebState(dayKey);
@@ -176,16 +143,6 @@ export const loadState = (store: KV, dayKey: string): WebState => {
   const sameDay = tracker.dayKey === dayKey;
   const num = (v: unknown): number => (isFiniteNumber(v) ? v : 0);
   const protocol = raw.lastProtocolId;
-  let history = normalizeHistory(Array.isArray(raw.history)
-    ? raw.history.filter(isHistoryEntry) : [], dayKey);
-  if (tracker.dayKey < dayKey) {
-    history = archiveDay(history, {
-      day: tracker.dayKey,
-      activeSeconds: Math.max(0, tracker.todayActiveSeconds),
-      cardsDone: Math.max(0, Math.floor(num(raw.cardsDoneToday))),
-      resets: Math.max(0, Math.floor(num(raw.resetsToday))),
-    }, dayKey);
-  }
   if (!sameDay) {
     tracker.todayActiveSeconds = 0;
     tracker.dayKey = dayKey;
@@ -200,14 +157,11 @@ export const loadState = (store: KV, dayKey: string): WebState => {
       ? Math.max(0, Math.floor(raw.snoozesInARow)) : 0,
     lastEyeBreakAtStretch: !tracker.onBreak && tracker.currentStretchSeconds > 0 && isFiniteNumber(raw.lastEyeBreakAtStretch)
       ? Math.max(0, Math.min(tracker.currentStretchSeconds, raw.lastEyeBreakAtStretch)) : 0,
-    goalNoticeDay: noticeDay(raw.goalNoticeDay),
     wrapUpNoticeDay: noticeDay(raw.wrapUpNoticeDay),
-    history,
-    lastProtocolId:
-      protocol === "water" || protocol === "posture" || protocol === "mobility" || protocol === "breathwork" || protocol === "alternate" || protocol === "desk-stretch"
-        ? protocol
-        : null,
+    lastProtocolId: isProtocolId(protocol) ? protocol : null,
     paused: raw.paused === true,
+    meetingMode: raw.meetingMode === true,
+    lastPracticeId: isCardPracticeId(raw.lastPracticeId) ? raw.lastPracticeId : null,
     savedAt: num(raw.savedAt),
   };
 };

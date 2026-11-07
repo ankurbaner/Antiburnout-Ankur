@@ -3,27 +3,27 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Anti-Burnout counts the time you actively spend at the screen and, every 20 active minutes, asks for one small physical break. Private by design: your activity never leaves your browser." />
+    <meta name="description" content="Quiet desk-yoga reminders for your eyes, back and mind. Meeting mode keeps breaks call-safe. Private by design: nothing leaves your browser." />
     <link rel="canonical" href="https://ankurbaner.github.io/Antiburnout-Ankur/" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Anti-Burnout" />
     <meta property="og:title" content="Anti-Burnout: breaks for your eyes, your back and a glass of water" />
-    <meta property="og:description" content="Anti-Burnout counts the time you actively spend at the screen and, every 20 active minutes, asks for one small physical break. Private by design: your activity never leaves your browser." />
+    <meta property="og:description" content="Quiet desk-yoga reminders for your eyes, back and mind. Meeting mode keeps breaks call-safe. Private by design: nothing leaves your browser." />
     <meta property="og:url" content="https://ankurbaner.github.io/Antiburnout-Ankur/" />
     <meta property="og:image" content="https://ankurbaner.github.io/Antiburnout-Ankur/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Anti-Burnout: The break is for your eyes, your back, and a glass of water. Not for more work." />
+    <meta property="og:image:alt" content="Anti-Burnout: short breaks for your eyes, back and mind." />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Anti-Burnout" />
-    <meta name="twitter:description" content="Anti-Burnout counts the time you actively spend at the screen and, every 20 active minutes, asks for one small physical break. Private by design: your activity never leaves your browser." />
+    <meta name="twitter:description" content="Quiet desk-yoga reminders for your eyes, back and mind. Meeting mode keeps breaks call-safe. Private by design: nothing leaves your browser." />
     <meta name="twitter:image" content="https://ankurbaner.github.io/Antiburnout-Ankur/og-image.png" />
     <meta name="theme-color" content="#EDEAE2" />
     <title>Anti-Burnout</title>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
   </head>
   <body>
-    <a class="skip-link" href="#today">Skip to today</a>
+    <a class="skip-link" href="#top">Skip to content</a>
 
     <header class="site-header">
       <div class="wrap header-inner">
@@ -32,7 +32,6 @@
           <span>Anti-Burnout</span>
         </a>
         <nav class="nav" aria-label="Sections">
-          <a href="#today">Today</a>
           <a href="#yoga">Yoga</a>
           <a href="#how">How it works</a>
           <a href="#privacy">Privacy</a>
@@ -43,67 +42,26 @@
     </header>
 
     <main id="top">
-      <section class="hero wrap">
-        <p class="eyebrow">For people whose work has lost its edges</p>
-        <h1>The break is for your eyes, your back, and a glass of water. <em>Not for more work.</em></h1>
-        <p class="lead">
-          Anti-Burnout counts the minutes you spend actively using your screen. After every 20 of them, a small card
-          asks you to do one physical thing: rest your eyes, fix your posture, drink some water or move. It never adds
-          a task, never asks a question and never needs a reply.
-        </p>
-        <div class="hero-actions">
-          <button class="btn btn-primary" type="button" data-action="start-reset">Take a 5-minute reset</button>
-          <button class="btn btn-ghost" type="button" data-action="preview-card">Preview a card</button>
+      <div class="wrap control-area">
+        <div class="status-bar" role="group" aria-label="Reminder controls">
+          <button class="btn btn-ghost btn-sm" type="button" id="pause-btn" aria-pressed="false">Pause</button>
+          <span class="chip" id="source-chip">Tracking: this tab</span>
+          <button class="btn btn-ghost btn-sm" type="button" id="enable-system" hidden>Track the whole computer</button>
+          <button class="btn btn-ghost btn-sm" type="button" id="meeting-btn" aria-pressed="false">In a meeting</button>
         </div>
-      </section>
-
-      <section class="wrap today" id="today" aria-labelledby="today-title">
-        <div class="section-head">
-          <div>
-            <h2 id="today-title">Today</h2>
-            <p class="muted" id="status-line" aria-live="polite">Counting your screen time.</p>
-          </div>
-          <div class="today-controls">
-            <div class="today-controls-row">
-              <span class="chip" id="source-chip" title="Where activity is measured">Tracking: this tab only</span>
-              <button class="btn btn-ghost btn-sm" type="button" id="pause-btn" aria-pressed="false">Pause</button>
-            </div>
-            <p id="source-text">
-              Only this tab is watched, so time in other tabs still counts.
-            </p>
-          </div>
-        </div>
-
+        <p class="tracking-help" id="source-text">This tab cannot see activity elsewhere. Track the whole computer to detect when you step away.</p>
         <div class="day-notice" id="day-notice" hidden>
           <p id="day-notice-text" role="status" aria-live="polite"></p>
           <button class="btn btn-ghost btn-sm" type="button" id="day-notice-dismiss">Dismiss</button>
         </div>
-        <div class="metrics">
-          <article class="metric metric-terracotta">
-            <p class="metric-label">Since your last break</p>
-            <p class="metric-value" id="m-stretch">0m</p>
-            <p class="metric-sub" id="m-stretch-sub">Resets after 1 min away</p>
-          </article>
-          <article class="metric metric-periwinkle">
-            <p class="metric-label">Screen time today</p>
-            <p class="metric-value" id="m-today">0m</p>
-            <p class="metric-sub" id="m-today-sub">0 guided breaks</p>
-          </article>
-          <article class="metric metric-sage">
-            <p class="metric-label">Next reminder in</p>
-            <p class="metric-value" id="m-next">20m</p>
-            <p class="metric-sub" id="m-next-sub">of screen time</p>
-          </article>
-        </div>
-
-        <div class="history" aria-labelledby="history-title">
-          <h3 id="history-title">Last 7 days</h3>
-          <p class="muted" id="history-goal-note" hidden>Green bars = days you hit your goal.</p>
-          <ol class="history-chart" id="history-chart"></ol>
-        </div>
-
-        <div class="source-note" id="source-note">
-          <button class="btn btn-ghost btn-sm" type="button" id="enable-system" hidden>Track the whole computer</button>
+      </div>
+      <section class="hero wrap">
+        <p class="eyebrow">Small breaks, less strain</p>
+        <h1>Short breaks for your eyes, back and mind.</h1>
+        <p class="lead">Every 20 minutes of screen use, a small card suggests one quiet desk-yoga move. After a long stretch, it also reminds you to drink water. No sign-up. Nothing leaves your browser.</p>
+        <div class="hero-actions">
+          <button class="btn btn-primary" type="button" data-action="start-reset">Take a 5-minute reset</button>
+          <button class="btn btn-ghost" type="button" data-action="preview-card">Preview a card</button>
         </div>
       </section>
 
@@ -120,18 +78,18 @@
         <div class="steps">
           <article class="step">
             <span class="step-num">1</span>
-            <h3>It counts only the time you're using the screen</h3>
-            <p>Step away for a minute and it counts as a break. The timer starts again from zero.</p>
+            <h3>Let reminders run in the background</h3>
+            <p>Keep this tab open. A minute away counts as a break, and the next reminder starts fresh.</p>
           </article>
           <article class="step">
             <span class="step-num">2</span>
             <h3>Every 20 minutes, a small reminder appears</h3>
-            <p>It asks you to rest your eyes, stretch or drink water. Click Done, or Snooze to be reminded in 5 minutes.</p>
+            <p>Each card suggests one desk-yoga practice for how long you've been at the screen. Click Done, or Snooze for 5 minutes.</p>
           </article>
           <article class="step">
             <span class="step-num">3</span>
             <h3>Need a proper break? Take 5 minutes</h3>
-            <p>The 5-minute reset shows one simple activity to do away from the screen.</p>
+            <p>Choose a 5-minute reset for a longer pause. Turn on In a meeting to keep cards and resets call-safe, with no chime.</p>
           </article>
         </div>
 
@@ -139,7 +97,7 @@
         <ul class="privacy-list">
           <li>Keep this tab open. Nothing is counted while it's closed.</li>
           <li>On Chrome or Edge, click Track the whole computer so it knows when you walk away.</li>
-          <li>Press Pause during calls or meetings.</li>
+          <li>Use In a meeting for quiet, camera-friendly practices. Press Pause when you don't want reminders.</li>
         </ul>
       </section>
 
@@ -148,7 +106,7 @@
         <ul class="privacy-list">
           <li>Everything stays in this browser. No accounts, no analytics, no trackers.</li>
           <li>It only knows whether you're active or away, never what you type or look at.</li>
-          <li>It keeps today's numbers, the last 7 days and your settings. Clear them any time in Settings.</li>
+          <li>It keeps a few reminder counters, your settings and meeting mode in this browser. No activity history is kept. Clear all data any time in Settings.</li>
         </ul>
       </section>
 
@@ -232,8 +190,8 @@
               <span id="snooze-limit-hint">0 = no limit</span>
             </label>
           </div>
-          <label class="check"><input type="checkbox" name="chime" /> Play a soft chime for cards and notices</label>
-          <label class="check"><input type="checkbox" name="headsUp" /> Warn 10 seconds before a card</label>
+          <label class="check"><input type="checkbox" name="chime" /> Play a soft chime for cards and notices (silent in meeting mode)</label>
+          <label class="check"><input type="checkbox" name="headsUp" /> Show a 10-second heads-up in the tab title</label>
           <label class="check"><input type="checkbox" name="eyeBreaks" /> Short eye breaks between cards</label>
           <div class="field-grid">
             <label>Eye break every
@@ -242,13 +200,7 @@
           </div>
         </fieldset>
         <fieldset class="settings-group">
-          <legend>Your day</legend>
-          <div class="field-grid">
-            <label>Daily active-time goal
-              <span class="input-suffix"><input type="number" name="dailyGoalMinutes" min="0" max="960" step="1" required aria-describedby="goal-hint" /> min</span>
-              <span id="goal-hint">0 = off</span>
-            </label>
-          </div>
+          <legend>Working hours</legend>
           <label class="check"><input type="checkbox" name="workHours" /> Only show cards during working hours</label>
           <div class="field-grid">
             <label>Start <input type="time" name="workStart" required /></label>
@@ -257,6 +209,7 @@
         </fieldset>
         <fieldset class="settings-group">
           <legend>Tracking</legend>
+          <p class="settings-help">Time is used only to schedule breaks. In this-tab mode, other tabs still count as screen use; whole-computer tracking can detect when you step away.</p>
           <div class="field-grid">
             <label>Counts as a break after
               <span class="input-suffix"><input type="number" name="idleThresholdSeconds" min="30" max="900" step="5" required /> sec idle</span>

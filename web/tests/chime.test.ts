@@ -38,6 +38,9 @@ it("schedules two gentle notes and tolerates playback errors", async () => {
   })));
   const { playChime, unlockChime } = await import("../src/chime");
   unlockChime();
+  playChime(true, true);
+  playChime(false, false);
+  expect(createOscillator).not.toHaveBeenCalled();
   playChime();
   expect(start.mock.calls).toEqual([[1], [1.25]]);
   expect(stop).toHaveBeenCalledTimes(2);
