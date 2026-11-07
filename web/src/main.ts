@@ -406,7 +406,8 @@ const showTestNotification = (): Promise<boolean> =>
   showNotification(
     "Notifications are on",
     "Anti-Burnout cards will appear here when its tab is in the background.",
-    "anti-burnout-test",
+    // A fresh tag each time, so a repeat test alerts again instead of silently replacing the last one.
+    `anti-burnout-test-${Date.now()}`,
   );
 
 const sendTestNotification = async (): Promise<void> => {
