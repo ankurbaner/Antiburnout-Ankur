@@ -117,7 +117,10 @@ const getSwRegistration = (): Promise<ServiceWorkerRegistration | null> =>
       ? navigator.serviceWorker
           .register("./sw.js")
           .then(() => navigator.serviceWorker.ready)
-          .catch(() => null)
+          .catch(() => {
+            swRegistration = null;
+            return null;
+          })
       : Promise.resolve(null));
 
 const showNotification = async (title: string, body: string, tag: string): Promise<boolean> => {
