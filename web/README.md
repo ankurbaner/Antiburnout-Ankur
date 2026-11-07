@@ -5,22 +5,26 @@ this repo and the 5-minute reset from
 [Off-Duty](https://github.com/ankurbaner/calude-impact-lab-off-duty), as a
 static site with no backend.
 
-- **Counts real active time.** Idle for 60 seconds or more (configurable)
-  counts as a break and resets the stretch. It uses the same `tick()` state
+- **Tab-based reminders.** With this page focused, 60 seconds without input
+  counts as a break and resets the stretch. This threshold is fixed, not
+  configurable. It uses the same `tick()` state
   machine as the desktop app (`../src/tracker.ts`).
-- **Recovery cards** every 20 active minutes, built by the shared
-  `../src/cardContent.ts` and `../src/exercises.ts`, so the eyes → posture →
-  water → movement escalation and the rotating wording match the desktop app
-  exactly, with Done / Snooze controls on each in-page card.
+- **Recovery cards** every 20 active minutes by default, with web-local
+  desk-yoga practices chosen by stretch length and Done / Snooze controls.
 - **5-minute reset**: a full-screen countdown showing one activity at a time
   (never the same one twice in a row).
+- **Quiet practices only (for meetings)** in Settings restricts cards and
+  resets to call-safe practices and silences the chime. It stays on across
+  same-day reloads and turns off at local midnight.
+- **Desk yoga and meditation** with inline Start / countdown / Done timers.
 
 ## Where activity comes from
 
-| Mode | When | What it sees |
-| --- | --- | --- |
-| This tab (default) | Always | Whether a pointer, key, scroll or touch event happened on this page. While the tab is unfocused it assumes you're working elsewhere. |
-| Whole computer | Opt-in, Chromium browsers | The [Idle Detection API](https://developer.mozilla.org/docs/Web/API/Idle_Detection_API): only `active` / `idle` and `locked` / `unlocked`. |
+Tracking is this-tab only: it watches for pointer, key, scroll or touch events
+on this page. While focused, a minute without that input counts as being away.
+While the tab is unfocused, it cannot see activity elsewhere and assumes
+you're working elsewhere. Nothing is counted while the tab is closed.
+Whole-computer tracking and the Idle Detection API have been removed.
 
 There is no network after the page loads: no analytics and no third-party
 fonts (they're bundled). Settings and coarse counters live in `localStorage`
@@ -46,6 +50,8 @@ npm run build      # static output in web/dist (relative paths, so any host or s
 
 - `src/main.ts`: UI wiring and the 1-second loop that feeds `tick()`
 - `src/activity.ts`: turns browser signals into "seconds idle"
+- `src/cards.ts`: web-local yoga reminder selection and preview rotation
+- `src/yoga.ts`, `src/meditation.ts`, `src/yogaUI.ts`: practice data and inline timers
 - `src/protocols.ts`: the 5-minute reset activities and their rotation
 - `src/storage.ts`: validated `localStorage` persistence
-- `../src/tracker.ts`, `../src/exercises.ts`, `../src/cardContent.ts`: shared with the desktop app
+- `../src/tracker.ts`: shared with the desktop app; card content is web-local

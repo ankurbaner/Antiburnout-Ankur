@@ -81,6 +81,7 @@ export const loadConfig = (store: KV): WebConfig => {
   const raw = read(store, CONFIG_KEY) ?? {};
   const out = { ...DEFAULT_WEB_CONFIG };
   for (const key of Object.keys(out) as (keyof WebConfig)[]) {
+    // Idle stays fixed at 60 seconds, ignoring old user-configured values.
     if (key === "idleThresholdSeconds") continue;
     const v = raw[key];
     if (typeof out[key] === "number" && isFiniteNumber(v)) (out[key] as number) = v;

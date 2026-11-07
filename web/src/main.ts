@@ -70,7 +70,10 @@ const rollDay = (now: Date): void => {
   const today = dayKeyFor(now);
   if (state.tracker.dayKey === today) return;
   state.meetingMode = false;
-  if (settingsDialog.open) (settingsForm.elements.namedItem("meetingMode") as HTMLInputElement).checked = false;
+  if (settingsDialog.open) {
+    const meetingCheckbox = settingsForm.elements.namedItem("meetingMode");
+    if (meetingCheckbox instanceof HTMLInputElement) meetingCheckbox.checked = false;
+  }
   if (cardVisible) showCard(cardStretch, cardIsPreview, false);
   state.cardsDoneToday = 0;
   state.resetsToday = 0;
