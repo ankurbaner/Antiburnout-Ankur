@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { DEFAULT_GENTLE, GENTLE_AREAS, filterPractices, isAllowed, loadGentle } from "../src/gentle";
+import { DEFAULT_GENTLE, GENTLE_AREAS, PRACTICE_CONFLICTS, filterPractices, isAllowed, loadGentle } from "../src/gentle";
 import { CARD_BANDS, createPreviewSelector, practicePool, selectCardPractice } from "../src/cards";
 import { DAILY_PRACTICES, dailyPractice } from "../src/dailyPractice";
 import { GENTLE_PRACTICES, YOGA_GROUPS, yogaGroupsFor } from "../src/yoga";
@@ -23,7 +23,7 @@ it("defaults legacy and malformed settings to off and persists only explicit boo
   expect(filterPractices([], DEFAULT_GENTLE)).toEqual([]);
 });
 
-it("conservatively hides tagged yoga with readable notes and alternatives, retaining all practices by default", () => {
+it("hides tagged yoga with readable notes and alternatives, retaining all practices by default", () => {
   expect(yogaGroupsFor().flatMap((g) => g.practices)).toEqual(YOGA_GROUPS.flatMap((g) => g.practices));
   for (const gentle of combinations.slice(1)) {
     const groups = yogaGroupsFor(gentle);
@@ -34,7 +34,24 @@ it("conservatively hides tagged yoga with readable notes and alternatives, retai
   expect(isAllowed({ id: "twist" }, { ...DEFAULT_GENTLE, back: true })).toBe(false);
   expect(isAllowed({ id: "neck" }, { ...DEFAULT_GENTLE, neck: true })).toBe(false);
   expect(isAllowed({ id: "wrists" }, { ...DEFAULT_GENTLE, wrists: true })).toBe(false);
-  expect(isAllowed({ id: "cat-cow" }, { ...DEFAULT_GENTLE, pregnancy: true })).toBe(false);
+  expect(isAllowed({ id: "cat-cow" }, { ...DEFAULT_GENTLE, pregnancy: true })).toBe(true);
+  expect(isAllowed({ id: "cat-cow" }, { ...DEFAULT_GENTLE, back: true })).toBe(false);
+});
+
+it("keeps the requested practices available with all Gentle settings while preserving the reset conflicts", () => {
+  const all = combinations[15];
+  for (const id of ["alternate", "eyes", "meeting-palming", "shoulders", "palm-tree", "heels"]) {
+    expect(PRACTICE_CONFLICTS[id]).toEqual([]);
+    expect(isAllowed({ id }, all)).toBe(true);
+  }
+  expect(PRACTICE_CONFLICTS).toMatchObject({
+    twist: ["back", "pregnancy"], "side-bend": ["back", "pregnancy"], neck: ["neck"], wrists: ["wrists"],
+    posture: ["back", "pregnancy"], mobility: ["back", "neck", "wrists", "pregnancy"],
+    "desk-stretch": ["back", "neck", "pregnancy"], breathwork: ["pregnancy"],
+  });
+  expect(yogaGroupsFor(all).flatMap((group) => group.practices).map((practice) => practice.id)).toEqual([
+    "alternate", "deep", "equal", "shoulders", "eyes", "palm-tree", "heels", "gentle-eyes", "gentle-shoulders",
+  ]);
 });
 
 it("never empties a reminder pool, repeats consecutively or loses effective-pool coverage for any setting combination", () => {
@@ -61,8 +78,9 @@ it("never empties a reminder pool, repeats consecutively or loses effective-pool
     expect(seenPreview).toEqual(seen);
   }
   const all = combinations[15];
-  expect(filterPractices(CARD_BANDS[2], all)).toHaveLength(0);
-  expect(practicePool(6000, false, "evening", all)).toEqual(GENTLE_PRACTICES);
+  expect(filterPractices(CARD_BANDS[2], all).map((practice) => practice.id)).toEqual(["palm-tree", "heels"]);
+  expect(practicePool(6000, false, "evening", all).map((practice) => practice.id)).toEqual(["palm-tree", "heels"]);
+  expect(practicePool(0, false, undefined, all).map((practice) => practice.id)).toEqual(["eyes", "gentle-eyes", "gentle-shoulders"]);
 });
 
 it("chooses only allowed daily practices, deterministically per date and settings without adjacent-day repeats", () => {
@@ -91,5 +109,5 @@ it("filters reset protocols with non-repeating safe fallbacks, including meeting
       expect(pool).toContain(nextProtocol(id, pool).id);
     }
   }
-  expect(allowedProtocolOrder(false, combinations[15])).toEqual(["water", "gentle-eyes", "gentle-shoulders"]);
+  expect(allowedProtocolOrder(false, combinations[15])).toEqual(["water", "alternate"]);
 });
