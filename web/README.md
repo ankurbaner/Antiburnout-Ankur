@@ -46,6 +46,14 @@ npm run build      # static output in web/dist (relative paths, so any host or s
 `web/dist` can be served from any static host, e.g. GitHub Pages, Netlify or
 `npx vite preview`.
 
+## App icons
+
+The PNG app icons and apple-touch-icon are generated from `public/favicon.svg`
+by `scripts/generate-icons.mjs`, using only Node.js built-ins. If the favicon
+changes, regenerate and commit the PNGs with `node scripts/generate-icons.mjs`
+from `web/`. The generator supports the current logo's SVG path commands
+(M/C/S/Z) and geometry; update it too if the logo structure changes.
+
 ## Layout
 
 - `src/main.ts`: UI wiring and the 1-second loop that feeds `tick()`
