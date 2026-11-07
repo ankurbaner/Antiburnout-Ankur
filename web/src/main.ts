@@ -274,7 +274,7 @@ const render = (): void => {
     chip.dataset.state = "active";
   }
   setText("status-line", status);
-  setText("source-chip", monitor.source === "system" ? "Whole computer" : "This tab");
+  setText("source-chip", monitor.source === "system" ? "Tracking: whole computer" : "Tracking: this tab only");
   const pauseBtn = $("pause-btn");
   setText("pause-btn", state.paused ? "Resume" : "Pause");
   pauseBtn.setAttribute("aria-pressed", String(state.paused));
