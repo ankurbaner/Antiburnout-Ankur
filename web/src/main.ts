@@ -46,6 +46,8 @@ const monitor = new ActivityMonitor();
 let lastTickMs = Date.now();
 let previewIndex = 0;
 let cardVisible = false;
+/** Previews don't count as done and don't move the schedule. */
+let cardIsPreview = false;
 let reset: { endsAt: number; protocol: Protocol; finished: boolean } | null = null;
 
 const persist = (): void => saveState(store, state);
@@ -88,6 +90,7 @@ const renderCard = (content: CardContent, preview: boolean): void => {
   foot.textContent = content.footnote ?? "";
   $("card").hidden = false;
   cardVisible = true;
+  cardIsPreview = preview;
 };
 
 const notify = (content: CardContent): void => {
@@ -243,6 +246,8 @@ const step = (): void => {
   if (!state.paused && !reset && !state.dayEndedAt) {
     const result = tick(state.tracker, monitor.idleSeconds(nowMs), elapsed, dayKeyFor(now), config);
     state.tracker = result.state;
+    // Stepping away already was the break, so a card left open is now stale.
+    if (result.state.onBreak && cardVisible && !cardIsPreview) hideCard();
     if (result.showCard) showDueCard();
   }
 
@@ -462,13 +467,14 @@ document.addEventListener("click", (e) => {
 });
 
 $("card-done").addEventListener("click", () => {
-  if ($("card-chip").textContent !== "Preview") state.cardsDoneToday += 1;
+  if (!cardIsPreview) state.cardsDoneToday += 1;
   hideCard();
   persist();
   render();
 });
 $("card-snooze").addEventListener("click", () => {
-  if ($("card-chip").textContent !== "Preview") {
+  if (!cardIsPreview) {
+
     // Pull the next reminder to `snoozeMinutes` from now instead of a full interval away.
     state.tracker = {
       ...state.tracker,
