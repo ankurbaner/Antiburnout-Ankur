@@ -105,9 +105,6 @@ em { font-style: italic; }
 .nav a { text-decoration: none; color: var(--ink-muted); }
 .nav a:hover { color: var(--ink); }
 
-.curfew-banner { background: var(--ink); color: var(--canvas); }
-.curfew-banner-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 0; }
-.curfew-banner .btn-dark { background: var(--canvas); color: var(--ink); }
 
 /* Hero */
 .hero { padding: 72px 0 40px; max-width: 900px; margin-left: max(20px, calc((100% - 1120px) / 2)); }
@@ -124,7 +121,7 @@ section h2 { font-size: clamp(30px, 3.6vw, 42px); }
 .section-head .muted { margin-top: 6px; }
 .today-controls { display: flex; align-items: center; gap: 10px; }
 
-.metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .metric {
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
   padding: 22px 22px 20px; box-shadow: var(--shadow); position: relative; overflow: hidden;
@@ -133,7 +130,6 @@ section h2 { font-size: clamp(30px, 3.6vw, 42px); }
 .metric-terracotta::before { background: var(--terracotta); }
 .metric-periwinkle::before { background: var(--periwinkle); }
 .metric-sage::before { background: var(--sage); }
-.metric-charcoal::before { background: var(--ink); }
 .metric-label { font-size: 13px; font-weight: 600; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.05em; }
 .metric-value { font-family: var(--display); font-weight: 300; font-size: 52px; line-height: 1.05; letter-spacing: -0.03em; margin: 10px 0 6px; font-variant-numeric: tabular-nums; }
 .metric-sub { font-size: 14px; color: var(--ink-muted); }
@@ -157,7 +153,7 @@ section h2 { font-size: clamp(30px, 3.6vw, 42px); }
 .today-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
 
 /* How */
-.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 24px; }
+.steps { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 24px; }
 .step { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
 .step h3 { font-size: 24px; margin: 14px 0 8px; }
 .step p { color: var(--ink-muted); }
@@ -229,17 +225,6 @@ section h2 { font-size: clamp(30px, 3.6vw, 42px); }
 .reset-done { margin-top: 18px; font-weight: 600; color: var(--sage-dark); }
 .overlay-actions { display: flex; gap: 10px; margin-top: 22px; flex-wrap: wrap; justify-content: center; }
 
-.overlay-night { background: #141413; color: #f1eee6; }
-.overlay-night .eyebrow { color: #e08a69; }
-.overlay-night h2 { font-size: clamp(40px, 6vw, 64px); font-weight: 300; }
-.night-sub { color: #b3afa5; margin-top: 10px; font-size: 18px; }
-.night-clock { font-family: var(--display); font-weight: 300; font-size: clamp(56px, 9vw, 96px); letter-spacing: -0.03em; margin-top: 34px; font-variant-numeric: tabular-nums; }
-.night-until { color: #b3afa5; }
-.receipt { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 34px 0 22px; width: 100%; }
-.receipt div { border: 1px solid #34322e; border-radius: 14px; padding: 14px; }
-.receipt dt { font-size: 12.5px; color: #b3afa5; }
-.receipt dd { margin: 4px 0 0; font-family: var(--display); font-size: 30px; }
-.overlay-night .btn-link { color: #8e8a80; }
 
 /* Settings */
 .settings { border: 1px solid var(--border); border-radius: 20px; padding: 0; width: min(560px, calc(100% - 32px)); background: var(--surface); color: var(--ink); box-shadow: var(--shadow-lg); }
@@ -256,7 +241,7 @@ input[type="number"] { width: 88px; }
 .check input { margin-top: 4px; accent-color: var(--sage); }
 
 @media (max-width: 900px) {
-  .metrics { grid-template-columns: repeat(2, 1fr); }
+  .metrics { grid-template-columns: 1fr; }
   .band-track { grid-template-columns: repeat(2, 1fr); }
   .steps { grid-template-columns: 1fr; }
   .reset-preview { grid-template-columns: 1fr; }
@@ -267,11 +252,9 @@ input[type="number"] { width: 88px; }
   .hero { padding-top: 44px; }
   .metric-value { font-size: 40px; }
   .protocol-list, .field-grid { grid-template-columns: 1fr; }
-  .receipt { grid-template-columns: 1fr; }
   .contact-card { flex-direction: column; text-align: center; padding: 24px; }
   .contact-photo { width: 140px; height: 140px; }
   .recovery-card { top: auto; bottom: 16px; right: 16px; }
-  .curfew-banner-inner { flex-direction: column; align-items: flex-start; }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }

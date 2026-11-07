@@ -17,11 +17,3 @@ export const formatClock = (totalSeconds: number): string => {
   const pad = (n: number): string => String(n).padStart(2, "0");
   return h > 0 ? `${h}:${pad(m)}:${pad(sec)}` : `${pad(m)}:${pad(sec)}`;
 };
-
-/** 20 -> "8pm", 6 -> "6am", 0 -> "12am". */
-export const formatHour = (hour: number): string => {
-  const h = ((hour % 24) + 24) % 24;
-  const suffix = h < 12 ? "am" : "pm";
-  const twelve = h % 12 === 0 ? 12 : h % 12;
-  return `${twelve}${suffix}`;
-};

@@ -10,8 +10,7 @@ not for more work.**
 Runs on macOS, Windows, and Linux.
 
 > **Prefer the browser?** [`web/`](web/) is a static-site version that runs in any
-> modern browser, with the same tracker and cards plus a 5-minute reset and an
-> evening boundary. See [web/README.md](web/README.md).
+> modern browser, with the same tracker and cards plus a 5-minute reset. See [web/README.md](web/README.md).
 
 ## Who it's for
 

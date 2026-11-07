@@ -1,7 +1,7 @@
 # Anti-Burnout for the web
 
 The browser version of Anti-Burnout. It brings together the desktop tracker in
-this repo and the evening boundary and 5-minute reset from
+this repo and the 5-minute reset from
 [Off-Duty](https://github.com/ankurbaner/calude-impact-lab-off-duty), as a
 static site with no backend.
 
@@ -14,9 +14,6 @@ static site with no backend.
   exactly. Done / Snooze, plus optional browser notifications.
 - **5-minute reset**: a full-screen countdown showing one activity at a time
   (never the same one twice in a row).
-- **Evening boundary**: after 8pm (configurable) it says the day can end.
-  **End my day** shows a calm full-screen countdown to 6am, with an optional
-  auto-lock.
 
 ## Where activity comes from
 
@@ -37,7 +34,7 @@ Needs Node.js 18+.
 cd web
 npm install
 npm run dev        # http://localhost:5173
-npm test           # Vitest unit tests for curfew, activity, protocols, storage
+npm test           # Vitest unit tests for activity, protocols, formatting, storage
 npm run typecheck
 npm run build      # static output in web/dist (relative paths, so any host or sub-path works)
 ```
@@ -49,7 +46,6 @@ npm run build      # static output in web/dist (relative paths, so any host or s
 
 - `src/main.ts`: UI wiring and the 1-second loop that feeds `tick()`
 - `src/activity.ts`: turns browser signals into "seconds idle"
-- `src/curfew.ts`: evening window maths
 - `src/protocols.ts`: the 5-minute reset activities and their rotation
 - `src/storage.ts`: validated `localStorage` persistence
 - `../src/tracker.ts`, `../src/exercises.ts`, `../src/cardContent.ts`: shared with the desktop app

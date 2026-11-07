@@ -9,8 +9,7 @@ import "./styles.css";
 import { StretchBand, bandForStretch, tick } from "../../src/tracker";
 import { CardContent, buildCardContent } from "../../src/cardContent";
 import { ActivityMonitor, systemIdleSupported } from "./activity";
-import { curfewStatus } from "./curfew";
-import { formatClock, formatHour, formatMinutes } from "./format";
+import { formatClock, formatMinutes } from "./format";
 import { PROTOCOLS, PROTOCOL_ORDER, Protocol, RESET_SECONDS, nextProtocol } from "./protocols";
 import {
   applyAbsence,
@@ -64,7 +63,7 @@ const persist = (): void => {
 
 /**
  * Start a new day's counters at local midnight. Runs on every step, even
- * while paused, mid-reset or after the day was ended, so nothing from
+ * while paused or mid-reset, so nothing from
  * yesterday leaks into today.
  */
 const rollDay = (now: Date): void => {
@@ -202,46 +201,6 @@ const updateReset = (now: number): void => {
   }
 };
 
-/* ---------- End of day ---------- */
-
-const curfewCfg = () => ({ startHour: config.curfewStartHour, endHour: config.curfewEndHour });
-
-const endDay = (): void => {
-  hideCard();
-  state.dayEndedAt = new Date().toISOString();
-  state.lockOverrideUntil = null;
-  persist();
-  render();
-};
-
-const unlockDay = (): void => {
-  const curfew = curfewStatus(new Date(), curfewCfg());
-  if (state.dayEndedAt && curfew.inCurfew) {
-    // Keep auto-lock from immediately re-locking for the rest of this evening.
-    state.lockOverrideUntil = curfew.unlockAt.toISOString();
-  }
-  state.dayEndedAt = null;
-  persist();
-  render();
-};
-
-/** Clear an ended day once its morning arrives, and auto-lock when configured. */
-const updateDayEnd = (now: Date): void => {
-  if (state.dayEndedAt) {
-    const unlockAt = curfewStatus(new Date(state.dayEndedAt), curfewCfg()).unlockAt;
-    if (now.getTime() >= unlockAt.getTime()) state.dayEndedAt = null;
-  }
-  if (state.lockOverrideUntil && now.getTime() >= new Date(state.lockOverrideUntil).getTime()) {
-    state.lockOverrideUntil = null;
-  }
-  // Runs after the clear above on purpose: if `now` already sits inside a later
-  // curfew window (e.g. the tab was closed for a day), auto-lock re-locks it.
-  if (config.autoLock && !state.dayEndedAt && !state.lockOverrideUntil && curfewStatus(now, curfewCfg()).inCurfew) {
-    hideCard();
-    state.dayEndedAt = now.toISOString();
-  }
-};
-
 /* ---------- Main loop ---------- */
 
 const step = (): void => {
@@ -251,13 +210,12 @@ const step = (): void => {
   lastTickMs = nowMs;
 
   rollDay(now);
-  updateDayEnd(now);
 
-  // Nothing counts while paused, during a reset (that *is* the break), or
-  // after the day has been ended. Time spent in those states is never
-  // credited, even if timers were suspended across the transition. Large
+  // Nothing counts while paused or during a reset (that *is* the break).
+  // Time spent in those states is never credited, even if timers were
+  // suspended across the transition. Large
   // gaps from background-tab throttling or sleep are clamped by tick().
-  const counting = !state.paused && !reset && !state.dayEndedAt;
+  const counting = !state.paused && !reset;
   const elapsed = counting && wasCounting ? sinceLastStep : 0;
   wasCounting = counting;
   if (counting) {
@@ -279,10 +237,7 @@ const step = (): void => {
 };
 
 const render = (): void => {
-  const now = new Date();
   const t = state.tracker;
-  const cfg = curfewCfg();
-  const curfew = curfewStatus(now, cfg);
 
   // Metrics
   setText("m-stretch", formatMinutes(t.currentStretchSeconds));
@@ -299,14 +254,6 @@ const render = (): void => {
   } else {
     setText("m-next", formatMinutes(Math.ceil(untilNext / 60) * 60));
     setText("m-next-sub", "of active time from now");
-  }
-
-  if (curfew.inCurfew) {
-    setText("m-curfew", "Now");
-    setText("m-curfew-sub", `evening until ${formatHour(cfg.endHour)}`);
-  } else {
-    setText("m-curfew", formatMinutes(curfew.secondsUntilStart));
-    setText("m-curfew-sub", `evening starts at ${formatHour(cfg.startHour)}`);
   }
 
   // Status line + chip
@@ -350,29 +297,7 @@ const render = (): void => {
   $("enable-notify").hidden =
     !("Notification" in window) || (config.notifications && Notification.permission === "granted");
 
-  // Curfew banner
-  $("curfew-banner").hidden = !curfew.inCurfew || Boolean(state.dayEndedAt);
-
-  // Night overlay
-  const night = $("night");
-  if (state.dayEndedAt) {
-    const unlockAt = curfewStatus(new Date(state.dayEndedAt), cfg).unlockAt;
-    setText("night-clock", formatClock((unlockAt.getTime() - now.getTime()) / 1000));
-    setText(
-      "night-until",
-      `until ${unlockAt.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}${unlockAt.getDate() !== now.getDate() ? " tomorrow" : ""}`,
-    );
-    setText("r-today", formatMinutes(t.todayActiveSeconds));
-    setText("r-cards", String(state.cardsDoneToday));
-    setText("r-resets", String(state.resetsToday));
-    if (night.hidden) {
-      night.hidden = false;
-      $("night-unlock").focus();
-    }
-  } else {
-    night.hidden = true;
-  }
-  document.body.classList.toggle("locked", Boolean(state.dayEndedAt) || Boolean(reset));
+  document.body.classList.toggle("locked", Boolean(reset));
 
   // Tab title doubles as the menu-bar counter from the desktop app.
   document.title = state.paused
@@ -385,22 +310,11 @@ const render = (): void => {
 const settingsDialog = $<HTMLDialogElement>("settings");
 const settingsForm = $<HTMLFormElement>("settings-form");
 
-const fillHourSelect = (name: string, selected: number): void => {
-  const select = settingsForm.elements.namedItem(name) as HTMLSelectElement;
-  if (select.options.length === 0) {
-    for (let h = 0; h < 24; h++) select.add(new Option(formatHour(h), String(h)));
-  }
-  select.value = String(selected);
-};
-
 const openSettings = (): void => {
   const f = settingsForm.elements;
   (f.namedItem("reminderMinutes") as HTMLInputElement).value = String(Math.round(config.reminderIntervalSeconds / 60));
   (f.namedItem("idleThresholdSeconds") as HTMLInputElement).value = String(config.idleThresholdSeconds);
   (f.namedItem("snoozeMinutes") as HTMLInputElement).value = String(config.snoozeMinutes);
-  fillHourSelect("curfewStartHour", config.curfewStartHour);
-  fillHourSelect("curfewEndHour", config.curfewEndHour);
-  (f.namedItem("autoLock") as HTMLInputElement).checked = config.autoLock;
   (f.namedItem("notifications") as HTMLInputElement).checked = config.notifications;
   (f.namedItem("systemIdle") as HTMLInputElement).checked = monitor.source === "system";
   $("system-idle-row").hidden = !systemIdleSupported();
@@ -464,9 +378,6 @@ settingsForm.addEventListener("submit", (e) => {
     reminderIntervalSeconds: clampInt(val("reminderMinutes").value, 1, 180, 20) * 60,
     idleThresholdSeconds,
     snoozeMinutes: clampInt(val("snoozeMinutes").value, 1, 60, 5),
-    curfewStartHour: clampInt((f.namedItem("curfewStartHour") as HTMLSelectElement).value, 0, 23, 20),
-    curfewEndHour: clampInt((f.namedItem("curfewEndHour") as HTMLSelectElement).value, 0, 23, 6),
-    autoLock: val("autoLock").checked,
   };
   saveConfig(store, config);
   settingsDialog.close();
@@ -505,9 +416,6 @@ document.addEventListener("click", (e) => {
     case "preview-card":
       previewCard();
       break;
-    case "end-day":
-      endDay();
-      break;
   }
 });
 
@@ -533,7 +441,6 @@ $("card-snooze").addEventListener("click", () => {
 });
 $("reset-next").addEventListener("click", nextResetActivity);
 $("reset-end").addEventListener("click", endReset);
-$("night-unlock").addEventListener("click", unlockDay);
 $("pause-btn").addEventListener("click", () => {
   state.paused = !state.paused;
   persist();

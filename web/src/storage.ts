@@ -3,17 +3,12 @@
  * nothing is ever sent anywhere.
  */
 import { DEFAULT_CONFIG, TrackerState, createInitialState } from "../../src/tracker";
-import { DEFAULT_CURFEW } from "./curfew";
 import { ProtocolId } from "./protocols";
 
 export interface WebConfig {
   idleThresholdSeconds: number;
   reminderIntervalSeconds: number;
   snoozeMinutes: number;
-  curfewStartHour: number;
-  curfewEndHour: number;
-  /** Show the end-of-day screen automatically once curfew starts. */
-  autoLock: boolean;
   /** Also raise a system notification when a card is due and the tab is in the background. */
   notifications: boolean;
   /** Use the Idle Detection API when the browser supports it. */
@@ -24,9 +19,6 @@ export const DEFAULT_WEB_CONFIG: WebConfig = {
   idleThresholdSeconds: DEFAULT_CONFIG.idleThresholdSeconds,
   reminderIntervalSeconds: DEFAULT_CONFIG.reminderIntervalSeconds,
   snoozeMinutes: 5,
-  curfewStartHour: DEFAULT_CURFEW.startHour,
-  curfewEndHour: DEFAULT_CURFEW.endHour,
-  autoLock: false,
   notifications: false,
   systemIdle: false,
 };
@@ -41,10 +33,6 @@ export interface WebState {
   resetsToday: number;
   lastProtocolId: ProtocolId | null;
   paused: boolean;
-  /** ISO time the user ended their day; cleared when the evening window ends. */
-  dayEndedAt: string | null;
-  /** ISO time until which auto-lock stays off after "Unlock anyway". */
-  lockOverrideUntil: string | null;
   /** Epoch ms of the last save, to detect an absence across a reload. */
   savedAt: number;
 }
@@ -62,8 +50,6 @@ export const initialWebState = (dayKey: string): WebState => ({
   resetsToday: 0,
   lastProtocolId: null,
   paused: false,
-  dayEndedAt: null,
-  lockOverrideUntil: null,
   savedAt: 0,
 });
 
@@ -73,10 +59,6 @@ const STATE_KEY = "anti-burnout:state";
 type KV = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
 const isFiniteNumber = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
-
-/** A string that parses to a real date, or null. */
-const validIso = (v: unknown): string | null =>
-  typeof v === "string" && Number.isFinite(new Date(v).getTime()) ? v : null;
 
 const read = (store: KV, key: string): Record<string, unknown> | null => {
   try {
@@ -143,8 +125,6 @@ export const loadState = (store: KV, dayKey: string): WebState => {
         ? protocol
         : null,
     paused: raw.paused === true,
-    dayEndedAt: validIso(raw.dayEndedAt),
-    lockOverrideUntil: validIso(raw.lockOverrideUntil),
     savedAt: num(raw.savedAt),
   };
 };

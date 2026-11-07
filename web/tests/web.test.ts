@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { curfewStatus, isCurfewHour } from "../src/curfew";
 import { pageIdleSeconds, systemIdleSeconds } from "../src/activity";
 import { PROTOCOL_ORDER, nextProtocol } from "../src/protocols";
-import { formatClock, formatHour, formatMinutes } from "../src/format";
+import { formatClock, formatMinutes } from "../src/format";
 import {
   applyAbsence,
   DEFAULT_WEB_CONFIG,
@@ -23,40 +22,6 @@ const memoryStore = () => {
     data,
   };
 };
-
-describe("curfew", () => {
-  it("wraps past midnight for the default 8pm-6am window", () => {
-    expect(isCurfewHour(19)).toBe(false);
-    expect(isCurfewHour(20)).toBe(true);
-    expect(isCurfewHour(2)).toBe(true);
-    expect(isCurfewHour(6)).toBe(false);
-  });
-
-  it("supports same-day windows and treats equal hours as disabled", () => {
-    expect(isCurfewHour(13, { startHour: 13, endHour: 14 })).toBe(true);
-    expect(isCurfewHour(14, { startHour: 13, endHour: 14 })).toBe(false);
-    expect(isCurfewHour(3, { startHour: 5, endHour: 5 })).toBe(false);
-  });
-
-  it("counts down to the next morning during the evening", () => {
-    const s = curfewStatus(new Date(2026, 10, 7, 22, 0, 0));
-    expect(s.inCurfew).toBe(true);
-    expect(s.unlockAt).toEqual(new Date(2026, 10, 8, 6, 0, 0));
-    expect(s.secondsUntilUnlock).toBe(8 * 3600);
-    expect(s.secondsUntilStart).toBe(0);
-  });
-
-  it("unlocks the same morning when it's already after midnight", () => {
-    const s = curfewStatus(new Date(2026, 10, 7, 4, 30, 0));
-    expect(s.unlockAt).toEqual(new Date(2026, 10, 7, 6, 0, 0));
-  });
-
-  it("reports time until the evening starts during the day", () => {
-    const s = curfewStatus(new Date(2026, 10, 7, 17, 15, 0));
-    expect(s.inCurfew).toBe(false);
-    expect(s.secondsUntilStart).toBe(2 * 3600 + 45 * 60);
-  });
-});
 
 describe("activity", () => {
   it("measures idle from the last input while focused", () => {
@@ -101,9 +66,6 @@ describe("format", () => {
     expect(formatMinutes(75 * 60 + 59)).toBe("1h 15m");
     expect(formatClock(300)).toBe("05:00");
     expect(formatClock(3725)).toBe("1:02:05");
-    expect(formatHour(0)).toBe("12am");
-    expect(formatHour(12)).toBe("12pm");
-    expect(formatHour(20)).toBe("8pm");
   });
 });
 
@@ -119,9 +81,9 @@ describe("storage", () => {
 
   it("round-trips config and drops wrongly typed fields", () => {
     const s = memoryStore();
-    saveConfig(s, { ...DEFAULT_WEB_CONFIG, reminderIntervalSeconds: 600, autoLock: true });
+    saveConfig(s, { ...DEFAULT_WEB_CONFIG, reminderIntervalSeconds: 600, notifications: true });
     expect(loadConfig(s).reminderIntervalSeconds).toBe(600);
-    expect(loadConfig(s).autoLock).toBe(true);
+    expect(loadConfig(s).notifications).toBe(true);
     s.data.set("anti-burnout:config", JSON.stringify({ snoozeMinutes: "ten", notifications: 1 }));
     expect(loadConfig(s).snoozeMinutes).toBe(DEFAULT_WEB_CONFIG.snoozeMinutes);
     expect(loadConfig(s).notifications).toBe(false);
@@ -141,14 +103,6 @@ describe("storage", () => {
     expect(next.cardsDoneToday).toBe(0);
     expect(next.resetsToday).toBe(0);
     expect(next.rotation).toBe(7);
-  });
-
-  it("drops unparseable timestamps", () => {
-    const s = memoryStore();
-    s.data.set("anti-burnout:state", JSON.stringify({ dayEndedAt: "not a date", lockOverrideUntil: "2026-11-08T06:00:00.000Z" }));
-    const st = loadState(s, "2026-11-07");
-    expect(st.dayEndedAt).toBeNull();
-    expect(st.lockOverrideUntil).toBe("2026-11-08T06:00:00.000Z");
   });
 
   it("treats an absence across a reload as a break", () => {
