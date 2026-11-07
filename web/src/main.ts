@@ -422,30 +422,53 @@ const setSystemIdle = async (on: boolean): Promise<void> => {
   render();
 };
 
-settingsDialog.addEventListener("close", async () => {
-  if (settingsDialog.returnValue !== "save") return;
+/**
+ * Save from the Save button's submit event so permission prompts
+ * (notifications, Idle Detection) are requested synchronously inside the
+ * user gesture, before anything is awaited.
+ */
+settingsForm.addEventListener("submit", (e) => {
+  const submitter = (e as SubmitEvent).submitter as HTMLButtonElement | null;
+  if (submitter?.value !== "save") return;
+  e.preventDefault();
+
   const f = settingsForm.elements;
   const val = (name: string): HTMLInputElement => f.namedItem(name) as HTMLInputElement;
+  const idleThresholdSeconds = clampInt(val("idleThresholdSeconds").value, 30, 900, 60);
   const wantsNotify = val("notifications").checked;
   const wantsSystem = val("systemIdle").checked;
-  const thresholdChanged = clampInt(val("idleThresholdSeconds").value, 30, 900, 60) !== config.idleThresholdSeconds;
+  const systemOn = monitor.source === "system";
+  const systemChange = wantsSystem !== systemOn || (wantsSystem && idleThresholdSeconds !== config.idleThresholdSeconds);
+
+  const notifyPermission = wantsNotify ? enableNotifications() : Promise.resolve(false);
+  let systemResult: Promise<boolean> = Promise.resolve(systemOn);
+  if (systemChange) {
+    if (wantsSystem) {
+      systemResult = monitor.enableSystem(idleThresholdSeconds);
+    } else {
+      monitor.disableSystem();
+      systemResult = Promise.resolve(false);
+    }
+  }
 
   config = {
     ...config,
     reminderIntervalSeconds: clampInt(val("reminderMinutes").value, 1, 180, 20) * 60,
-    idleThresholdSeconds: clampInt(val("idleThresholdSeconds").value, 30, 900, 60),
+    idleThresholdSeconds,
     snoozeMinutes: clampInt(val("snoozeMinutes").value, 1, 60, 5),
     curfewStartHour: clampInt((f.namedItem("curfewStartHour") as HTMLSelectElement).value, 0, 23, 20),
     curfewEndHour: clampInt((f.namedItem("curfewEndHour") as HTMLSelectElement).value, 0, 23, 6),
     autoLock: val("autoLock").checked,
-    notifications: wantsNotify ? await enableNotifications() : false,
   };
   saveConfig(store, config);
-
-  if (wantsSystem !== (monitor.source === "system") || (wantsSystem && thresholdChanged)) {
-    await setSystemIdle(wantsSystem);
-  }
+  settingsDialog.close();
   render();
+
+  void Promise.all([notifyPermission, systemResult]).then(([notifications, systemIdle]) => {
+    config = { ...config, notifications, systemIdle };
+    saveConfig(store, config);
+    render();
+  });
 });
 
 /* ---------- Wiring ---------- */
