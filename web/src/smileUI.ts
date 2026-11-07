@@ -2,7 +2,8 @@ import { SMILE_PRACTICES, SMILE_SCENES, nextSmileScene, practiceSecondsLeft } fr
 import "./smile.css";
 
 export const initSmile = (): void => {
-  const stage = document.getElementById("smile-player")!;
+  const stage = document.getElementById("smile-player");
+  if (!stage) return;
   const scenes = [...stage.querySelectorAll<HTMLElement>(".smile-scene")];
   const caption = document.getElementById("smile-caption")!;
   const dots = document.getElementById("smile-dots")!;
