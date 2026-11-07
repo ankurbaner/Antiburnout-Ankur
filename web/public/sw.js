@@ -1,4 +1,4 @@
-const CACHE = "anti-burnout-v1";
+const CACHE = "anti-burnout-__BUILD_VERSION__";
 
 self.addEventListener("install", (event) => {
   event.waitUntil((async () => {
@@ -8,14 +8,16 @@ self.addEventListener("install", (event) => {
     if (!page.ok) throw new Error("App shell unavailable");
     await cache.put(root, page.clone());
     const html = await page.text();
-    const assets = [...html.matchAll(/(?:src|href)="([^"]+)"/g)].map((match) => new URL(match[1], root)).filter((url) => url.origin === root.origin && !url.hash);
-    await Promise.all(assets.map(async (url) => {
+    const assets = [...html.matchAll(/(?:src|href)="([^"]+)"/g)].map((match) => match[1]);
+    await Promise.allSettled(assets.map(async (path) => {
+      const url = new URL(path, root);
+      if (url.origin !== root.origin || url.hash) return;
       const response = await fetch(url, { redirect: "error" });
       if (!response.ok) throw new Error("App asset unavailable");
       await cache.put(url, response.clone());
       if (url.pathname.endsWith(".webmanifest")) {
         const manifest = await response.clone().json();
-        await Promise.all(manifest.icons.map(async (icon) => {
+        await Promise.allSettled(manifest.icons.map(async (icon) => {
           const image = new URL(icon.src, url);
           if (image.origin !== root.origin) return;
           const file = await fetch(image, { redirect: "error" });
@@ -25,8 +27,10 @@ self.addEventListener("install", (event) => {
       }
       if (url.pathname.endsWith(".css")) {
         const css = await response.text();
-        const fonts = [...css.matchAll(/url\(["']?([^\s)'"\s]+)["']?\)/g)].map((match) => new URL(match[1], url)).filter((font) => font.origin === root.origin);
-        await Promise.all(fonts.map(async (font) => {
+        const fonts = [...css.matchAll(/url\(["']?([^\s)'"]+)["']?\)/g)].map((match) => match[1]);
+        await Promise.allSettled(fonts.map(async (path) => {
+          const font = new URL(path, url);
+          if (font.origin !== root.origin) return;
           const file = await fetch(font, { redirect: "error" });
           if (!file.ok) throw new Error("Font unavailable");
           await cache.put(font, file);
