@@ -58,7 +58,7 @@ export const initSaveSpot = (store: LocalStore, chime: () => void) => {
       refresh(date);
       const day = dayKeyFor(date);
       if (!card.hidden && card.dataset.day !== day) card.hidden = true;
-      if (canPrompt && spotDue(day, date.getHours(), date.getMinutes(), config.endOfDay, config.endOfDayTime, spot)) open(false, date);
+      if (canPrompt && document.visibilityState === "visible" && spotDue(day, date.getHours(), date.getMinutes(), config.endOfDay, config.endOfDayTime, spot)) open(false, date);
     },
   };
 };

@@ -6,13 +6,14 @@ import { loadSpot } from "../src/saveSpot";
 const setup = () => {
   vi.useFakeTimers();
   vi.setSystemTime(new Date(2026, 10, 7, 18));
+  const visibility = vi.spyOn(document, "visibilityState", "get").mockReturnValue("visible");
   document.body.innerHTML = '<section id="save-spot" hidden><p id="spot-intention"></p><form><textarea></textarea><button type="submit">Save</button></form><button id="spot-skip">Not today</button></section><section id="morning-note"><p id="morning-text"></p><button id="morning-done">Done</button></section>';
   const data = new Map<string, string>();
   const store = { getItem: (key: string) => data.get(key) ?? null, setItem: (key: string, value: string) => { data.set(key, value); }, removeItem: (key: string) => { data.delete(key); } };
   const card = document.getElementById("save-spot")!;
   card.scrollIntoView = vi.fn();
   const chime = vi.fn();
-  return { store, card, chime, ui: initSaveSpot(store, chime)! };
+  return { store, card, chime, visibility, ui: initSaveSpot(store, chime)! };
 };
 afterEach(() => { vi.useRealTimers(); vi.restoreAllMocks(); document.body.replaceChildren(); });
 
@@ -59,4 +60,19 @@ it.each(["save", "skip"])("suppresses the scheduled prompt after an explicit man
   ui.update(new Date(), { endOfDay: true, endOfDayTime: "18:00" }, true);
   expect(card.hidden).toBe(true);
   expect(chime).not.toHaveBeenCalled();
+});
+
+it("waits while hidden, then shows the due card once when visible the same day", () => {
+  const { store, card, chime, visibility, ui } = setup();
+  visibility.mockReturnValue("hidden");
+  ui.update(new Date(), { endOfDay: true, endOfDayTime: "18:00" }, true);
+  expect(card.hidden).toBe(true);
+  expect(loadSpot(store).promptDay).toBe("");
+  expect(chime).not.toHaveBeenCalled();
+  visibility.mockReturnValue("visible");
+  ui.update(new Date(), { endOfDay: true, endOfDayTime: "18:00" }, true);
+  expect(card.hidden).toBe(false);
+  expect(chime).toHaveBeenCalledOnce();
+  ui.update(new Date(), { endOfDay: true, endOfDayTime: "18:00" }, true);
+  expect(chime).toHaveBeenCalledOnce();
 });
