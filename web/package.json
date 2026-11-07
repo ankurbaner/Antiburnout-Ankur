@@ -1,0 +1,25 @@
+{
+  "name": "anti-burnout-web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Browser version of Anti-Burnout: counts active time, shows short recovery cards, guides a 5-minute reset, and helps the day end on time. Runs entirely in the browser.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "jsdom": "^25.0.1",
+    "typescript": "^5.9.3",
+    "vite": "^5.4.21",
+    "vitest": "^2.1.9"
+  },
+  "dependencies": {
+    "@fontsource-variable/newsreader": "^5.3.0",
+    "@fontsource/plus-jakarta-sans": "^5.3.0"
+  }
+}
