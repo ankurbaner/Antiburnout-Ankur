@@ -41,7 +41,7 @@ it("installs the shell despite individual asset, icon and font failures", async 
   const handlers: Record<string, (event: Record<string, unknown>) => void> = {};
   const put = vi.fn(), skipWaiting = vi.fn();
   const fetch = vi.fn(async (url: URL) => {
-    if (url.pathname === "/app/") return new Response('<script src="missing.js"></script><link href="style.css"><link href="manifest.webmanifest"><img src="https://other.test/image.png">');
+    if (url.pathname === "/app/") return new Response('<script src="good.js"></script><link rel="stylesheet" href="style.css"><link href="manifest.webmanifest"><img src="https://other.test/image.png">');
     if (url.pathname.endsWith(".css")) return new Response('a{src:url(missing.woff2)}b{src:url(good.woff2)}');
     if (url.pathname.endsWith(".webmanifest")) return Response.json({ icons: [{ src: "missing.png" }, { src: "good.png" }] });
     if (url.pathname.endsWith("missing.woff2")) throw new Error("offline font");
@@ -58,6 +58,30 @@ it("installs the shell despite individual asset, icon and font failures", async 
   expect(skipWaiting).toHaveBeenCalledOnce();
   expect(put.mock.calls.map(([url]) => String(url))).toEqual(expect.arrayContaining(["https://example.test/app/", "https://example.test/app/good.woff2", "https://example.test/app/good.png"]));
   expect(fetch.mock.calls.every(([url]) => url.origin === "https://example.test")).toBe(true);
+});
+
+it.each([
+  ['<script type="module" src="required.js"></script>', "404"],
+  ["<SCRIPT SRC='required.js'></SCRIPT>", "offline"],
+  ['<link href="required.css" rel="stylesheet">', "404"],
+  ["<link rel='stylesheet' href='required.css'>", "offline"],
+])("rejects the new worker when a required shell asset fails: %s (%s)", async (html, failure) => {
+  let handler!: (event: Record<string, unknown>) => void;
+  const skipWaiting = vi.fn(), remove = vi.fn();
+  runInNewContext(readFileSync("public/sw.js", "utf8"), {
+    self: { registration: { scope: "https://example.test/app/" }, skipWaiting, addEventListener: (name: string, callback: typeof handler) => { if (name === "install") handler = callback; } },
+    caches: { open: async () => ({ put: vi.fn() }), delete: remove },
+    fetch: async (url: URL) => {
+      if (url.pathname === "/app/") return new Response(html);
+      if (failure === "offline") throw new Error("offline");
+      return new Response("missing", { status: 404 });
+    }, URL, Response,
+  });
+  let install!: Promise<void>;
+  handler({ waitUntil: (promise: Promise<void>) => { install = promise; } });
+  await expect(install).rejects.toThrow();
+  expect(skipWaiting).not.toHaveBeenCalled();
+  expect(remove).not.toHaveBeenCalled();
 });
 
 it.each(["offline", "404"])("fails installation when the app shell is %s", async (failure) => {

@@ -8,8 +8,13 @@ self.addEventListener("install", (event) => {
     if (!page.ok) throw new Error("App shell unavailable");
     await cache.put(root, page.clone());
     const html = await page.text();
-    const assets = [...html.matchAll(/(?:src|href)="([^"]+)"/g)].map((match) => match[1]);
-    await Promise.allSettled(assets.map(async (path) => {
+    const required = new Set([...html.matchAll(/<(script|link)\b[^>]*>/gi)].flatMap(([tag, kind]) => {
+      if (kind.toLowerCase() === "link" && !/\brel\s*=\s*["'][^"']*\bstylesheet\b[^"']*["']/i.test(tag)) return [];
+      const path = tag.match(kind.toLowerCase() === "script" ? /\bsrc\s*=\s*["']([^"']+)["']/i : /\bhref\s*=\s*["']([^"']+)["']/i)?.[1];
+      return path ? [path] : [];
+    }));
+    const assets = [...html.matchAll(/(?:src|href)\s*=\s*["']([^"']+)["']/gi)].map((match) => match[1]);
+    const results = await Promise.allSettled(assets.map(async (path) => {
       const url = new URL(path, root);
       if (url.origin !== root.origin || url.hash) return;
       const response = await fetch(url, { redirect: "error" });
@@ -37,6 +42,9 @@ self.addEventListener("install", (event) => {
         }));
       }
     }));
+    for (let i = 0; i < results.length; i++) {
+      if (required.has(assets[i]) && results[i].status === "rejected") throw results[i].reason;
+    }
     await self.skipWaiting();
   })());
 });
