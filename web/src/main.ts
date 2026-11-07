@@ -291,7 +291,7 @@ const render = (): void => {
     "source-text",
     systemOn
       ? "Tracking the whole computer with the browser's Idle Detection permission. It reports only active or idle, nothing else."
-      : "A browser tab can't see other apps. Your activity on this page is counted, and while the tab is in the background the app assumes you're working elsewhere.",
+      : "This mode only sees this tab. When you switch to another tab or app, it assumes you're still working, so time spent there still counts.",
   );
   $("enable-system").hidden = systemOn || !systemIdleSupported();
   $("enable-notify").hidden =

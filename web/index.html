@@ -32,8 +32,9 @@
         <p class="eyebrow">For people whose work has lost its edges</p>
         <h1>The break is for your eyes, your back, and a glass of water. <em>Not for more work.</em></h1>
         <p class="lead">
-          Anti-Burnout counts the time you actually spend at the screen. Every 20 active minutes it asks for one small,
-          physical thing. It never adds a task, never asks a question, and never wants a reply.
+          Anti-Burnout counts the minutes you spend actively using your screen. After every 20 of them, a small card
+          asks you to do one physical thing: rest your eyes, fix your posture, drink some water or move. It never adds
+          a task, never asks a question and never needs a reply.
         </p>
         <div class="hero-actions">
           <button class="btn btn-primary" type="button" data-action="start-reset">Take a 5-minute reset</button>
@@ -83,8 +84,7 @@
 
         <div class="source-note" id="source-note">
           <p id="source-text">
-            A browser tab can't see other apps. Your activity on this page is counted, and while the tab is in the
-            background the app assumes you're working elsewhere.
+            This mode only sees this tab. When you switch to another tab or app, it assumes you're still working, so time spent there still counts.
           </p>
           <div class="source-actions">
             <button class="btn btn-ghost btn-sm" type="button" id="enable-system" hidden>Track the whole computer</button>
@@ -103,18 +103,34 @@
         <div class="steps">
           <article class="step">
             <span class="step-num">1</span>
-            <h3>It counts real active time</h3>
+            <h3>It counts active time, not open time</h3>
             <p>
-              Idle time doesn't count. If you've been away for a minute or more, you already took a break: the stretch
-              resets and no card appears.
+              The clock only runs while you're using the screen. Stop for a minute and that pause counts as a break:
+              your current stretch goes back to zero and no card is shown.
             </p>
           </article>
           <article class="step">
             <span class="step-num">2</span>
-            <h3>It asks for one small thing</h3>
+            <h3>Every 20 active minutes, a card appears</h3>
             <p>
-              A card appears in the corner every 20 active minutes. The longer the stretch, the more it asks for. The
-              wording rotates so the 4pm card doesn't read like the 10am one.
+              It sits in the top-right corner and never covers the page. Click <em>Done</em> once you've done it, or
+              <em>Snooze</em> to see it again in 5 minutes.
+            </p>
+          </article>
+          <article class="step">
+            <span class="step-num">3</span>
+            <h3>The longer you go, the more it asks</h3>
+            <p>
+              Under 45 minutes it's just your eyes. Then posture, then water and a stretch. The wording changes from card
+              to card, so it doesn't read the same each time.
+            </p>
+          </article>
+          <article class="step">
+            <span class="step-num">4</span>
+            <h3>A 5-minute reset when you need more</h3>
+            <p>
+              <em>Take a 5-minute reset</em> opens a full-screen timer with one activity. Finishing it, or clicking
+              <em>I'm back</em>, counts as a break and starts a fresh stretch.
             </p>
           </article>
         </div>
@@ -122,25 +138,37 @@
         <div class="reset-preview">
           <div>
             <h3>The 5-minute reset</h3>
-            <p class="muted">One activity at a time, never the same one twice in a row. No forms and no lists. Just a timer and one thing to do.</p>
+            <p class="muted">
+              A 5-minute timer and one activity on screen. Each takes a minute or two; spend the rest of the time away
+              from the screen, or click <em>Try another activity</em>. The same activity never comes up twice in a row.
+            </p>
           </div>
           <ul class="protocol-list" id="protocol-list"></ul>
         </div>
+
+        <h3 class="tips-title">Getting the most out of it</h3>
+        <ul class="privacy-list">
+          <li><strong>Keep this tab open.</strong> Nothing is counted while it's closed. When you come back after more than a minute, that gap counts as a break.</li>
+          <li><strong>Turn on notifications</strong> so a card still reaches you when you're in another tab or app.</li>
+          <li><strong>On Chrome or Edge, track the whole computer.</strong> It then knows when you actually walk away, instead of assuming you're working whenever this tab is in the background.</li>
+          <li><strong>Press Pause</strong> when you don't want time counted, such as during a call. Settings let you change the card interval, the break length and the snooze time.</li>
+        </ul>
       </section>
 
       <section class="wrap privacy" id="privacy" aria-labelledby="privacy-title">
         <h2 id="privacy-title">Privacy: what it does <em>not</em> do</h2>
         <ul class="privacy-list">
-          <li><strong>The only input is whether you're active.</strong> On this page that means pointer, key and scroll events happened, never which keys or where.</li>
+          <li><strong>It only knows whether you're active.</strong> By default that means a mouse, keyboard, scroll or touch event happened on this page, never which key or where.</li>
           <li><strong>No screen reading.</strong> No window titles, no screenshots, no clipboard.</li>
           <li><strong>No network.</strong> No accounts, analytics, trackers or third-party fonts. After the page loads, nothing leaves your browser.</li>
-          <li><strong>Only coarse counters are stored</strong>: your current stretch, today's total and your settings, in this browser's local storage. Clear them any time in Settings.</li>
-          <li><strong>Whole-computer tracking is opt-in.</strong> It uses the browser's Idle Detection permission, which reports only "active" or "idle".</li>
+          <li><strong>Only a few numbers are stored</strong>, in this browser's local storage: your current stretch, today's screen time, cards done, resets taken and your settings. Clear them any time in Settings.</li>
+          <li><strong>Whole-computer tracking and notifications are opt-in.</strong> Tracking uses the browser's Idle Detection permission, which reports only whether you're active or idle and whether the screen is locked.</li>
         </ul>
         <p class="muted desktop-note">
-          Prefer something that sits in your menu bar? The
-          <a href="https://github.com/ankurbaner/calude-impact-lab-anti-burnout">desktop app</a> does the same thing
-          system-wide on macOS, Windows and Linux. The 5-minute reset comes from
+          Prefer an app? The
+          <a href="https://github.com/ankurbaner/calude-impact-lab-anti-burnout">desktop app</a> runs in your menu bar or
+          system tray on macOS, Windows and Linux. It watches activity across the whole computer and shows the same
+          cards. The 5-minute reset is adapted from
           <a href="https://github.com/ankurbaner/calude-impact-lab-off-duty">Off-Duty</a>.
         </p>
       </section>
