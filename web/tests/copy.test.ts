@@ -10,8 +10,9 @@ describe("simplified page copy", () => {
     expect(document.querySelector("#contact .contact-email")?.getAttribute("href")).toBe("mailto:ankur.banerjee014@gmail.com?subject=Anti-Burnout");
     expect(document.querySelector("#contact .contact-email")?.textContent).toBe("ankur.banerjee014@gmail.com");
   });
-  it("keeps desk yoga immediately after the hero", () => {
-    expect(document.querySelector(".hero + section")?.id).toBe("yoga");
+  it("places the silent breath guide before desk yoga", () => {
+    expect(document.querySelector(".hero + section")?.id).toBe("breathe");
+    expect(document.querySelector("#breathe + section")?.id).toBe("yoga");
     expect(document.querySelector('.nav a[href="#yoga"]')?.textContent).toBe("Yoga");
     expect(document.querySelector("#smile, .smile-scene, #smile-practices")).toBeNull();
     expect(document.getElementById("yoga-title")?.textContent).toBe("Desk yoga");
@@ -29,7 +30,7 @@ describe("simplified page copy", () => {
 
   it("keeps only reminder and reset options and retained navigation", () => {
     expect(document.querySelector("#how, #privacy, .tips-title, #eye-break, #day-notice")).toBeNull();
-    expect([...document.querySelectorAll(".nav a")].map((link) => link.textContent)).toEqual(["Yoga", "Meditation", "Contact"]);
+    expect([...document.querySelectorAll(".nav a")].map((link) => link.textContent)).toEqual(["Breathe", "Yoga", "Meditation", "Contact"]);
     expect([...document.querySelectorAll("#settings input")].map((input) => input.getAttribute("name"))).toEqual([
       "reminderMinutes", "snoozeMinutes", "maxSnoozes", "chime", "meetingMode",
     ]);

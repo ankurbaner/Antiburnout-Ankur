@@ -1,0 +1,16 @@
+.breath-guide { margin-top: 24px; padding: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.breath-controls { display: flex; flex-wrap: wrap; gap: 16px; align-items: end; }
+.breath-controls label { display: grid; gap: 8px; font-size: 14px; min-width: 0; }
+.breath-controls select { font: inherit; color: var(--ink); background: var(--canvas); border: 1px solid var(--border); border-radius: 10px; padding: 10px; width: 100%; max-width: 100%; }
+.breath-stage { height: 260px; display: grid; place-items: center; overflow: hidden; }
+.breath-circle { width: 200px; height: 200px; border-radius: 50%; background: var(--sage); opacity: 0.65; transform: scale(0.65); }
+.breath-circle[data-inhale="true"] { opacity: 0.9; }
+.breath-cue { text-align: center; min-height: 3.5em; max-width: 52ch; margin: auto; }
+.breath-time { text-align: center; font-variant-numeric: tabular-nums; margin-top: 12px; color: var(--ink-muted); }
+@media (max-width: 600px) {
+  .breath-guide { padding: 18px; }
+  .breath-controls label { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .breath-circle { transform: none !important; transition: opacity 0.4s linear !important; }
+}

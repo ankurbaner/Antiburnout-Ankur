@@ -9,6 +9,7 @@ import "./styles.css";
 import { tick } from "../../src/tracker";
 import { CardPractice, createPreviewSelector, needsWater, selectCardPractice } from "./cards";
 import { ActivityMonitor } from "./activity";
+import { initBreathe } from "./breatheUI";
 import { playChime, unlockChime } from "./chime";
 import { initPracticeGroups, initYoga } from "./yogaUI";
 import { MEDITATION_PRACTICES } from "./meditation";
@@ -359,6 +360,7 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && cardVisible) hideCard();
 });
 
+initBreathe();
 initYoga();
 initPracticeGroups("meditation-practices", [{ id: "meditation", title: "Choose a quiet moment", practices: MEDITATION_PRACTICES }]);
 render();
