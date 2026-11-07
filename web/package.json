@@ -2,7 +2,7 @@
   "name": "anti-burnout-web",
   "version": "0.1.0",
   "private": true,
-  "description": "Browser version of Anti-Burnout: counts active time, shows short recovery cards, guides a 5-minute reset, and helps the day end on time. Runs entirely in the browser.",
+  "description": "Browser version of Anti-Burnout: counts active time, shows short recovery cards, and guides a 5-minute reset. Runs entirely in the browser.",
   "license": "MIT",
   "type": "module",
   "scripts": {
