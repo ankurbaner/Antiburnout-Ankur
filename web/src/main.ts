@@ -10,6 +10,7 @@ import { tick } from "../../src/tracker";
 import { CardContent, buildCardContent } from "../../src/cardContent";
 import { ActivityMonitor, systemIdleSupported } from "./activity";
 import { playChime, unlockChime } from "./chime";
+import { initSmile } from "./smileUI";
 import { crossedWorkEnd, eyeBreakDue, formatTimeOfDay, headsUpSeconds, parseTimeOfDay, snoozeAllowed, withinWorkingHours } from "./schedule";
 import { formatClock, formatIdleThreshold, formatMinutes } from "./format";
 import { Protocol, RESET_SECONDS, countsAsReset, nextProtocol } from "./protocols";
@@ -625,6 +626,7 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && cardVisible) hideCard();
 });
 
+initSmile();
 render();
 if (config.systemIdle) {
   void monitor.resumeSystem(config.idleThresholdSeconds).then(render);
