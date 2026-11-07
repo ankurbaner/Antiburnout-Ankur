@@ -22,6 +22,29 @@ it("ignores legacy idle thresholds while keeping other settings", () => {
   }
 });
 
+it("drops retired config and paused state without losing reminders or quiet mode", () => {
+  const storage = store();
+  storage.setItem("anti-burnout:config", JSON.stringify({
+    reminderIntervalSeconds: 60, snoozeMinutes: 10, maxSnoozes: 3, chime: false,
+    systemIdle: true, eyeBreaks: true, eyeBreakMinutes: 5, headsUp: true,
+    workHours: true, workStartMinutes: 540, workEndMinutes: 1080,
+  }));
+  const config = loadConfig(storage);
+  expect(config).toEqual({ idleThresholdSeconds: 60, reminderIntervalSeconds: 60, snoozeMinutes: 10, maxSnoozes: 3, chime: false });
+  saveConfig(storage, config);
+  expect(storage.getItem("anti-burnout:config")).not.toMatch(/systemIdle|eyeBreak|headsUp|work/);
+  storage.setItem("anti-burnout:state", JSON.stringify({
+    ...initialWebState("2026-11-07"), meetingMode: true, paused: true,
+    lastEyeBreakAtStretch: 600, wrapUpNoticeDay: "2026-11-07",
+  }));
+  const state = loadState(storage, "2026-11-07");
+  expect(state.meetingMode).toBe(true);
+  expect(state).not.toHaveProperty("paused");
+  saveState(storage, state);
+  expect(storage.getItem("anti-burnout:state")).not.toMatch(/paused|lastEyeBreak|wrapUp/);
+  expect(loadState(storage, "2026-11-08").meetingMode).toBe(false);
+});
+
 it("loads legacy goal/history data without recording it again", () => {
   const storage = store();
   storage.setItem("anti-burnout:config", JSON.stringify({ dailyGoalMinutes: 360, snoozeMinutes: 10 }));

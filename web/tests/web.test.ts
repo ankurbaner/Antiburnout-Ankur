@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { pageIdleSeconds, systemIdleSeconds } from "../src/activity";
+import { pageIdleSeconds } from "../src/activity";
 import { PROTOCOL_ORDER, countsAsReset, nextProtocol } from "../src/protocols";
-import { formatClock, formatIdleThreshold, formatMinutes } from "../src/format";
+import { formatClock } from "../src/format";
 import {
   applyAbsence,
   DEFAULT_WEB_CONFIG,
@@ -31,12 +31,6 @@ describe("activity", () => {
   it("assumes work elsewhere while the page is unfocused", () => {
     expect(pageIdleSeconds({ now: 900_000, lastInputAt: 0, focused: false })).toBe(0);
   });
-
-  it("maps Idle Detection states onto the threshold", () => {
-    expect(systemIdleSeconds({ userState: "active", screenState: "unlocked", thresholdSeconds: 60 })).toBe(0);
-    expect(systemIdleSeconds({ userState: "idle", screenState: "unlocked", thresholdSeconds: 60 })).toBe(60);
-    expect(systemIdleSeconds({ userState: "active", screenState: "locked", thresholdSeconds: 90 })).toBe(90);
-  });
 });
 
 describe("protocols", () => {
@@ -65,13 +59,7 @@ describe("protocols", () => {
 });
 
 describe("format", () => {
-  it.each([[0, "0 sec"], [30, "30 sec"], [60, "1 min"], [90, "1 min 30 sec"], [120, "2 min"], [900, "15 min"]])(
-    "formats the %s-second idle threshold",
-    (seconds, expected) => expect(formatIdleThreshold(seconds as number)).toBe(expected),
-  );
   it("formats durations and hours", () => {
-    expect(formatMinutes(0)).toBe("0m");
-    expect(formatMinutes(75 * 60 + 59)).toBe("1h 15m");
     expect(formatClock(300)).toBe("05:00");
     expect(formatClock(3725)).toBe("1:02:05");
   });
@@ -89,12 +77,10 @@ describe("storage", () => {
 
   it("round-trips config and drops wrongly typed fields", () => {
     const s = memoryStore();
-    saveConfig(s, { ...DEFAULT_WEB_CONFIG, reminderIntervalSeconds: 600, systemIdle: true });
+    saveConfig(s, { ...DEFAULT_WEB_CONFIG, reminderIntervalSeconds: 600 });
     expect(loadConfig(s).reminderIntervalSeconds).toBe(600);
-    expect(loadConfig(s).systemIdle).toBe(true);
     s.data.set("anti-burnout:config", JSON.stringify({ snoozeMinutes: "ten", systemIdle: 1 }));
     expect(loadConfig(s).snoozeMinutes).toBe(DEFAULT_WEB_CONFIG.snoozeMinutes);
-    expect(loadConfig(s).systemIdle).toBe(false);
   });
 
   it("ignores obsolete saved config fields while preserving current settings", () => {

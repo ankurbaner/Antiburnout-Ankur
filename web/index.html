@@ -34,8 +34,6 @@
         <nav class="nav" aria-label="Sections">
           <a href="#yoga">Yoga</a>
           <a href="#meditation">Meditation</a>
-          <a href="#how">How it works</a>
-          <a href="#privacy">Privacy</a>
           <a href="#contact">Contact</a>
         </nav>
         <button class="btn btn-ghost btn-sm" id="open-settings" type="button" aria-haspopup="dialog">Settings</button>
@@ -43,19 +41,6 @@
     </header>
 
     <main id="top">
-      <div class="wrap control-area">
-        <div class="status-bar" role="group" aria-label="Reminder controls">
-          <button class="btn btn-ghost btn-sm" type="button" id="pause-btn" aria-pressed="false">Pause</button>
-          <span class="chip" id="source-chip">Tracking: this tab</span>
-          <button class="btn btn-ghost btn-sm" type="button" id="enable-system" hidden>Track the whole computer</button>
-          <button class="btn btn-ghost btn-sm" type="button" id="meeting-btn" aria-pressed="false">In a meeting</button>
-        </div>
-        <p class="tracking-help" id="source-text">This tab cannot see activity elsewhere. Track the whole computer to detect when you step away.</p>
-        <div class="day-notice" id="day-notice" hidden>
-          <p id="day-notice-text" role="status" aria-live="polite"></p>
-          <button class="btn btn-ghost btn-sm" type="button" id="day-notice-dismiss">Dismiss</button>
-        </div>
-      </div>
       <section class="hero wrap">
         <p class="eyebrow">Small breaks, less strain</p>
         <h1>Short breaks for your eyes, back and mind.</h1>
@@ -79,43 +64,6 @@
         <h2 id="meditation-title">Meditation at work</h2>
         <p class="yoga-intro muted">Quiet moments you can take while sitting at your desk. Keep your eyes open or closed, whatever feels comfortable. Everything here is silent.</p>
         <div id="meditation-practices"></div>
-      </section>
-
-      <section class="wrap how" id="how" aria-labelledby="how-title">
-        <h2 id="how-title">How it works</h2>
-        <div class="steps">
-          <article class="step">
-            <span class="step-num">1</span>
-            <h3>Let reminders run in the background</h3>
-            <p>Keep this tab open. A minute away counts as a break, and the next reminder starts fresh.</p>
-          </article>
-          <article class="step">
-            <span class="step-num">2</span>
-            <h3>Every 20 minutes, a small reminder appears</h3>
-            <p>Each card suggests one desk-yoga practice for how long you've been at the screen. Click Done, or Snooze for 5 minutes.</p>
-          </article>
-          <article class="step">
-            <span class="step-num">3</span>
-            <h3>Need a proper break? Take 5 minutes</h3>
-            <p>Choose a 5-minute reset for a longer pause. Turn on In a meeting to keep cards and resets call-safe, with no chime.</p>
-          </article>
-        </div>
-
-        <h3 class="tips-title">Tips</h3>
-        <ul class="privacy-list">
-          <li>Keep this tab open. Nothing is counted while it's closed.</li>
-          <li>On Chrome or Edge, click Track the whole computer so it knows when you walk away.</li>
-          <li>Use In a meeting for quiet, camera-friendly practices, or try a short meditation at your desk. Press Pause when you don't want reminders.</li>
-        </ul>
-      </section>
-
-      <section class="wrap privacy" id="privacy" aria-labelledby="privacy-title">
-        <h2 id="privacy-title">Privacy</h2>
-        <ul class="privacy-list">
-          <li>Everything stays in this browser. No accounts, no analytics, no trackers.</li>
-          <li>It only knows whether you're active or away, never what you type or look at.</li>
-          <li>It keeps a few reminder counters, your settings and meeting mode in this browser. No activity history is kept. Clear all data any time in Settings.</li>
-        </ul>
       </section>
 
       <section class="wrap contact" id="contact" aria-labelledby="contact-title">
@@ -146,14 +94,6 @@
         <button class="btn btn-primary" type="button" id="card-done">Done</button>
         <button class="btn btn-ghost" type="button" id="card-snooze">Snooze</button>
       </div>
-    </aside>
-
-    <aside class="recovery-card" id="eye-break" hidden aria-labelledby="eye-break-heading">
-      <p class="eyebrow">Short eye break</p>
-      <h2 id="eye-break-heading" aria-live="polite">Look 20 feet away</h2>
-      <p>Rest your eyes on something far away for 20 seconds.</p>
-      <p id="eye-break-countdown" aria-live="off">20 s</p>
-      <button class="btn btn-ghost" type="button" id="eye-break-skip">Skip</button>
     </aside>
 
     <!-- 5-minute reset overlay. -->
@@ -198,27 +138,8 @@
               <span id="snooze-limit-hint">0 = no limit</span>
             </label>
           </div>
-          <label class="check"><input type="checkbox" name="chime" /> Play a soft chime for cards and notices (silent in meeting mode)</label>
-          <label class="check"><input type="checkbox" name="headsUp" /> Show a 10-second heads-up in the tab title</label>
-          <label class="check"><input type="checkbox" name="eyeBreaks" /> Short eye breaks between cards</label>
-          <div class="field-grid">
-            <label>Eye break every
-              <span class="input-suffix"><input type="number" name="eyeBreakMinutes" min="5" max="60" step="1" required /> active min</span>
-            </label>
-          </div>
-        </fieldset>
-        <fieldset class="settings-group">
-          <legend>Working hours</legend>
-          <label class="check"><input type="checkbox" name="workHours" /> Only show cards during working hours</label>
-          <div class="field-grid">
-            <label>Start <input type="time" name="workStart" required /></label>
-            <label>End <input type="time" name="workEnd" required /></label>
-          </div>
-        </fieldset>
-        <fieldset class="settings-group">
-          <legend>Tracking</legend>
-          <p class="settings-help">A minute away counts as a break. In this-tab mode, other tabs still count as screen use; whole-computer tracking can detect when you step away.</p>
-          <label class="check" id="system-idle-row"><input type="checkbox" name="systemIdle" /> Track the whole computer (Idle Detection permission)</label>
+          <label class="check"><input type="checkbox" name="chime" /> Play a soft chime for cards (silent with quiet practices)</label>
+          <label class="check"><input type="checkbox" name="meetingMode" /> Quiet practices only (for meetings)</label>
         </fieldset>
         <footer class="settings-foot">
           <button class="btn btn-link danger" type="button" id="reset-data">Clear all data</button>

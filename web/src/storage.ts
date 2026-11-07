@@ -11,15 +11,7 @@ export interface WebConfig {
   reminderIntervalSeconds: number;
   snoozeMinutes: number;
   chime: boolean;
-  headsUp: boolean;
   maxSnoozes: number;
-  eyeBreaks: boolean;
-  eyeBreakMinutes: number;
-  workHours: boolean;
-  workStartMinutes: number;
-  workEndMinutes: number;
-  /** Use the Idle Detection API when the browser supports it. */
-  systemIdle: boolean;
 }
 
 export const DEFAULT_WEB_CONFIG: WebConfig = {
@@ -27,14 +19,7 @@ export const DEFAULT_WEB_CONFIG: WebConfig = {
   reminderIntervalSeconds: DEFAULT_CONFIG.reminderIntervalSeconds,
   snoozeMinutes: 5,
   chime: true,
-  headsUp: true,
   maxSnoozes: 2,
-  eyeBreaks: false,
-  eyeBreakMinutes: 10,
-  workHours: false,
-  workStartMinutes: 540,
-  workEndMinutes: 1080,
-  systemIdle: false,
 };
 
 export interface WebState {
@@ -46,10 +31,7 @@ export interface WebState {
   /** Bio-Resets completed today. */
   resetsToday: number;
   snoozesInARow: number;
-  lastEyeBreakAtStretch: number;
-  wrapUpNoticeDay: string;
   lastProtocolId: ProtocolId | null;
-  paused: boolean;
   meetingMode: boolean;
   lastPracticeId: string | null;
   /** Epoch ms of the last save, to detect an absence across a reload. */
@@ -68,10 +50,7 @@ export const initialWebState = (dayKey: string): WebState => ({
   cardsDoneToday: 0,
   resetsToday: 0,
   snoozesInARow: 0,
-  lastEyeBreakAtStretch: 0,
-  wrapUpNoticeDay: "",
   lastProtocolId: null,
-  paused: false,
   meetingMode: false,
   lastPracticeId: null,
   savedAt: 0,
@@ -83,12 +62,6 @@ const STATE_KEY = "anti-burnout:state";
 type KV = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
 const isFiniteNumber = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
-const noticeDay = (value: unknown): string => {
-  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return "";
-  const date = new Date(`${value}T00:00:00Z`);
-  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value ? value : "";
-};
-
 const read = (store: KV, key: string): Record<string, unknown> | null => {
   try {
     const raw = store.getItem(key);
@@ -108,6 +81,7 @@ export const loadConfig = (store: KV): WebConfig => {
   const raw = read(store, CONFIG_KEY) ?? {};
   const out = { ...DEFAULT_WEB_CONFIG };
   for (const key of Object.keys(out) as (keyof WebConfig)[]) {
+    // Idle stays fixed at 60 seconds, ignoring old user-configured values.
     if (key === "idleThresholdSeconds") continue;
     const v = raw[key];
     if (typeof out[key] === "number" && isFiniteNumber(v)) (out[key] as number) = v;
@@ -126,7 +100,7 @@ export const saveConfig = (store: KV, config: WebConfig): void => {
 
 /**
  * Load saved state for `dayKey`. Daily counters reset when the saved state is
- * from an earlier day. Legacy history and goal fields are ignored.
+ * from an earlier day. Retired state fields are ignored.
  */
 export const loadState = (store: KV, dayKey: string): WebState => {
   const fresh = initialWebState(dayKey);
@@ -156,11 +130,7 @@ export const loadState = (store: KV, dayKey: string): WebState => {
     resetsToday: sameDay ? num(raw.resetsToday) : 0,
     snoozesInARow: !tracker.onBreak && tracker.currentStretchSeconds > 0 && isFiniteNumber(raw.snoozesInARow)
       ? Math.max(0, Math.floor(raw.snoozesInARow)) : 0,
-    lastEyeBreakAtStretch: !tracker.onBreak && tracker.currentStretchSeconds > 0 && isFiniteNumber(raw.lastEyeBreakAtStretch)
-      ? Math.max(0, Math.min(tracker.currentStretchSeconds, raw.lastEyeBreakAtStretch)) : 0,
-    wrapUpNoticeDay: noticeDay(raw.wrapUpNoticeDay),
     lastProtocolId: isProtocolId(protocol) ? protocol : null,
-    paused: raw.paused === true,
     meetingMode: sameDay && raw.meetingMode === true,
     lastPracticeId: isCardPracticeId(raw.lastPracticeId) ? raw.lastPracticeId : null,
     savedAt: num(raw.savedAt),
@@ -173,7 +143,7 @@ export const loadState = (store: KV, dayKey: string): WebState => {
  */
 export const applyAbsence = (state: WebState, now: number, idleThresholdSeconds: number): WebState =>
   state.savedAt > 0 && now - state.savedAt >= idleThresholdSeconds * 1000
-    ? { ...state, snoozesInARow: 0, lastEyeBreakAtStretch: 0, tracker: { ...state.tracker, currentStretchSeconds: 0, lastReminderAtStretch: 0, onBreak: true } }
+    ? { ...state, snoozesInARow: 0, tracker: { ...state.tracker, currentStretchSeconds: 0, lastReminderAtStretch: 0, onBreak: true } }
     : state;
 
 export const saveState = (store: KV, state: WebState, now = Date.now()): void => {

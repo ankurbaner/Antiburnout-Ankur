@@ -13,26 +13,24 @@ describe("simplified page copy", () => {
     expect(document.querySelector(".yoga-safety")?.textContent).toBe("Move gently and stop if anything hurts. If you have a health condition, check with your doctor first.");
     expect(html).not.toMatch(/Brahma Kumaris|Art of Living|Smile break|Quick ways to feel lighter/);
   });
-  it("replaces Today and metrics with small reminder controls", () => {
+  it("removes the dashboard and top controls", () => {
     expect(document.querySelector("#today, .metrics, .history, #status-line")).toBeNull();
     expect(document.querySelector('.nav a[href="#today"]')).toBeNull();
-    expect(document.querySelector("#pause-btn")?.textContent).toBe("Pause");
-    expect(document.querySelector("#meeting-btn")?.getAttribute("aria-pressed")).toBe("false");
+    expect(document.querySelector(".control-area, #pause-btn, #source-chip, #enable-system, #meeting-btn, #source-text")).toBeNull();
     expect(document.querySelector('[name="dailyGoalMinutes"]')).toBeNull();
     expect(document.querySelector('[name="idleThresholdSeconds"]')).toBeNull();
     expect(document.querySelector("h1")?.textContent).toBe("Short breaks for your eyes, back and mind.");
   });
 
-  it("has three short steps, three tips and three privacy bullets without removed sections", () => {
-    expect(document.querySelectorAll(".step")).toHaveLength(3);
-    expect(document.querySelectorAll("#how .privacy-list li")).toHaveLength(3);
-    expect(document.querySelectorAll("#privacy li")).toHaveLength(3);
-    expect(document.getElementById("privacy-title")?.textContent).toBe("Privacy");
-    expect(document.querySelector(".tips-title")?.textContent).toBe("Tips");
-    expect(document.querySelector(".bands, .reset-preview, #protocol-list")).toBeNull();
+  it("keeps only reminder and reset options and retained navigation", () => {
+    expect(document.querySelector("#how, #privacy, .tips-title, #eye-break, #day-notice")).toBeNull();
+    expect([...document.querySelectorAll(".nav a")].map((link) => link.textContent)).toEqual(["Yoga", "Meditation", "Contact"]);
+    expect([...document.querySelectorAll("#settings input")].map((input) => input.getAttribute("name"))).toEqual([
+      "reminderMinutes", "snoozeMinutes", "maxSnoozes", "chime", "meetingMode",
+    ]);
+    expect(document.querySelector("#settings")?.textContent).toContain("Quiet practices only (for meetings)");
     expect(document.querySelector("#reset #reset-action")).not.toBeNull();
-    expect(document.querySelector("#privacy")?.textContent).toContain("No activity history is kept.");
-    expect(document.querySelector("#how")?.textContent).toContain("In a meeting");
+    expect(document.querySelector("#reset-data")).not.toBeNull();
   });
 
   it("keeps every navigation link pointing at an existing section", () => {

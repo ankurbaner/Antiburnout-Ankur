@@ -8,17 +8,16 @@ import "./styles.css";
 
 import { tick } from "../../src/tracker";
 import { CardPractice, createPreviewSelector, needsWater, selectCardPractice } from "./cards";
-import { ActivityMonitor, systemIdleSupported } from "./activity";
+import { ActivityMonitor } from "./activity";
 import { playChime, unlockChime } from "./chime";
 import { initPracticeGroups, initYoga } from "./yogaUI";
 import { MEDITATION_PRACTICES } from "./meditation";
-import { crossedWorkEnd, eyeBreakDue, formatTimeOfDay, headsUpSeconds, parseTimeOfDay, snoozeAllowed, withinWorkingHours } from "./schedule";
-import { formatClock, formatIdleThreshold } from "./format";
+import { snoozeAllowed } from "./schedule";
+import { formatClock } from "./format";
 import { MEETING_PROTOCOL_ORDER, PROTOCOL_ORDER, Protocol, RESET_SECONDS, countsAsReset, nextProtocol } from "./protocols";
 import {
   applyAbsence,
   WebConfig,
-
   WebState,
   clearAll,
   dayKeyFor,
@@ -61,50 +60,29 @@ let cardVisible = false;
 let cardIsPreview = false;
 let cardStretch = 0;
 let reset: { startedAt: number; endsAt: number; protocol: Protocol; finished: boolean } | null = null;
-let eyeBreakEndsAt: number | null = null;
-
-const workingNow = (now = new Date()): boolean => !config.workHours ||
-  withinWorkingHours(now.getHours() * 60 + now.getMinutes(), config.workStartMinutes, config.workEndMinutes);
-
-const hideEyeBreak = (): void => {
-  eyeBreakEndsAt = null;
-  $("eye-break").hidden = true;
-};
-
-const showNotice = (message: string): void => {
-  setText("day-notice-text", message);
-  $("day-notice").hidden = false;
-  chime();
-  persist();
-};
-
 let lastPersistMs = 0;
 const persist = (): void => {
   lastPersistMs = Date.now();
   saveState(store, state);
 };
 
-/**
- * Start a new day's counters at local midnight. Runs on every step, even
- * while paused or mid-reset, so nothing from
- * yesterday leaks into today.
- */
 const rollDay = (now: Date): void => {
   const today = dayKeyFor(now);
   if (state.tracker.dayKey === today) return;
   state.meetingMode = false;
+  if (settingsDialog.open) {
+    const meetingCheckbox = settingsForm.elements.namedItem("meetingMode");
+    if (meetingCheckbox instanceof HTMLInputElement) meetingCheckbox.checked = false;
+  }
   if (cardVisible) showCard(cardStretch, cardIsPreview, false);
   state.cardsDoneToday = 0;
   state.resetsToday = 0;
-  state.wrapUpNoticeDay = "";
-  $("day-notice").hidden = true;
   state.tracker = { ...state.tracker, todayActiveSeconds: 0, dayKey: today };
 };
 
 /* ---------- Recovery card ---------- */
 
 const renderCard = (practice: CardPractice, preview: boolean, stretch = state.tracker.currentStretchSeconds): void => {
-  hideEyeBreak();
   cardStretch = stretch;
   setText("card-meta", "A quiet yoga break");
   setText("card-chip", preview ? "Preview" : "1 min");
@@ -134,7 +112,6 @@ const showCard = (stretch: number, preview: boolean, advance = true): void => {
 };
 
 const showDueCard = (): void => {
-  state.lastEyeBreakAtStretch = state.tracker.currentStretchSeconds;
   showCard(state.tracker.currentStretchSeconds, false);
   chime();
 };
@@ -173,7 +150,6 @@ const setBackgroundInert = (inert: boolean): void => {
 const startReset = (): void => {
   focusBeforeReset = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   hideCard();
-  hideEyeBreak();
   const protocol = nextProtocol(state.lastProtocolId, resetPool());
   state.lastProtocolId = protocol.id;
   const startedAt = Date.now();
@@ -207,7 +183,6 @@ const endReset = (): void => {
   rollDay(new Date());
   if (countsAsReset(elapsedSeconds)) state.resetsToday += 1;
   state.snoozesInARow = 0;
-  state.lastEyeBreakAtStretch = 0;
   state.tracker = { ...state.tracker, currentStretchSeconds: 0, lastReminderAtStretch: 0, onBreak: true };
   $("reset").hidden = true;
   setBackgroundInert(false);
@@ -234,104 +209,32 @@ const updateReset = (now: number): void => {
 const step = (): void => {
   const nowMs = Date.now();
   const now = new Date(nowMs);
-  const previousTickMs = lastTickMs;
   const sinceLastStep = (nowMs - lastTickMs) / 1000;
   lastTickMs = nowMs;
-
   rollDay(now);
 
-  // Nothing counts while paused or during a reset (that *is* the break).
-  // Time spent in those states is never credited, even if timers were
-  // suspended across the transition. Large
-  // gaps from background-tab throttling or sleep are clamped by tick().
-  const counting = !state.paused && !reset;
+  // A reset is the break; never credit time spent in it.
+  const counting = !reset;
   const elapsed = counting && wasCounting ? sinceLastStep : 0;
   wasCounting = counting;
   if (counting) {
-
-    const result = tick(state.tracker, monitor.idleSeconds(nowMs), elapsed, dayKeyFor(now), {
-      ...config,
-      idleThresholdSeconds: monitor.effectiveThreshold(config.idleThresholdSeconds),
-    });
-
+    const result = tick(state.tracker, monitor.idleSeconds(nowMs), elapsed, dayKeyFor(now), config);
     state.tracker = result.state;
-    if (result.state.onBreak || result.state.currentStretchSeconds === 0) {
-      state.snoozesInARow = 0;
-      state.lastEyeBreakAtStretch = 0;
-      hideEyeBreak();
-    }
-    // Stepping away already was the break, so a card left open is now stale.
+    if (result.state.onBreak || result.state.currentStretchSeconds === 0) state.snoozesInARow = 0;
     if (result.state.onBreak && cardVisible && !cardIsPreview) hideCard();
-    if (result.showCard && workingNow(now)) showDueCard();
-    if (config.eyeBreaks && workingNow(now) && !cardVisible && !state.tracker.onBreak && eyeBreakEndsAt === null) {
-      const stretch = state.tracker.currentStretchSeconds;
-      const untilNext = config.reminderIntervalSeconds - (stretch - state.tracker.lastReminderAtStretch);
-      const due = eyeBreakDue(stretch, state.lastEyeBreakAtStretch, config.eyeBreakMinutes * 60, untilNext);
-      if (due !== "no") state.lastEyeBreakAtStretch = stretch;
-      if (due === "show") {
-        eyeBreakEndsAt = nowMs + 20_000;
-        setText("eye-break-countdown", "20 s");
-        $("eye-break").hidden = false;
-        chime();
-      }
-    }
+    if (result.showCard) showDueCard();
   }
-
-  if (eyeBreakEndsAt !== null) {
-    if (nowMs >= eyeBreakEndsAt) hideEyeBreak();
-    else setText("eye-break-countdown", `${Math.ceil((eyeBreakEndsAt - nowMs) / 1000)} s`);
-  }
-  const today = dayKeyFor(now);
-  let notice: string | null = null;
-  if (config.workHours && state.wrapUpNoticeDay !== today && crossedWorkEnd(previousTickMs, nowMs, config.workEndMinutes, config.workStartMinutes)) {
-    state.wrapUpNoticeDay = today;
-    notice = `It's ${formatTimeOfDay(config.workEndMinutes)}, the end of your working hours. Time to wrap up.`;
-  }
-  if (notice !== null) showNotice(notice);
   updateReset(nowMs);
   render();
   if (nowMs - lastPersistMs >= PERSIST_MS) persist();
 };
 
 const render = (): void => {
-  const t = state.tracker;
-  const working = workingNow();
-  if (!working && cardVisible && !cardIsPreview) hideCard();
-  if (state.paused || reset || !working || !config.eyeBreaks) hideEyeBreak();
-
-  const untilNext = Math.max(0, config.reminderIntervalSeconds - (t.currentStretchSeconds - t.lastReminderAtStretch));
-  const headsUp = working && !state.paused && !reset && !cardVisible && eyeBreakEndsAt === null && !t.onBreak
-    ? headsUpSeconds(untilNext, config.headsUp) : null;
   const canSnooze = cardIsPreview || snoozeAllowed(state.snoozesInARow, config.maxSnoozes);
   $<HTMLButtonElement>("card-snooze").disabled = !canSnooze;
   setText("card-snooze", canSnooze ? "Snooze" : "No more snoozes");
-  const chip = $("source-chip");
-  chip.dataset.state = state.paused ? "paused" : t.onBreak ? "away" : "active";
-  setText("source-chip", monitor.source === "system" ? "Tracking: whole computer" : "Tracking: this tab only");
-  const pauseBtn = $("pause-btn");
-  setText("pause-btn", state.paused ? "Resume" : "Pause");
-  pauseBtn.setAttribute("aria-pressed", String(state.paused));
-
-  const systemOn = monitor.source === "system";
-  $("source-text").hidden = false;
-  setText("source-text", systemOn
-    ? `Away for ${formatIdleThreshold(monitor.effectiveThreshold(config.idleThresholdSeconds))} counts as a break.`
-    : "This tab cannot see activity elsewhere. Track the whole computer to detect when you step away.");
-  $("meeting-btn").setAttribute("aria-pressed", String(state.meetingMode));
-  $("enable-system").hidden = systemOn || !systemIdleSupported();
-
   document.body.classList.toggle("locked", Boolean(reset));
-
-  // Keep alerts visible when this tab is in the background.
-  document.title = state.paused
-    ? "Paused · Anti-Burnout"
-    : !reset && cardVisible && !cardIsPreview
-      ? "Break due · Anti-Burnout"
-      : eyeBreakEndsAt !== null
-        ? "Eye break · Anti-Burnout"
-        : headsUp !== null
-          ? `Card in ${headsUp}s · Anti-Burnout`
-          : "Anti-Burnout";
+  document.title = !reset && cardVisible && !cardIsPreview ? "Break due · Anti-Burnout" : "Anti-Burnout";
 };
 
 /* ---------- Settings ---------- */
@@ -345,17 +248,7 @@ const openSettings = (): void => {
   (f.namedItem("snoozeMinutes") as HTMLInputElement).value = String(config.snoozeMinutes);
   (f.namedItem("maxSnoozes") as HTMLInputElement).value = String(config.maxSnoozes);
   (f.namedItem("chime") as HTMLInputElement).checked = config.chime;
-  (f.namedItem("headsUp") as HTMLInputElement).checked = config.headsUp;
-  for (const name of ["eyeBreaks", "workHours"] as const) {
-    (f.namedItem(name) as HTMLInputElement).checked = config[name];
-  }
-  for (const name of ["eyeBreakMinutes"] as const) {
-    (f.namedItem(name) as HTMLInputElement).value = String(config[name]);
-  }
-  (f.namedItem("workStart") as HTMLInputElement).value = formatTimeOfDay(config.workStartMinutes);
-  (f.namedItem("workEnd") as HTMLInputElement).value = formatTimeOfDay(config.workEndMinutes);
-  (f.namedItem("systemIdle") as HTMLInputElement).checked = monitor.source === "system";
-  $("system-idle-row").hidden = !systemIdleSupported();
+  (f.namedItem("meetingMode") as HTMLInputElement).checked = state.meetingMode;
   settingsDialog.showModal();
 };
 
@@ -364,21 +257,6 @@ const clampInt = (raw: string, min: number, max: number, fallback: number): numb
   return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
 };
 
-const setSystemIdle = async (on: boolean): Promise<void> => {
-  if (on) {
-    config.systemIdle = await monitor.enableSystem(config.idleThresholdSeconds);
-  } else {
-    monitor.disableSystem();
-    config.systemIdle = false;
-  }
-  saveConfig(store, config);
-  render();
-};
-
-/**
- * Save from the Save button's submit event so Idle Detection permission
- * is requested synchronously inside the user gesture, before anything is awaited.
- */
 settingsForm.addEventListener("submit", (e) => {
   const submitter = (e as SubmitEvent).submitter as HTMLButtonElement | null;
   if (submitter?.value !== "save") return;
@@ -386,42 +264,22 @@ settingsForm.addEventListener("submit", (e) => {
 
   const f = settingsForm.elements;
   const val = (name: string): HTMLInputElement => f.namedItem(name) as HTMLInputElement;
-  const wantsSystem = val("systemIdle").checked;
-  const systemOn = monitor.source === "system";
-  const systemChange = wantsSystem !== systemOn;
-
-  let systemResult: Promise<boolean> = Promise.resolve(systemOn);
-  if (systemChange) {
-    if (wantsSystem) {
-      systemResult = monitor.enableSystem(config.idleThresholdSeconds);
-    } else {
-      monitor.disableSystem();
-      systemResult = Promise.resolve(false);
-    }
-  }
-
   config = {
     ...config,
     reminderIntervalSeconds: clampInt(val("reminderMinutes").value, 1, 180, 20) * 60,
     snoozeMinutes: clampInt(val("snoozeMinutes").value, 1, 60, 5),
     maxSnoozes: clampInt(val("maxSnoozes").value, 0, 10, 2),
     chime: val("chime").checked,
-    headsUp: val("headsUp").checked,
-    eyeBreaks: val("eyeBreaks").checked,
-    eyeBreakMinutes: clampInt(val("eyeBreakMinutes").value, 5, 60, 10),
-    workHours: val("workHours").checked,
-    workStartMinutes: parseTimeOfDay(val("workStart").value, 540),
-    workEndMinutes: parseTimeOfDay(val("workEnd").value, 1080),
   };
+  const meetingMode = val("meetingMode").checked;
+  if (state.meetingMode !== meetingMode) {
+    state.meetingMode = meetingMode;
+    if (cardVisible) showCard(cardStretch, cardIsPreview, false);
+  }
   saveConfig(store, config);
+  persist();
   settingsDialog.close();
   render();
-
-  void systemResult.then((systemIdle) => {
-    config = { ...config, systemIdle };
-    saveConfig(store, config);
-    render();
-  });
 });
 
 /* ---------- Wiring ---------- */
@@ -465,32 +323,15 @@ $("card-snooze").addEventListener("click", () => {
   render();
 });
 $("reset-next").addEventListener("click", nextResetActivity);
-$("eye-break-skip").addEventListener("click", () => { hideEyeBreak(); render(); });
-$("day-notice-dismiss").addEventListener("click", () => { $("day-notice").hidden = true; });
 $("reset-end").addEventListener("click", endReset);
-$("pause-btn").addEventListener("click", () => {
-  state.paused = !state.paused;
-  persist();
-  render();
-});
-$("meeting-btn").addEventListener("click", () => {
-  state.meetingMode = !state.meetingMode;
-  if (cardVisible) showCard(cardStretch, cardIsPreview, false);
-  persist();
-  render();
-});
 $("open-settings").addEventListener("click", openSettings);
-$("enable-system").addEventListener("click", () => void setSystemIdle(true));
 $("reset-data").addEventListener("click", () => {
   if (!window.confirm("Clear all counters and settings stored in this browser?")) return;
   clearAll(store);
-  monitor.disableSystem();
   config = loadConfig(store);
   state = loadState(store, dayKeyFor(new Date()));
   settingsDialog.close();
   hideCard();
-  hideEyeBreak();
-  $("day-notice").hidden = true;
   render();
 });
 window.addEventListener("pagehide", persist);
@@ -521,7 +362,4 @@ document.addEventListener("keydown", (e) => {
 initYoga();
 initPracticeGroups("meditation-practices", [{ id: "meditation", title: "Choose a quiet moment", practices: MEDITATION_PRACTICES }]);
 render();
-if (config.systemIdle) {
-  void monitor.resumeSystem(config.idleThresholdSeconds).then(render);
-}
 window.setInterval(step, TICK_MS);
