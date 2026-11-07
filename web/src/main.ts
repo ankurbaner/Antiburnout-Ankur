@@ -106,19 +106,24 @@ const renderCard = (content: CardContent, preview: boolean): void => {
 
 const notificationsSupported = "Notification" in window;
 
-/** Some browsers (Chrome on Android) only allow notifications through a service worker. */
-const swRegistration: Promise<ServiceWorkerRegistration | null> =
-  notificationsSupported && "serviceWorker" in navigator
-    ? navigator.serviceWorker
-        .register("./sw.js")
-        .then(() => navigator.serviceWorker.ready)
-        .catch(() => null)
-    : Promise.resolve(null);
+/**
+ * Some browsers (Chrome on Android) only allow notifications through a service worker.
+ * Registered only once notifications are actually used, so visitors who never opt in get none.
+ */
+let swRegistration: Promise<ServiceWorkerRegistration | null> | null = null;
+const getSwRegistration = (): Promise<ServiceWorkerRegistration | null> =>
+  (swRegistration ??=
+    "serviceWorker" in navigator
+      ? navigator.serviceWorker
+          .register("./sw.js")
+          .then(() => navigator.serviceWorker.ready)
+          .catch(() => null)
+      : Promise.resolve(null));
 
 const showNotification = async (title: string, body: string, tag: string): Promise<boolean> => {
   const options: NotificationOptions = { body, tag, icon: "./favicon.svg" };
   try {
-    const reg = await swRegistration;
+    const reg = await getSwRegistration();
     if (reg) {
       await reg.showNotification(title, options);
       return true;
