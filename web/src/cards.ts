@@ -31,7 +31,8 @@ export const needsWater = (stretch: number): boolean => stretch > 90 * 60;
 
 export const selectCardPractice = (stretch: number, meeting: boolean, previous: string | null, rotation = 0): CardPractice => {
   const pool = meeting ? MEETING_PRACTICES : CARD_BANDS[stretch < 45 * 60 ? 0 : needsWater(stretch) ? 2 : 1];
-  const available = pool.filter((practice) => practice.id !== previous);
-  const index = Number.isFinite(rotation) ? Math.abs(Math.floor(rotation)) % available.length : 0;
-  return available[index];
+  const previousIndex = pool.findIndex((practice) => practice.id === previous);
+  const index = previousIndex >= 0 ? (previousIndex + 1) % pool.length
+    : Number.isFinite(rotation) ? Math.abs(Math.floor(rotation)) % pool.length : 0;
+  return pool[index];
 };

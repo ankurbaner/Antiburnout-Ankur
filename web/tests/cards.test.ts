@@ -4,6 +4,20 @@ import { MEETING_PRACTICES } from "../src/yoga";
 import { MEETING_PROTOCOL_ORDER, PROTOCOLS, nextProtocol } from "../src/protocols";
 
 describe("web yoga reminder cards", () => {
+  it.each([[0, false], [2700, false], [5401, false], [0, true]] as const)("eventually visits every practice at %s seconds with meeting=%s", (stretch, meeting) => {
+    const pool = meeting ? MEETING_PRACTICES : CARD_BANDS[stretch === 0 ? 0 : stretch === 2700 ? 1 : 2];
+    for (const first of pool) {
+      let previous = first.id;
+      const seen = new Set<string>();
+      for (let rotation = 0; rotation < pool.length * 3; rotation++) {
+        const practice = selectCardPractice(stretch, meeting, previous, rotation);
+        expect(practice.id).not.toBe(previous);
+        seen.add(practice.id);
+        previous = practice.id;
+      }
+      expect(seen).toEqual(new Set(pool.map((practice) => practice.id)));
+    }
+  });
   it.each([[-1, false], [5399, false], [5400, false], [5401, true]])("pairs standing practices with water only over 90 minutes (%s)", (stretch, water) => {
     expect(needsWater(stretch)).toBe(water);
     expect(CARD_BANDS[2].some((practice) => practice.id === selectCardPractice(stretch, false, null).id)).toBe(water);
