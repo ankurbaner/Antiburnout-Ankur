@@ -26,4 +26,4 @@ export const nextSmileScene = (current: number, count = SMILE_SCENES.length): nu
   Number.isInteger(current) && Number.isInteger(count) && count > 0 ? ((current + 1) % count + count) % count : 0;
 
 export const practiceSecondsLeft = (endsAt: number | null, now: number): number | null =>
-  endsAt === null ? null : Number.isFinite(endsAt) && Number.isFinite(now) ? Math.max(0, Math.ceil((endsAt - now) / 1000)) : 0;
+  endsAt === null || !Number.isFinite(now) ? null : Number.isFinite(endsAt) ? Math.max(0, Math.ceil((endsAt - now) / 1000)) : 0;

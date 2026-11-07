@@ -39,7 +39,9 @@ describe("smile scenes and practices", () => {
   it("handles inactive and invalid timers without displaying NaN", () => {
     expect(practiceSecondsLeft(null, 0)).toBeNull();
     expect(practiceSecondsLeft(Infinity, 0)).toBe(0);
-    expect(practiceSecondsLeft(60000, NaN)).toBe(0);
+    expect(practiceSecondsLeft(60000, NaN)).toBeNull();
+    expect(practiceSecondsLeft(60000, Infinity)).toBeNull();
+    expect(practiceSecondsLeft(60000, -Infinity)).toBeNull();
   });
 });
 
