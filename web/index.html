@@ -63,8 +63,13 @@
             <p class="muted" id="status-line" aria-live="polite">Tracking starts as soon as the page is open.</p>
           </div>
           <div class="today-controls">
-            <span class="chip" id="source-chip" title="Where activity is measured">Tracking: this tab only</span>
-            <button class="btn btn-ghost btn-sm" type="button" id="pause-btn" aria-pressed="false">Pause</button>
+            <div class="today-controls-row">
+              <span class="chip" id="source-chip" title="Where activity is measured">Tracking: this tab only</span>
+              <button class="btn btn-ghost btn-sm" type="button" id="pause-btn" aria-pressed="false">Pause</button>
+            </div>
+            <p id="source-text">
+              This mode only sees this tab. When you switch to another tab or app, it assumes you're still working, so time spent there still counts.
+            </p>
           </div>
         </div>
 
@@ -97,9 +102,6 @@
         </div>
 
         <div class="source-note" id="source-note">
-          <p id="source-text">
-            This mode only sees this tab. When you switch to another tab or app, it assumes you're still working, so time spent there still counts.
-          </p>
           <div class="source-actions">
             <button class="btn btn-ghost btn-sm" type="button" id="enable-system" hidden>Track the whole computer</button>
             <button class="btn btn-ghost btn-sm" type="button" id="enable-notify">Turn on notifications</button>
