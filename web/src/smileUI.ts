@@ -19,7 +19,7 @@ export const initSmile = (): void => {
   };
   const schedule = (): void => {
     window.clearTimeout(rotation);
-    if (reduced.matches || hovered || stage.contains(document.activeElement) || document.hidden) return;
+    if (reduced.matches || hovered || stage.querySelector(":focus-visible") || document.hidden) return;
     rotation = window.setTimeout(() => {
       current = nextSmileScene(current);
       showScene();
