@@ -11,7 +11,8 @@ describe("simplified page copy", () => {
     expect(document.querySelector("#contact .contact-email")?.textContent).toBe("ankur.banerjee014@gmail.com");
   });
   it("places the silent breath guide before desk yoga", () => {
-    expect(document.querySelector(".hero + section")?.id).toBe("breathe");
+    expect(document.querySelector(".hero + section")?.id).toBe("practice-of-the-day");
+    expect(document.querySelector("#practice-of-the-day + section")?.id).toBe("breathe");
     expect(document.querySelector("#breathe + section")?.id).toBe("yoga");
     expect(document.querySelector('.nav a[href="#yoga"]')?.textContent).toBe("Yoga");
     expect(document.querySelector("#smile, .smile-scene, #smile-practices")).toBeNull();

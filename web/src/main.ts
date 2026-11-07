@@ -10,6 +10,7 @@ import { tick } from "../../src/tracker";
 import { CardPractice, createPreviewSelector, needsWater, selectCardPractice } from "./cards";
 import { ActivityMonitor } from "./activity";
 import { initBreathe } from "./breatheUI";
+import { initDailyPractice } from "./dailyPracticeUI";
 import { playChime, unlockChime } from "./chime";
 import { initPracticeGroups, initYoga } from "./yogaUI";
 import { MEDITATION_PRACTICES } from "./meditation";
@@ -70,6 +71,7 @@ const persist = (): void => {
 const rollDay = (now: Date): void => {
   const today = dayKeyFor(now);
   if (state.tracker.dayKey === today) return;
+  initDailyPractice(now);
   state.meetingMode = false;
   if (settingsDialog.open) {
     const meetingCheckbox = settingsForm.elements.namedItem("meetingMode");
@@ -361,6 +363,7 @@ document.addEventListener("keydown", (e) => {
 });
 
 initBreathe();
+initDailyPractice();
 initYoga();
 initPracticeGroups("meditation-practices", [{ id: "meditation", title: "Choose a quiet moment", practices: MEDITATION_PRACTICES }]);
 render();

@@ -1,19 +1,22 @@
 import { YOGA_GROUPS, YogaGroup, practiceSecondsLeft } from "./yoga";
 import "./yoga.css";
 
-export const initPracticeGroups = (containerId: string, groups: YogaGroup[]): void => {
+export const initPracticeGroups = (containerId: string, groups: YogaGroup[], featured = false): (() => void) => {
   const container = document.getElementById(containerId);
-  if (!container) return;
+  if (!container) return () => {};
+  const stopTimers: (() => void)[] = [];
   container.replaceChildren(...groups.map((group) => {
     const section = document.createElement("div");
     section.className = "yoga-group";
     const heading = document.createElement("h3");
-    heading.id = `yoga-group-${group.id}`;
+    heading.id = `${containerId}-group-${group.id}`;
     heading.textContent = group.title;
-    section.setAttribute("role", "group");
-    section.setAttribute("aria-labelledby", heading.id);
+    if (!featured) {
+      section.setAttribute("role", "group");
+      section.setAttribute("aria-labelledby", heading.id);
+    }
     const cards = document.createElement("div");
-    cards.className = "yoga-practices";
+    cards.className = featured ? "yoga-practices daily-practices" : "yoga-practices";
     cards.replaceChildren(...group.practices.map((practice) => {
       const card = document.createElement("article");
       card.className = "yoga-practice";
@@ -21,8 +24,8 @@ export const initPracticeGroups = (containerId: string, groups: YogaGroup[]): vo
       const duration = document.createElement("p");
       duration.className = "yoga-duration";
       duration.textContent = `${practice.seconds / 60} min`;
-      const title = document.createElement("h4");
-      title.id = `yoga-practice-${practice.id}`;
+      const title = document.createElement(featured ? "h3" : "h4");
+      title.id = `${containerId}-practice-${practice.id}`;
       title.textContent = practice.title;
       const english = document.createElement("p");
       english.className = "yoga-english";
@@ -37,7 +40,7 @@ export const initPracticeGroups = (containerId: string, groups: YogaGroup[]): vo
       start.setAttribute("aria-expanded", "false");
       const timer = document.createElement("div");
       timer.className = "yoga-timer";
-      timer.id = `yoga-timer-${practice.id}`;
+      timer.id = `${containerId}-timer-${practice.id}`;
       timer.hidden = true;
       start.setAttribute("aria-controls", timer.id);
       const countdown = document.createElement("span");
@@ -54,6 +57,7 @@ export const initPracticeGroups = (containerId: string, groups: YogaGroup[]): vo
       done.setAttribute("aria-label", `Done with ${practice.title}`);
       timer.append(countdown, done);
       let interval: number | undefined;
+      stopTimers.push(() => window.clearInterval(interval));
       let endsAt: number | null = null;
       const update = (): void => {
         const left = practiceSecondsLeft(endsAt, Date.now());
@@ -84,11 +88,19 @@ export const initPracticeGroups = (containerId: string, groups: YogaGroup[]): vo
       });
       card.setAttribute("aria-labelledby", title.id);
       card.append(duration, title, english, instruction, start, timer, status);
+      if (featured && practice.origin) {
+        const roots = document.createElement("p");
+        roots.className = "practice-roots";
+        roots.textContent = `Roots: ${practice.origin}`;
+        card.append(roots);
+      }
       return card;
     }));
-    section.append(heading, cards);
+    if (!featured) section.append(heading);
+    section.append(cards);
     return section;
   }));
+  return () => stopTimers.forEach((stop) => stop());
 };
 
-export const initYoga = (): void => initPracticeGroups("yoga-groups", YOGA_GROUPS);
+export const initYoga = (): void => { initPracticeGroups("yoga-groups", YOGA_GROUPS); };
