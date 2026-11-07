@@ -484,6 +484,7 @@ settingsForm.addEventListener("submit", (e) => {
     saveConfig(store, config);
     render();
     if (wantsNotify && (turnedOn || !notifications)) void reportNotifications();
+    if (!wantsNotify) $("notify-status").hidden = true;
   });
 });
 
