@@ -17,6 +17,8 @@ static site with no backend.
   resets to call-safe practices and silences the chime. It stays on across
   same-day reloads and turns off at local midnight.
 - **Desk yoga and meditation** with inline Start / countdown / Done timers.
+- **Practice of the day**: one yoga or meditation practice chosen by local date,
+  with its instructions and inline timer.
 
 ## Where activity comes from
 
@@ -26,9 +28,10 @@ While the tab is unfocused, it cannot see activity elsewhere and assumes
 you're working elsewhere. Nothing is counted while the tab is closed.
 Whole-computer tracking and the Idle Detection API have been removed.
 
-There is no network after the page loads: no analytics and no third-party
-fonts (they're bundled). Settings and coarse counters live in `localStorage`
-and can be cleared from Settings.
+There are no analytics or third-party fonts (they're bundled). Settings and
+coarse counters live in `localStorage` and can be cleared from Settings.
+Data from retired features is ignored; Clear all data also removes their
+legacy storage entries. The PWA caches the app's own static files for offline use.
 
 ## Develop
 

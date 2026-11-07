@@ -13,8 +13,6 @@ import { initBreathe } from "./breatheUI";
 import { initDailyPractice } from "./dailyPracticeUI";
 import { TIME_LABELS, timeOfDay } from "./timeOfDay";
 import { GENTLE_AREAS, loadGentle } from "./gentle";
-import { initIntention } from "./intentionUI";
-import { initSaveSpot } from "./saveSpotUI";
 import { initInstall, registerWorker } from "./pwa";
 import { playChime, unlockChime } from "./chime";
 import { initPracticeGroups, initYoga } from "./yogaUI";
@@ -219,7 +217,6 @@ const updateReset = (now: number): void => {
 const step = (): void => {
   const nowMs = Date.now();
   const now = new Date(nowMs);
-  intention?.update(now);
   const sinceLastStep = (nowMs - lastTickMs) / 1000;
   lastTickMs = nowMs;
   rollDay(now);
@@ -236,7 +233,6 @@ const step = (): void => {
     if (result.showCard) showDueCard();
   }
   updateReset(nowMs);
-  spot?.update(now, config, !reset && !settingsDialog.open);
   render();
   if (nowMs - lastPersistMs >= PERSIST_MS) persist();
 };
@@ -261,8 +257,6 @@ const openSettings = (): void => {
   (f.namedItem("maxSnoozes") as HTMLInputElement).value = String(config.maxSnoozes);
   (f.namedItem("chime") as HTMLInputElement).checked = config.chime;
   (f.namedItem("meetingMode") as HTMLInputElement).checked = state.meetingMode;
-  (f.namedItem("endOfDay") as HTMLInputElement).checked = config.endOfDay;
-  (f.namedItem("endOfDayTime") as HTMLInputElement).value = config.endOfDayTime;
   for (const area of GENTLE_AREAS) (f.namedItem(`gentle-${area}`) as HTMLInputElement).checked = config.gentle[area];
   settingsDialog.showModal();
 };
@@ -288,8 +282,6 @@ settingsForm.addEventListener("submit", (e) => {
     maxSnoozes: clampInt(val("maxSnoozes").value, 0, 10, 2),
     chime: val("chime").checked,
     gentle,
-    endOfDay: val("endOfDay").checked,
-    endOfDayTime: val("endOfDayTime").value,
   };
   const meetingMode = val("meetingMode").checked;
   const meetingChanged = state.meetingMode !== meetingMode;
@@ -355,8 +347,6 @@ $("reset-data").addEventListener("click", () => {
   clearAll(store);
   config = loadConfig(store);
   state = loadState(store, dayKeyFor(new Date()));
-  intention?.reload();
-  spot?.reload();
   initYoga(config.gentle);
   initDailyPractice(new Date(), config.gentle);
   updateBreatheGentle(config.gentle);
@@ -390,11 +380,8 @@ document.addEventListener("keydown", (e) => {
 });
 
 const updateBreatheGentle = initBreathe(config.gentle);
-const intention = initIntention(store);
-const spot = initSaveSpot(store, chime);
 initInstall();
 registerWorker();
-$("save-spot-open").addEventListener("click", () => spot?.open());
 initDailyPractice(new Date(), config.gentle);
 initYoga(config.gentle);
 initPracticeGroups("meditation-practices", [{ id: "meditation", title: "Choose a quiet moment", practices: MEDITATION_PRACTICES }]);

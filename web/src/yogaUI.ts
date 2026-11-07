@@ -89,12 +89,6 @@ export const initPracticeGroups = (containerId: string, groups: YogaGroup[], fea
       });
       card.setAttribute("aria-labelledby", title.id);
       card.append(duration, title, english, instruction, start, timer, status);
-      if (featured && practice.origin) {
-        const roots = document.createElement("p");
-        roots.className = "practice-roots";
-        roots.textContent = `Roots: ${practice.origin}`;
-        card.append(roots);
-      }
       return card;
     }));
     if (!featured) section.append(heading);

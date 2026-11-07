@@ -6,8 +6,6 @@ import { DEFAULT_CONFIG, TrackerState, createInitialState } from "../../src/trac
 import { ProtocolId, isProtocolId } from "./protocols";
 import { isCardPracticeId } from "./cards";
 import { DEFAULT_GENTLE, GentleSettings, loadGentle } from "./gentle";
-import { INTENTION_KEY } from "./intention";
-import { SPOT_KEY, validClock } from "./saveSpot";
 
 export interface WebConfig {
   idleThresholdSeconds: number;
@@ -16,8 +14,6 @@ export interface WebConfig {
   chime: boolean;
   maxSnoozes: number;
   gentle: GentleSettings;
-  endOfDay: boolean;
-  endOfDayTime: string;
 }
 
 export const DEFAULT_WEB_CONFIG: WebConfig = {
@@ -27,8 +23,6 @@ export const DEFAULT_WEB_CONFIG: WebConfig = {
   chime: true,
   maxSnoozes: 2,
   gentle: DEFAULT_GENTLE,
-  endOfDay: true,
-  endOfDayTime: "18:00",
 };
 
 export interface WebState {
@@ -97,7 +91,6 @@ export const loadConfig = (store: KV): WebConfig => {
     if (typeof out[key] === "boolean" && typeof v === "boolean") (out[key] as boolean) = v;
   }
   out.gentle = loadGentle(raw.gentle);
-  out.endOfDayTime = validClock(raw.endOfDayTime) ? raw.endOfDayTime : "18:00";
   return out;
 };
 
@@ -170,6 +163,6 @@ export const saveState = (store: KV, state: WebState, now = Date.now()): void =>
 export const clearAll = (store: KV): void => {
   store.removeItem(CONFIG_KEY);
   store.removeItem(STATE_KEY);
-  store.removeItem(INTENTION_KEY);
-  store.removeItem(SPOT_KEY);
+  store.removeItem("anti-burnout:intention");
+  store.removeItem("anti-burnout:spot");
 };

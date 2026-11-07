@@ -6,14 +6,14 @@ const document = new DOMParser().parseFromString(html, "text/html");
 
 describe("simplified page copy", () => {
   it("welcomes questions, feedback and suggestions while keeping the email link", () => {
-    expect(document.querySelector("#contact .muted")?.textContent).toBe("We welcome your questions, feedback and suggestions. Please contact us by email.");
+    expect(document.querySelector("#contact .eyebrow")?.textContent).toBe("Contact me");
+    expect(document.querySelector("#contact .muted")?.textContent).toBe("I welcome your questions, feedback and suggestions. Please contact me by email.");
+    expect(html).not.toMatch(/\b(?:we|us|our)\b/i);
     expect(document.querySelector("#contact .contact-email")?.getAttribute("href")).toBe("mailto:ankur.banerjee014@gmail.com?subject=Anti-Burnout");
     expect(document.querySelector("#contact .contact-email")?.textContent).toBe("ankur.banerjee014@gmail.com");
   });
   it("places the silent breath guide before desk yoga", () => {
-    expect(document.querySelector(".hero + section")?.id).toBe("morning-note");
-    expect(document.querySelector("#morning-note + section")?.id).toBe("intention-panel");
-    expect(document.querySelector("#save-spot + section")?.id).toBe("practice-of-the-day");
+    expect(document.querySelector(".hero + section")?.id).toBe("practice-of-the-day");
     expect(document.querySelector("#practice-of-the-day + section")?.id).toBe("breathe");
     expect(document.querySelector("#breathe + section")?.id).toBe("yoga");
     expect(document.querySelector('.nav a[href="#yoga"]')?.textContent).toBe("Yoga");
@@ -37,7 +37,6 @@ describe("simplified page copy", () => {
     expect([...document.querySelectorAll("#settings input")].map((input) => input.getAttribute("name"))).toEqual([
       "reminderMinutes", "snoozeMinutes", "maxSnoozes", "chime", "meetingMode",
       "gentle-back", "gentle-neck", "gentle-wrists", "gentle-pregnancy",
-      "endOfDay", "endOfDayTime",
     ]);
     expect(document.querySelector("#settings")?.textContent).toContain("Quiet practices only (for meetings)");
     expect(document.querySelector("#reset #reset-action")).not.toBeNull();
@@ -48,5 +47,13 @@ describe("simplified page copy", () => {
     for (const link of document.querySelectorAll<HTMLAnchorElement>("a[href^='#']")) {
       expect(document.querySelector(link.getAttribute("href")!)).not.toBeNull();
     }
+  });
+
+  it("removes daily intentions, saved spots, end-of-day settings and Roots copy", () => {
+    expect(document.querySelector("#intention-panel, #save-spot, #save-spot-open, #morning-note")).toBeNull();
+    expect(document.querySelector('[name="endOfDay"], [name="endOfDayTime"]')).toBeNull();
+    expect(html).not.toMatch(/Today's intention|Sankalpa|Save my spot|Save your spot|Where you left off|Roots|End of day/i);
+    expect(document.querySelector("#practice-of-the-day")).not.toBeNull();
+    expect(document.querySelector("#install-app")).not.toBeNull();
   });
 });

@@ -4,10 +4,10 @@ import { YOGA_GROUPS } from "../src/yoga";
 import { MEDITATION_PRACTICES } from "../src/meditation";
 
 describe("practice of the local day", () => {
-  it("includes every yoga and meditation practice with conservative roots notes", () => {
+  it("includes every yoga and meditation practice without unused origin metadata", () => {
     expect(DAILY_PRACTICES).toEqual([...YOGA_GROUPS.flatMap((group) => group.practices), ...MEDITATION_PRACTICES]);
     expect(new Set(DAILY_PRACTICES.map((practice) => practice.id)).size).toBe(18);
-    for (const practice of DAILY_PRACTICES) expect(practice.origin.length).toBeGreaterThan(10);
+    for (const practice of DAILY_PRACTICES) expect(practice).not.toHaveProperty("origin");
   });
   it("is stable throughout a local calendar day, without saved state", () => {
     const morning = new Date(2026, 10, 7, 0, 0);

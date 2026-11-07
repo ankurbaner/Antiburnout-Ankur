@@ -31,7 +31,7 @@ it("drops retired config and paused state without losing reminders or quiet mode
     workHours: true, workStartMinutes: 540, workEndMinutes: 1080,
   }));
   const config = loadConfig(storage);
-  expect(config).toEqual({ idleThresholdSeconds: 60, reminderIntervalSeconds: 60, snoozeMinutes: 10, maxSnoozes: 3, chime: false, gentle: DEFAULT_GENTLE, endOfDay: true, endOfDayTime: "18:00" });
+  expect(config).toEqual({ idleThresholdSeconds: 60, reminderIntervalSeconds: 60, snoozeMinutes: 10, maxSnoozes: 3, chime: false, gentle: DEFAULT_GENTLE });
   saveConfig(storage, config);
   expect(storage.getItem("anti-burnout:config")).not.toMatch(/systemIdle|eyeBreak|headsUp|work/);
   storage.setItem("anti-burnout:state", JSON.stringify({
@@ -76,4 +76,30 @@ it("persists meeting mode and the previous card/reset without letting malformed 
   expect(loadState(storage, "2026-11-08")).toMatchObject({ meetingMode: false, lastPracticeId: "meeting-equal", lastProtocolId: "meeting-ankles" });
   storage.setItem("anti-burnout:state", JSON.stringify({ meetingMode: "true", lastPracticeId: "unknown", lastProtocolId: "__proto__" }));
   expect(loadState(storage, "2026-11-07")).toMatchObject({ meetingMode: false, lastPracticeId: null, lastProtocolId: null });
+});
+
+it("ignores retired day-note data, drops its config/state fields on save and clears legacy keys", () => {
+  for (const retired of [null, "broken", { text: "A previous note", day: "2026-11-07" }]) {
+    const storage = store();
+    storage.setItem("anti-burnout:config", JSON.stringify({ endOfDay: true, endOfDayTime: "00:00", intention: retired, snoozeMinutes: 7 }));
+    storage.setItem("anti-burnout:state", JSON.stringify({ ...initialWebState("2026-11-07"), intention: retired, spot: retired, promptDay: "2026-11-07", meetingMode: true }));
+    storage.setItem("anti-burnout:intention", JSON.stringify(retired));
+    storage.setItem("anti-burnout:spot", JSON.stringify(retired));
+    const config = loadConfig(storage);
+    expect(config.snoozeMinutes).toBe(7);
+    expect(config).not.toHaveProperty("endOfDay");
+    expect(config).not.toHaveProperty("endOfDayTime");
+    expect(config).not.toHaveProperty("intention");
+    const state = loadState(storage, "2026-11-07");
+    expect(state.meetingMode).toBe(true);
+    expect(state).not.toHaveProperty("intention");
+    expect(state).not.toHaveProperty("spot");
+    expect(state).not.toHaveProperty("promptDay");
+    saveConfig(storage, config);
+    saveState(storage, state);
+    expect(storage.getItem("anti-burnout:config")).not.toMatch(/endOfDay|intention/);
+    expect(storage.getItem("anti-burnout:state")).not.toMatch(/intention|spot|promptDay/);
+    clearAll(storage);
+    for (const key of ["config", "state", "intention", "spot"]) expect(storage.getItem(`anti-burnout:${key}`)).toBeNull();
+  }
 });
