@@ -5,7 +5,7 @@
  * one back to back, so a reset never turns into a checklist.
  */
 
-export type ProtocolId = "water" | "posture" | "mobility" | "breathwork" | "humming" | "laughter";
+export type ProtocolId = "water" | "posture" | "mobility" | "breathwork" | "alternate" | "desk-stretch";
 
 export interface Protocol {
   id: ProtocolId;
@@ -49,25 +49,25 @@ export const PROTOCOLS: Record<ProtocolId, Protocol> = {
     action: "Look at something 20+ feet away and take five double inhales, each with a long, slow exhale through the mouth.",
     why: "Distance focus relaxes the eye muscles; long exhales slow the heart rate.",
   },
-  humming: {
-    id: "humming",
-    icon: "🐝",
-    title: "Humming bee breath",
+  alternate: {
+    id: "alternate",
+    icon: "🌿",
+    title: "Alternate-nostril breathing",
     durationLabel: "1 min",
-    action: "Sit comfortably and close your eyes if you like. Breathe in gently, then hum as you breathe out, 3–5 times. Don't force your breath.",
-    why: "A quiet hum gives your attention somewhere simple to rest. Stop if it feels uncomfortable.",
+    action: "Sit comfortably. Close your right nostril gently, breathe in through the left, then close the left and breathe out through the right. Breathe in through the right and out through the left; repeat quietly without breath holds or forcing air.",
+    why: "Nadi Shodhana gives you a quiet rhythm to follow. Return to normal breathing if you feel uncomfortable.",
   },
-  laughter: {
-    id: "laughter",
-    icon: "😄",
-    title: "Laugh it out",
-    durationLabel: "30 sec",
-    action: "Let your shoulders drop and try a pretend laugh for 30 seconds. See if a real chuckle joins in; a small smile is fine too.",
-    why: "You don't have to be in a great mood to try something a little silly. No pressure to feel different.",
+  "desk-stretch": {
+    id: "desk-stretch",
+    icon: "🪑",
+    title: "Seated desk stretch",
+    durationLabel: "1 min",
+    action: "Sit tall with feet on the floor in a steady chair. Slowly turn your head left and right, roll your shoulders back, then turn your chest a little each way without pulling; keep breathing normally.",
+    why: "A quiet change of position for your neck, shoulders and back. Move gently and stop if anything hurts.",
   },
 };
 
-export const PROTOCOL_ORDER: ProtocolId[] = ["breathwork", "water", "posture", "mobility", "humming", "laughter"];
+export const PROTOCOL_ORDER: ProtocolId[] = ["breathwork", "water", "posture", "mobility", "alternate", "desk-stretch"];
 
 /** Length of a Bio-Reset, in seconds. */
 export const RESET_SECONDS = 5 * 60;

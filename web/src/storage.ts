@@ -204,7 +204,7 @@ export const loadState = (store: KV, dayKey: string): WebState => {
     wrapUpNoticeDay: noticeDay(raw.wrapUpNoticeDay),
     history,
     lastProtocolId:
-      protocol === "water" || protocol === "posture" || protocol === "mobility" || protocol === "breathwork" || protocol === "humming" || protocol === "laughter"
+      protocol === "water" || protocol === "posture" || protocol === "mobility" || protocol === "breathwork" || protocol === "alternate" || protocol === "desk-stretch"
         ? protocol
         : null,
     paused: raw.paused === true,

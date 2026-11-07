@@ -5,6 +5,14 @@ import html from "../index.html?raw";
 const document = new DOMParser().parseFromString(html, "text/html");
 
 describe("simplified page copy", () => {
+  it("replaces Smile with desk yoga immediately after Today", () => {
+    expect(document.querySelector("#today + section")?.id).toBe("yoga");
+    expect(document.querySelector('.nav a[href="#yoga"]')?.textContent).toBe("Yoga");
+    expect(document.querySelector("#smile, .smile-scene, #smile-practices")).toBeNull();
+    expect(document.getElementById("yoga-title")?.textContent).toBe("Desk yoga");
+    expect(document.querySelector(".yoga-safety")?.textContent).toBe("Move gently and stop if anything hurts. If you have a health condition, check with your doctor first.");
+    expect(html).not.toMatch(/Brahma Kumaris|Art of Living|Smile break|Quick ways to feel lighter/);
+  });
   it("keeps the three metrics and live-update targets with plain defaults", () => {
     expect([...document.querySelectorAll(".metric-label")].map((el) => el.textContent)).toEqual([
       "Since your last break", "Screen time today", "Next reminder in",

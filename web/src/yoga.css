@@ -1,0 +1,16 @@
+.yoga-intro { margin-top: 12px; max-width: 650px; }
+.yoga-safety { margin-top: 18px; padding: 14px 18px; border-left: 3px solid var(--sage); background: var(--surface); border-radius: 0 10px 10px 0; font-size: 14px; }
+.yoga-group { margin-top: 32px; }
+.yoga-group h3 { font-size: 27px; }
+.yoga-practices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 18px; }
+.yoga-practice { border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; background: var(--surface); display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+.yoga-practice h4 { margin: 0; font-family: var(--display); font-size: 23px; line-height: 1.2; font-weight: 400; overflow-wrap: anywhere; }
+.yoga-practice > p:not(.yoga-duration) { font-size: 14px; color: var(--ink-muted); }
+.yoga-practice .yoga-english { font-weight: 600; }
+.yoga-duration { color: var(--sage-dark); font-size: 12px; font-weight: 600; }
+.yoga-practice > .btn { margin-top: auto; }
+.yoga-timer { display: flex; align-items: center; gap: 18px; margin-top: auto; }
+.yoga-countdown { font-size: 24px; font-variant-numeric: tabular-nums; }
+.yoga-timer-status:empty { display: none; }
+@media (max-width: 900px) { .yoga-practices { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .yoga-practices { grid-template-columns: 1fr; } }
