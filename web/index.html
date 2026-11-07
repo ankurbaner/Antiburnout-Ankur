@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Anti-Burnout counts the time you actually spend at the screen, asks for a short physical break every so often, and helps the day end on time. Nothing leaves your browser." />
+    <meta name="theme-color" content="#EDEAE2" />
+    <title>Anti-Burnout</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  </head>
+  <body>
+    <a class="skip-link" href="#today">Skip to today</a>
+
+    <header class="site-header">
+      <div class="wrap header-inner">
+        <a class="brand" href="#top" aria-label="Anti-Burnout home">
+          <img src="./favicon.svg" alt="" width="28" height="28" />
+          <span>Anti-Burnout</span>
+        </a>
+        <nav class="nav" aria-label="Sections">
+          <a href="#today">Today</a>
+          <a href="#how">How it works</a>
+          <a href="#privacy">Privacy</a>
+          <a href="#contact">Contact</a>
+        </nav>
+        <button class="btn btn-ghost btn-sm" id="open-settings" type="button" aria-haspopup="dialog">Settings</button>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero wrap">
+        <p class="eyebrow">For people whose work has lost its edges</p>
+        <h1>The break is for your eyes, your back, and a glass of water. <em>Not for more work.</em></h1>
+        <p class="lead">
+          Anti-Burnout counts the minutes you spend actively using your screen. After every 20 of them, a small card
+          asks you to do one physical thing: rest your eyes, fix your posture, drink some water or move. It never adds
+          a task, never asks a question and never needs a reply.
+        </p>
+        <div class="hero-actions">
+          <button class="btn btn-primary" type="button" data-action="start-reset">Take a 5-minute reset</button>
+          <button class="btn btn-ghost" type="button" data-action="preview-card">Preview a card</button>
+        </div>
+      </section>
+
+      <section class="wrap today" id="today" aria-labelledby="today-title">
+        <div class="section-head">
+          <div>
+            <h2 id="today-title">Today</h2>
+            <p class="muted" id="status-line" aria-live="polite">Tracking starts as soon as the page is open.</p>
+          </div>
+          <div class="today-controls">
+            <span class="chip" id="source-chip" title="Where activity is measured">This tab</span>
+            <button class="btn btn-ghost btn-sm" type="button" id="pause-btn" aria-pressed="false">Pause</button>
+          </div>
+        </div>
+
+        <div class="metrics">
+          <article class="metric metric-terracotta">
+            <p class="metric-label">Current stretch</p>
+            <p class="metric-value" id="m-stretch">0m</p>
+            <p class="metric-sub" id="m-stretch-sub">since your last break</p>
+          </article>
+          <article class="metric metric-periwinkle">
+            <p class="metric-label">At the screen today</p>
+            <p class="metric-value" id="m-today">0m</p>
+            <p class="metric-sub" id="m-today-sub">0 cards done · 0 resets</p>
+          </article>
+          <article class="metric metric-sage">
+            <p class="metric-label">Next card</p>
+            <p class="metric-value" id="m-next">20m</p>
+            <p class="metric-sub" id="m-next-sub">of active time from now</p>
+          </article>
+        </div>
+
+        <div class="bands" aria-label="What the next card will ask for">
+          <p class="bands-title">What the next card will ask for</p>
+          <ol class="band-track" id="band-track">
+            <li data-band="eyes"><span class="band-time">Under 45 min</span><span class="band-ask">Eyes</span></li>
+            <li data-band="eyes-posture"><span class="band-time">45 to 90 min</span><span class="band-ask">Eyes, then posture</span></li>
+            <li data-band="eyes-posture-water"><span class="band-time">90 min to 3 h</span><span class="band-ask">Eyes, posture, water, plus a movement</span></li>
+            <li data-band="eyes-posture-water-day"><span class="band-time">Over 3 h</span><span class="band-ask">All of it, plus the day's water</span></li>
+          </ol>
+        </div>
+
+        <div class="source-note" id="source-note">
+          <p id="source-text">
+            This mode only sees this tab. When you switch to another tab or app, it assumes you're still working, so time spent there still counts.
+          </p>
+          <div class="source-actions">
+            <button class="btn btn-ghost btn-sm" type="button" id="enable-system" hidden>Track the whole computer</button>
+            <button class="btn btn-ghost btn-sm" type="button" id="enable-notify">Turn on notifications</button>
+          </div>
+        </div>
+
+        <div class="today-actions">
+          <button class="btn btn-primary" type="button" data-action="start-reset">Start a 5-minute reset</button>
+          <button class="btn btn-ghost" type="button" data-action="preview-card">Preview a card</button>
+        </div>
+      </section>
+
+      <section class="wrap how" id="how" aria-labelledby="how-title">
+        <h2 id="how-title">How it works</h2>
+        <div class="steps">
+          <article class="step">
+            <span class="step-num">1</span>
+            <h3>It counts active time, not open time</h3>
+            <p>
+              The clock only runs while you're using the screen. Stop for a minute and that pause counts as a break:
+              your current stretch goes back to zero and no card is shown.
+            </p>
+          </article>
+          <article class="step">
+            <span class="step-num">2</span>
+            <h3>Every 20 active minutes, a card appears</h3>
+            <p>
+              It sits in the top-right corner and never covers the page. Click <em>Done</em> once you've done it, or
+              <em>Snooze</em> to see it again in 5 minutes.
+            </p>
+          </article>
+          <article class="step">
+            <span class="step-num">3</span>
+            <h3>The longer you go, the more it asks</h3>
+            <p>
+              Under 45 minutes it's just your eyes. Then posture, then water and a stretch. The wording changes from card
+              to card, so it doesn't read the same each time.
+            </p>
+          </article>
+          <article class="step">
+            <span class="step-num">4</span>
+            <h3>A 5-minute reset when you need more</h3>
+            <p>
+              <em>Take a 5-minute reset</em> opens a full-screen timer with one activity. Finishing it, or clicking
+              <em>I'm back</em>, counts as a break and starts a fresh stretch.
+            </p>
+          </article>
+        </div>
+
+        <div class="reset-preview">
+          <div>
+            <h3>The 5-minute reset</h3>
+            <p class="muted">
+              A 5-minute timer and one activity on screen. Each takes a minute or two; spend the rest of the time away
+              from the screen, or click <em>Try another activity</em>. The same activity never comes up twice in a row.
+            </p>
+          </div>
+          <ul class="protocol-list" id="protocol-list"></ul>
+        </div>
+
+        <h3 class="tips-title">Getting the most out of it</h3>
+        <ul class="privacy-list">
+          <li><strong>Keep this tab open.</strong> Nothing is counted while it's closed. When you come back after more than a minute, that gap counts as a break.</li>
+          <li><strong>Turn on notifications</strong> so a card still reaches you when you're in another tab or app.</li>
+          <li><strong>On Chrome or Edge, track the whole computer.</strong> It then knows when you actually walk away, instead of assuming you're working whenever this tab is in the background.</li>
+          <li><strong>Press Pause</strong> when you don't want time counted, such as during a call. Settings let you change the card interval, the break length and the snooze time.</li>
+        </ul>
+      </section>
+
+      <section class="wrap privacy" id="privacy" aria-labelledby="privacy-title">
+        <h2 id="privacy-title">Privacy: what it does <em>not</em> do</h2>
+        <ul class="privacy-list">
+          <li><strong>It only knows whether you're active.</strong> By default that means a mouse, keyboard, scroll or touch event happened on this page, never which key or where.</li>
+          <li><strong>No screen reading.</strong> No window titles, no screenshots, no clipboard.</li>
+          <li><strong>No network.</strong> No accounts, analytics, trackers or third-party fonts. After the page loads, nothing leaves your browser.</li>
+          <li><strong>Only a few numbers are stored</strong>, in this browser's local storage: your current stretch, today's screen time, cards done, resets taken and your settings. Clear them any time in Settings.</li>
+          <li><strong>Whole-computer tracking and notifications are opt-in.</strong> Tracking uses the browser's Idle Detection permission, which reports only whether you're active or idle and whether the screen is locked.</li>
+        </ul>
+        <p class="muted desktop-note">
+          Prefer an app? The
+          <a href="https://github.com/ankurbaner/calude-impact-lab-anti-burnout">desktop app</a> runs in your menu bar or
+          system tray on macOS, Windows and Linux. It watches activity across the whole computer and shows the same
+          cards. The 5-minute reset is adapted from
+          <a href="https://github.com/ankurbaner/calude-impact-lab-off-duty">Off-Duty</a>.
+        </p>
+      </section>
+
+      <section class="wrap contact" id="contact" aria-labelledby="contact-title">
+        <div class="contact-card">
+          <img class="contact-photo" src="./ankur-banerjee.jpg" alt="Portrait of Ankur Banerjee" width="180" height="180" loading="lazy" />
+          <div class="contact-body">
+            <p class="eyebrow">Contact us</p>
+            <h2 id="contact-title">Ankur Banerjee</h2>
+            <p class="muted">Questions, feedback, or ideas for making the workday a little more humane? Send an email.</p>
+            <a class="btn btn-primary contact-email" href="mailto:ankur.banerjee014@gmail.com?subject=Anti-Burnout">ankur.banerjee014@gmail.com</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+
+    <!-- Recovery card: non-modal, top-right, never steals focus. -->
+    <aside class="recovery-card" id="card" hidden aria-live="polite" aria-labelledby="card-heading">
+      <div class="card-eyebrow">
+        <span id="card-meta">at the screen</span>
+        <span class="chip chip-accent" id="card-chip">now</span>
+      </div>
+      <h2 id="card-heading">Rest your eyes</h2>
+      <ul class="card-steps" id="card-steps"></ul>
+      <p class="card-footnote" id="card-footnote" hidden></p>
+      <p class="card-reminder">This break is for you, not for more work.</p>
+      <div class="card-actions">
+        <button class="btn btn-primary" type="button" id="card-done">Done</button>
+        <button class="btn btn-ghost" type="button" id="card-snooze">Snooze</button>
+      </div>
+    </aside>
+
+    <!-- 5-minute reset overlay. -->
+    <div class="overlay overlay-reset" id="reset" hidden role="dialog" aria-modal="true" aria-labelledby="reset-title">
+      <div class="overlay-inner">
+        <p class="eyebrow">5-minute reset</p>
+        <div class="orb" aria-hidden="true"></div>
+        <p class="reset-clock" id="reset-clock" aria-live="off">05:00</p>
+        <div class="protocol-card">
+          <p class="protocol-icon" id="reset-icon" aria-hidden="true">🌬️</p>
+          <h2 id="reset-title">20-20-20 + physiological sigh</h2>
+          <p class="protocol-duration" id="reset-duration">1 min</p>
+          <p class="protocol-action" id="reset-action"></p>
+          <p class="protocol-why" id="reset-why"></p>
+        </div>
+        <p class="reset-done" id="reset-done" hidden>Reset complete. Go back gently.</p>
+        <div class="overlay-actions">
+          <button class="btn btn-ghost" type="button" id="reset-next">Try another activity</button>
+          <button class="btn btn-primary" type="button" id="reset-end">I'm back</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings. -->
+    <dialog class="settings" id="settings" aria-labelledby="settings-title">
+      <form method="dialog" id="settings-form">
+        <header class="settings-head">
+          <h2 id="settings-title">Settings</h2>
+          <button class="btn btn-ghost btn-sm" type="submit" value="cancel" aria-label="Close settings">Close</button>
+        </header>
+        <div class="field-grid">
+          <label>Card every
+            <span class="input-suffix"><input type="number" name="reminderMinutes" min="1" max="180" step="1" required /> active min</span>
+          </label>
+          <label>Counts as a break after
+            <span class="input-suffix"><input type="number" name="idleThresholdSeconds" min="30" max="900" step="5" required /> sec idle</span>
+          </label>
+          <label>Snooze for
+            <span class="input-suffix"><input type="number" name="snoozeMinutes" min="1" max="60" step="1" required /> min</span>
+          </label>
+        </div>
+        <label class="check"><input type="checkbox" name="notifications" /> Send a notification when a card is due and this tab is in the background</label>
+        <label class="check" id="system-idle-row"><input type="checkbox" name="systemIdle" /> Track the whole computer (Idle Detection permission)</label>
+        <footer class="settings-foot">
+          <button class="btn btn-link danger" type="button" id="reset-data">Clear all data</button>
+          <button class="btn btn-primary" type="submit" value="save">Save</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>
