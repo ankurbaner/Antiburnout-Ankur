@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { CARD_BANDS, MEETING_PRACTICES, isCardPracticeId, selectCardPractice } from "../src/cards";
+import { CARD_BANDS, isCardPracticeId, selectCardPractice } from "../src/cards";
+import { MEETING_PRACTICES } from "../src/yoga";
 import { MEETING_PROTOCOL_ORDER, PROTOCOLS, nextProtocol } from "../src/protocols";
 
 describe("web yoga reminder cards", () => {

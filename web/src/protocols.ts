@@ -5,7 +5,7 @@
  * one back to back, so a reset never turns into a checklist.
  */
 
-import { MEETING_PRACTICES } from "./cards";
+import { MEETING_PRACTICES } from "./yoga";
 
 export type ProtocolId = "water" | "posture" | "mobility" | "breathwork" | "alternate" | "desk-stretch" | "meeting-eyes" | "meeting-palming" | "meeting-equal" | "meeting-shoulders" | "meeting-ankles";
 
