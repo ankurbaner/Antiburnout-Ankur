@@ -6,13 +6,13 @@ import "@fontsource/plus-jakarta-sans/600.css";
 import "@fontsource/plus-jakarta-sans/700.css";
 import "./styles.css";
 
-import { StretchBand, bandForStretch, tick } from "../../src/tracker";
+import { tick } from "../../src/tracker";
 import { CardContent, buildCardContent } from "../../src/cardContent";
 import { ActivityMonitor, systemIdleSupported } from "./activity";
 import { playChime, unlockChime } from "./chime";
 import { crossedWorkEnd, eyeBreakDue, formatTimeOfDay, headsUpSeconds, parseTimeOfDay, snoozeAllowed, withinWorkingHours } from "./schedule";
 import { formatClock, formatIdleThreshold, formatMinutes } from "./format";
-import { PROTOCOLS, PROTOCOL_ORDER, Protocol, RESET_SECONDS, countsAsReset, nextProtocol } from "./protocols";
+import { Protocol, RESET_SECONDS, countsAsReset, nextProtocol } from "./protocols";
 import {
   applyAbsence,
   archiveDay,
@@ -32,7 +32,6 @@ const TICK_MS = 1000;
 const PERSIST_MS = 5000;
 /** Fixed daytime hour for card content, so the shared library never adds its late-evening "stop for the day" line. */
 const CARD_HOUR = 12;
-const BANDS: StretchBand[] = ["eyes", "eyes-posture", "eyes-posture-water", "eyes-posture-water-day"];
 /** Stretch lengths the "Preview a card" button cycles through, one per band. */
 const PREVIEW_STRETCHES = [25 * 60, 60 * 60, 120 * 60, 200 * 60];
 
@@ -376,12 +375,13 @@ const render = (): void => {
   setText("m-stretch", formatMinutes(t.currentStretchSeconds));
   setText(
     "m-stretch-sub",
-    `since your last reset or ${formatIdleThreshold(monitor.effectiveThreshold(config.idleThresholdSeconds))} idle`,
+    `Resets after ${formatIdleThreshold(monitor.effectiveThreshold(config.idleThresholdSeconds))} away`,
   );
   setText("m-today", formatMinutes(t.todayActiveSeconds));
+  const breaksTaken = state.cardsDoneToday + state.resetsToday;
   setText(
     "m-today-sub",
-    `${config.dailyGoalMinutes > 0 ? `of ${formatMinutes(config.dailyGoalMinutes * 60)} goal · ` : ""}${state.cardsDoneToday} card${state.cardsDoneToday === 1 ? "" : "s"} done · ${state.resetsToday} reset${state.resetsToday === 1 ? "" : "s"}`,
+    `${config.dailyGoalMinutes > 0 ? `of ${formatMinutes(config.dailyGoalMinutes * 60)} goal · ` : ""}${breaksTaken} break${breaksTaken === 1 ? "" : "s"} taken`,
   );
 
   const untilNext = Math.max(0, config.reminderIntervalSeconds - (t.currentStretchSeconds - t.lastReminderAtStretch));
@@ -392,26 +392,24 @@ const render = (): void => {
   setText("card-snooze", canSnooze ? "Snooze" : "No more snoozes");
   if (state.paused) {
     setText("m-next", "Paused");
-    setText("m-next-sub", "nothing is being counted");
   } else {
     setText("m-next", formatMinutes(Math.ceil(untilNext / 60) * 60));
-    setText("m-next-sub", "of active time from now");
   }
 
   // Status line + chip
   const chip = $("source-chip");
   let status: string;
   if (state.paused) {
-    status = "Paused. Nothing is counted until you resume.";
+    status = "Paused. Nothing is being counted.";
     chip.dataset.state = "paused";
   } else if (!working) {
     status = `Outside working hours. No cards until ${formatTimeOfDay(config.workStartMinutes)}.`;
     chip.dataset.state = "away";
   } else if (t.onBreak) {
-    status = "You're away, which counts as a break. The stretch has reset.";
+    status = "You're away. That counts as a break.";
     chip.dataset.state = "away";
   } else {
-    status = headsUp !== null ? `Next card in ${headsUp} seconds.` : "Counting active time.";
+    status = headsUp !== null ? `Next card in ${headsUp} seconds.` : "Counting your screen time.";
     chip.dataset.state = "active";
   }
   setText("status-line", status);
@@ -420,24 +418,13 @@ const render = (): void => {
   setText("pause-btn", state.paused ? "Resume" : "Pause");
   pauseBtn.setAttribute("aria-pressed", String(state.paused));
 
-  // Bands
-  const band = bandForStretch(t.currentStretchSeconds);
-  const idx = BANDS.indexOf(band);
-  $("band-track")
-    .querySelectorAll<HTMLElement>("li")
-    .forEach((li, i) => {
-      li.classList.toggle("is-current", i === idx);
-      li.classList.toggle("is-past", i < idx);
-    });
-
   // Source note
   const systemOn = monitor.source === "system";
   setText(
     "source-text",
-    systemOn
-      ? "Uses the browser's Idle Detection permission, which reports only active or idle, nothing else."
-      : "This mode only sees this tab. When you switch to another tab or app, it assumes you're still working, so time spent there still counts.",
+    systemOn ? "" : "Only this tab is watched, so time in other tabs still counts.",
   );
+  $("source-text").hidden = systemOn;
   $("enable-system").hidden = systemOn || !systemIdleSupported();
 
   document.body.classList.toggle("locked", Boolean(reset));
@@ -550,20 +537,6 @@ settingsForm.addEventListener("submit", (e) => {
 
 /* ---------- Wiring ---------- */
 
-const renderProtocolList = (): void => {
-  $("protocol-list").replaceChildren(
-    ...PROTOCOL_ORDER.map((id) => {
-      const p = PROTOCOLS[id];
-      const li = document.createElement("li");
-      li.innerHTML = `<span class="p-icon" aria-hidden="true"></span><div><strong></strong><span></span></div>`;
-      li.querySelector(".p-icon")!.textContent = p.icon;
-      li.querySelector("strong")!.textContent = `${p.title} · ${p.durationLabel}`;
-      li.querySelector("div > span")!.textContent = p.action;
-      return li;
-    }),
-  );
-};
-
 document.addEventListener("click", (e) => {
   const target = (e.target as HTMLElement).closest<HTMLElement>("[data-action]");
   if (!target) return;
@@ -650,7 +623,6 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && cardVisible) hideCard();
 });
 
-renderProtocolList();
 render();
 if (config.systemIdle) {
   void monitor.resumeSystem(config.idleThresholdSeconds).then(render);
