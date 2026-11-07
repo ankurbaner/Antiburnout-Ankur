@@ -74,6 +74,10 @@ type KV = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
 const isFiniteNumber = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
 
+/** A string that parses to a real date, or null. */
+const validIso = (v: unknown): string | null =>
+  typeof v === "string" && Number.isFinite(new Date(v).getTime()) ? v : null;
+
 const read = (store: KV, key: string): Record<string, unknown> | null => {
   try {
     const raw = store.getItem(key);
@@ -139,8 +143,8 @@ export const loadState = (store: KV, dayKey: string): WebState => {
         ? protocol
         : null,
     paused: raw.paused === true,
-    dayEndedAt: typeof raw.dayEndedAt === "string" ? raw.dayEndedAt : null,
-    lockOverrideUntil: typeof raw.lockOverrideUntil === "string" ? raw.lockOverrideUntil : null,
+    dayEndedAt: validIso(raw.dayEndedAt),
+    lockOverrideUntil: validIso(raw.lockOverrideUntil),
     savedAt: num(raw.savedAt),
   };
 };

@@ -143,6 +143,14 @@ describe("storage", () => {
     expect(next.rotation).toBe(7);
   });
 
+  it("drops unparseable timestamps", () => {
+    const s = memoryStore();
+    s.data.set("anti-burnout:state", JSON.stringify({ dayEndedAt: "not a date", lockOverrideUntil: "2026-11-08T06:00:00.000Z" }));
+    const st = loadState(s, "2026-11-07");
+    expect(st.dayEndedAt).toBeNull();
+    expect(st.lockOverrideUntil).toBe("2026-11-08T06:00:00.000Z");
+  });
+
   it("treats an absence across a reload as a break", () => {
     const st = initialWebState("2026-11-07");
     st.tracker = { ...st.tracker, currentStretchSeconds: 1500, lastReminderAtStretch: 1200 };
