@@ -9,7 +9,8 @@ export const unlockChime = (): void => {
   }
 };
 
-export const playChime = (): void => {
+export const playChime = (enabled = true, meeting = false): void => {
+  if (!enabled || meeting) return;
   if (!audio || audio.state !== "running") return;
   try {
     const now = audio.currentTime;

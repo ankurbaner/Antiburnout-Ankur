@@ -5,21 +5,22 @@ import html from "../index.html?raw";
 const document = new DOMParser().parseFromString(html, "text/html");
 
 describe("simplified page copy", () => {
-  it("replaces Smile with desk yoga immediately after Today", () => {
-    expect(document.querySelector("#today + section")?.id).toBe("yoga");
+  it("keeps desk yoga immediately after the hero", () => {
+    expect(document.querySelector(".hero + section")?.id).toBe("yoga");
     expect(document.querySelector('.nav a[href="#yoga"]')?.textContent).toBe("Yoga");
     expect(document.querySelector("#smile, .smile-scene, #smile-practices")).toBeNull();
     expect(document.getElementById("yoga-title")?.textContent).toBe("Desk yoga");
     expect(document.querySelector(".yoga-safety")?.textContent).toBe("Move gently and stop if anything hurts. If you have a health condition, check with your doctor first.");
     expect(html).not.toMatch(/Brahma Kumaris|Art of Living|Smile break|Quick ways to feel lighter/);
   });
-  it("keeps the three metrics and live-update targets with plain defaults", () => {
-    expect([...document.querySelectorAll(".metric-label")].map((el) => el.textContent)).toEqual([
-      "Since your last break", "Screen time today", "Next reminder in",
-    ]);
-    expect(document.getElementById("m-stretch-sub")?.textContent).toBe("Resets after 1 min away");
-    expect(document.getElementById("m-today-sub")?.textContent).toBe("0 guided breaks");
-    expect(document.getElementById("m-next-sub")?.textContent).toBe("of screen time");
+  it("replaces Today and metrics with small reminder controls", () => {
+    expect(document.querySelector("#today, .metrics, .history, #status-line")).toBeNull();
+    expect(document.querySelector('.nav a[href="#today"]')).toBeNull();
+    expect(document.querySelector("#pause-btn")?.textContent).toBe("Pause");
+    expect(document.querySelector("#meeting-btn")?.getAttribute("aria-pressed")).toBe("false");
+    expect(document.querySelector('[name="dailyGoalMinutes"]')).toBeNull();
+    expect(document.querySelector('[name="idleThresholdSeconds"]')).toBeNull();
+    expect(document.querySelector("h1")?.textContent).toBe("Short breaks for your eyes, back and mind.");
   });
 
   it("has three short steps, three tips and three privacy bullets without removed sections", () => {
@@ -30,7 +31,8 @@ describe("simplified page copy", () => {
     expect(document.querySelector(".tips-title")?.textContent).toBe("Tips");
     expect(document.querySelector(".bands, .reset-preview, #protocol-list")).toBeNull();
     expect(document.querySelector("#reset #reset-action")).not.toBeNull();
-    expect(document.getElementById("history-goal-note")?.textContent).toBe("Green bars = days you hit your goal.");
+    expect(document.querySelector("#privacy")?.textContent).toContain("No activity history is kept.");
+    expect(document.querySelector("#how")?.textContent).toContain("In a meeting");
   });
 
   it("keeps every navigation link pointing at an existing section", () => {

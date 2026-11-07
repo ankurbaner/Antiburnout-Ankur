@@ -7,16 +7,16 @@ import "@fontsource/plus-jakarta-sans/700.css";
 import "./styles.css";
 
 import { tick } from "../../src/tracker";
-import { CardContent, buildCardContent } from "../../src/cardContent";
+import { CardPractice, createPreviewSelector, needsWater, selectCardPractice } from "./cards";
 import { ActivityMonitor, systemIdleSupported } from "./activity";
 import { playChime, unlockChime } from "./chime";
-import { initYoga } from "./yogaUI";
+import { initPracticeGroups, initYoga } from "./yogaUI";
+import { MEDITATION_PRACTICES } from "./meditation";
 import { crossedWorkEnd, eyeBreakDue, formatTimeOfDay, headsUpSeconds, parseTimeOfDay, snoozeAllowed, withinWorkingHours } from "./schedule";
-import { formatClock, formatIdleThreshold, formatMinutes } from "./format";
-import { Protocol, RESET_SECONDS, countsAsReset, nextProtocol } from "./protocols";
+import { formatClock, formatIdleThreshold } from "./format";
+import { MEETING_PROTOCOL_ORDER, PROTOCOL_ORDER, Protocol, RESET_SECONDS, countsAsReset, nextProtocol } from "./protocols";
 import {
   applyAbsence,
-  archiveDay,
   WebConfig,
 
   WebState,
@@ -31,10 +31,8 @@ import {
 const TICK_MS = 1000;
 /** How often the 1-second loop writes to localStorage; user actions save immediately. */
 const PERSIST_MS = 5000;
-/** Fixed daytime hour for card content, so the shared library never adds its late-evening "stop for the day" line. */
-const CARD_HOUR = 12;
 /** Stretch lengths the "Preview a card" button cycles through, one per band. */
-const PREVIEW_STRETCHES = [25 * 60, 60 * 60, 120 * 60, 200 * 60];
+const PREVIEW_STRETCHES = [25 * 60, 60 * 60, 120 * 60];
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
   const el = document.getElementById(id);
@@ -50,14 +48,18 @@ const store = window.localStorage;
 let config: WebConfig = loadConfig(store);
 let state: WebState = applyAbsence(loadState(store, dayKeyFor(new Date())), Date.now(), config.idleThresholdSeconds);
 const monitor = new ActivityMonitor();
+const chime = (): void => playChime(config.chime, state.meetingMode);
+const resetPool = (): typeof PROTOCOL_ORDER => state.meetingMode ? MEETING_PROTOCOL_ORDER : PROTOCOL_ORDER;
 
 let lastTickMs = Date.now();
 /** Whether the previous step counted time; the first counting step credits nothing. */
 let wasCounting = false;
 let previewIndex = 0;
+const selectPreviewPractice = createPreviewSelector();
 let cardVisible = false;
 /** Previews don't count as done and don't move the schedule. */
 let cardIsPreview = false;
+let cardStretch = 0;
 let reset: { startedAt: number; endsAt: number; protocol: Protocol; finished: boolean } | null = null;
 let eyeBreakEndsAt: number | null = null;
 
@@ -72,7 +74,7 @@ const hideEyeBreak = (): void => {
 const showNotice = (message: string): void => {
   setText("day-notice-text", message);
   $("day-notice").hidden = false;
-  if (config.chime) playChime();
+  chime();
   persist();
 };
 
@@ -90,18 +92,10 @@ const persist = (): void => {
 const rollDay = (now: Date): void => {
   const today = dayKeyFor(now);
   if (state.tracker.dayKey === today) return;
-  if (state.tracker.dayKey < today) {
-    state.history = archiveDay(state.history, {
-      day: state.tracker.dayKey,
-      activeSeconds: state.tracker.todayActiveSeconds,
-      cardsDone: state.cardsDoneToday,
-      resets: state.resetsToday,
-    }, today);
-  }
-  state.history = state.history.filter((entry) => entry.day < today);
+  state.meetingMode = false;
+  if (cardVisible) showCard(cardStretch, cardIsPreview, false);
   state.cardsDoneToday = 0;
   state.resetsToday = 0;
-  state.goalNoticeDay = "";
   state.wrapUpNoticeDay = "";
   $("day-notice").hidden = true;
   state.tracker = { ...state.tracker, todayActiveSeconds: 0, dayKey: today };
@@ -109,53 +103,46 @@ const rollDay = (now: Date): void => {
 
 /* ---------- Recovery card ---------- */
 
-const renderCard = (content: CardContent, preview: boolean): void => {
+const renderCard = (practice: CardPractice, preview: boolean, stretch = state.tracker.currentStretchSeconds): void => {
   hideEyeBreak();
-  setText("card-meta", `${content.stretchMinutes} min at the screen`);
-  setText("card-chip", preview ? "Preview" : `${formatMinutes(content.todayMinutes * 60)} today`);
-  setText("card-heading", content.heading);
-  const list = $("card-steps");
-  list.replaceChildren(
-    ...content.steps.map((step) => {
-      const li = document.createElement("li");
-      const icon = document.createElement("span");
-      icon.className = "icon";
-      icon.setAttribute("aria-hidden", "true");
-      icon.textContent = step.icon;
-      const text = document.createElement("span");
-      text.textContent = step.text;
-      li.append(icon, text);
-      return li;
-    }),
-  );
-  const foot = $("card-footnote");
-  foot.hidden = !content.footnote;
-  foot.textContent = content.footnote ?? "";
+  cardStretch = stretch;
+  setText("card-meta", "A quiet yoga break");
+  setText("card-chip", preview ? "Preview" : "1 min");
+  setText("card-heading", `${practice.title} · ${practice.english}`);
+  const li = document.createElement("li");
+  li.textContent = practice.instruction;
+  $("card-steps").replaceChildren(li);
+  const footnote = state.meetingMode ? "Meeting mode: nothing anyone will notice"
+    : needsWater(stretch) ? "And drink a glass of water." : "Move gently and stop if anything hurts.";
+  setText("card-footnote", footnote);
+  $("card-footnote").hidden = false;
   $("card").hidden = false;
   cardVisible = true;
   cardIsPreview = preview;
   render();
 };
 
+const showCard = (stretch: number, preview: boolean, advance = true): void => {
+  const practice = preview
+    ? selectPreviewPractice(stretch, state.meetingMode, state.lastPracticeId, state.rotation + previewIndex)
+    : selectCardPractice(stretch, state.meetingMode, state.lastPracticeId, state.rotation);
+  if (!preview) {
+    state.lastPracticeId = practice.id;
+    if (advance) state.rotation += 1;
+  }
+  renderCard(practice, preview, stretch);
+};
+
 const showDueCard = (): void => {
-  const content = buildCardContent(state.tracker.currentStretchSeconds, state.tracker.todayActiveSeconds, {
-    rotation: state.rotation,
-    hourOfDay: CARD_HOUR,
-  });
-  state.rotation += 1;
   state.lastEyeBreakAtStretch = state.tracker.currentStretchSeconds;
-  renderCard(content, false);
-  if (config.chime) playChime();
+  showCard(state.tracker.currentStretchSeconds, false);
+  chime();
 };
 
 const previewCard = (): void => {
   const stretch = PREVIEW_STRETCHES[previewIndex % PREVIEW_STRETCHES.length];
   previewIndex += 1;
-  const content = buildCardContent(stretch, Math.max(stretch, state.tracker.todayActiveSeconds), {
-    rotation: state.rotation + previewIndex,
-    hourOfDay: CARD_HOUR,
-  });
-  renderCard(content, true);
+  showCard(stretch, true);
 };
 
 const hideCard = (): void => {
@@ -187,7 +174,7 @@ const startReset = (): void => {
   focusBeforeReset = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   hideCard();
   hideEyeBreak();
-  const protocol = nextProtocol(state.lastProtocolId);
+  const protocol = nextProtocol(state.lastProtocolId, resetPool());
   state.lastProtocolId = protocol.id;
   const startedAt = Date.now();
   reset = { startedAt, endsAt: startedAt + RESET_SECONDS * 1000, protocol, finished: false };
@@ -205,7 +192,7 @@ const startReset = (): void => {
 
 const nextResetActivity = (): void => {
   if (!reset) return;
-  const protocol = nextProtocol(reset.protocol.id);
+  const protocol = nextProtocol(reset.protocol.id, resetPool());
   reset.protocol = protocol;
   state.lastProtocolId = protocol.id;
   renderProtocol(protocol);
@@ -243,61 +230,6 @@ const updateReset = (now: number): void => {
 };
 
 /* ---------- Main loop ---------- */
-
-const renderHistory = (): void => {
-  const now = new Date();
-  const days = Array.from({ length: 7 }, (_, i) => {
-    const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6 + i);
-    const day = dayKeyFor(date);
-    const entry = i === 6
-      ? { day, activeSeconds: state.tracker.todayActiveSeconds, cardsDone: state.cardsDoneToday, resets: state.resetsToday }
-      : state.history.find((item) => item.day === day);
-    return { entry, day, label: i === 6 ? "Today" : date.toLocaleDateString("en", { weekday: "short" }) };
-  });
-  const maxSeconds = Math.max(1, ...days.map(({ entry }) => entry?.activeSeconds ?? 0));
-  const chart = $("history-chart");
-  const signature = JSON.stringify([days.slice(0, 6), days[6].day, maxSeconds, config.dailyGoalMinutes]);
-  const updateColumn = (li: HTMLElement, { entry, label }: typeof days[number]): void => {
-    const hasData = entry && (entry.activeSeconds > 0 || entry.cardsDone > 0 || entry.resets > 0);
-    const description = hasData
-      ? `${label}: ${formatMinutes(entry.activeSeconds)} active, ${entry.cardsDone} cards done, ${entry.resets} resets`
-      : `${label}: no activity recorded`;
-    li.title = description;
-    li.setAttribute("aria-label", description);
-    const bar = li.querySelector<HTMLElement>(".history-bar")!;
-    bar.style.height = `${((entry?.activeSeconds ?? 0) / maxSeconds) * 100}%`;
-    const metGoal = config.dailyGoalMinutes > 0 && (entry?.activeSeconds ?? 0) >= config.dailyGoalMinutes * 60;
-    li.classList.toggle("goal-met", metGoal);
-    if (metGoal) {
-      li.title += " · Goal met";
-      li.setAttribute("aria-label", li.title);
-    }
-    const active = li.querySelector<HTMLElement>(".history-time")!;
-    active.textContent = hasData ? formatMinutes(entry.activeSeconds) : "–";
-  };
-  if (chart.dataset.signature !== signature) {
-    chart.dataset.signature = signature;
-    chart.replaceChildren(...days.map((day) => {
-      const li = document.createElement("li");
-      li.dataset.day = day.day;
-      const track = document.createElement("div");
-      track.className = "history-track";
-      const bar = document.createElement("div");
-      bar.className = "history-bar";
-      track.append(bar);
-      const dayLabel = document.createElement("span");
-      dayLabel.textContent = day.label;
-      const active = document.createElement("span");
-      active.className = "history-time";
-      li.append(track, dayLabel, active);
-      updateColumn(li, day);
-      return li;
-    }));
-  } else {
-    updateColumn(chart.lastElementChild as HTMLElement, days[6]);
-  }
-  $("history-goal-note").hidden = config.dailyGoalMinutes <= 0;
-};
 
 const step = (): void => {
   const nowMs = Date.now();
@@ -340,7 +272,7 @@ const step = (): void => {
         eyeBreakEndsAt = nowMs + 20_000;
         setText("eye-break-countdown", "20 s");
         $("eye-break").hidden = false;
-        if (config.chime) playChime();
+        chime();
       }
     }
   }
@@ -351,10 +283,6 @@ const step = (): void => {
   }
   const today = dayKeyFor(now);
   let notice: string | null = null;
-  if (config.dailyGoalMinutes > 0 && state.tracker.todayActiveSeconds >= config.dailyGoalMinutes * 60 && state.goalNoticeDay !== today) {
-    state.goalNoticeDay = today;
-    notice = `You've reached today's ${formatMinutes(config.dailyGoalMinutes * 60)} goal. A good time to start wrapping up.`;
-  }
   if (config.workHours && state.wrapUpNoticeDay !== today && crossedWorkEnd(previousTickMs, nowMs, config.workEndMinutes, config.workStartMinutes)) {
     state.wrapUpNoticeDay = today;
     notice = `It's ${formatTimeOfDay(config.workEndMinutes)}, the end of your working hours. Time to wrap up.`;
@@ -367,23 +295,9 @@ const step = (): void => {
 
 const render = (): void => {
   const t = state.tracker;
-  renderHistory();
   const working = workingNow();
   if (!working && cardVisible && !cardIsPreview) hideCard();
   if (state.paused || reset || !working || !config.eyeBreaks) hideEyeBreak();
-
-  // Metrics
-  setText("m-stretch", formatMinutes(t.currentStretchSeconds));
-  setText(
-    "m-stretch-sub",
-    `Resets after ${formatIdleThreshold(monitor.effectiveThreshold(config.idleThresholdSeconds))} away`,
-  );
-  setText("m-today", formatMinutes(t.todayActiveSeconds));
-  const breaksTaken = state.cardsDoneToday + state.resetsToday;
-  setText(
-    "m-today-sub",
-    `${config.dailyGoalMinutes > 0 ? `of ${formatMinutes(config.dailyGoalMinutes * 60)} goal · ` : ""}${breaksTaken} guided break${breaksTaken === 1 ? "" : "s"}`,
-  );
 
   const untilNext = Math.max(0, config.reminderIntervalSeconds - (t.currentStretchSeconds - t.lastReminderAtStretch));
   const headsUp = working && !state.paused && !reset && !cardVisible && eyeBreakEndsAt === null && !t.onBreak
@@ -391,48 +305,24 @@ const render = (): void => {
   const canSnooze = cardIsPreview || snoozeAllowed(state.snoozesInARow, config.maxSnoozes);
   $<HTMLButtonElement>("card-snooze").disabled = !canSnooze;
   setText("card-snooze", canSnooze ? "Snooze" : "No more snoozes");
-  if (state.paused) {
-    setText("m-next", "Paused");
-    setText("m-next-sub", "Press Resume to continue");
-  } else {
-    setText("m-next", formatMinutes(Math.ceil(untilNext / 60) * 60));
-    setText("m-next-sub", "of screen time");
-  }
-
-  // Status line + chip
   const chip = $("source-chip");
-  let status: string;
-  if (state.paused) {
-    status = "Paused. Nothing is being counted.";
-    chip.dataset.state = "paused";
-  } else if (!working) {
-    status = `Outside working hours. No cards until ${formatTimeOfDay(config.workStartMinutes)}.`;
-    chip.dataset.state = "away";
-  } else if (t.onBreak) {
-    status = "You're away. That counts as a break.";
-    chip.dataset.state = "away";
-  } else {
-    status = headsUp !== null ? `Next card in ${headsUp} seconds.` : "Counting your screen time.";
-    chip.dataset.state = "active";
-  }
-  setText("status-line", status);
+  chip.dataset.state = state.paused ? "paused" : t.onBreak ? "away" : "active";
   setText("source-chip", monitor.source === "system" ? "Tracking: whole computer" : "Tracking: this tab only");
   const pauseBtn = $("pause-btn");
   setText("pause-btn", state.paused ? "Resume" : "Pause");
   pauseBtn.setAttribute("aria-pressed", String(state.paused));
 
-  // Source note
   const systemOn = monitor.source === "system";
-  setText(
-    "source-text",
-    systemOn ? "" : "Only this tab is watched, so time in other tabs still counts.",
-  );
-  $("source-text").hidden = systemOn;
+  $("source-text").hidden = false;
+  setText("source-text", systemOn
+    ? `Away for ${formatIdleThreshold(monitor.effectiveThreshold(config.idleThresholdSeconds))} counts as a break.`
+    : "This tab cannot see activity elsewhere. Track the whole computer to detect when you step away.");
+  $("meeting-btn").setAttribute("aria-pressed", String(state.meetingMode));
   $("enable-system").hidden = systemOn || !systemIdleSupported();
 
   document.body.classList.toggle("locked", Boolean(reset));
 
-  // Tab title doubles as the menu-bar counter from the desktop app.
+  // Keep alerts visible when this tab is in the background.
   document.title = state.paused
     ? "Paused · Anti-Burnout"
     : !reset && cardVisible && !cardIsPreview
@@ -441,7 +331,7 @@ const render = (): void => {
         ? "Eye break · Anti-Burnout"
         : headsUp !== null
           ? `Card in ${headsUp}s · Anti-Burnout`
-          : `${formatMinutes(t.currentStretchSeconds)} · Anti-Burnout`;
+          : "Anti-Burnout";
 };
 
 /* ---------- Settings ---------- */
@@ -452,7 +342,6 @@ const settingsForm = $<HTMLFormElement>("settings-form");
 const openSettings = (): void => {
   const f = settingsForm.elements;
   (f.namedItem("reminderMinutes") as HTMLInputElement).value = String(Math.round(config.reminderIntervalSeconds / 60));
-  (f.namedItem("idleThresholdSeconds") as HTMLInputElement).value = String(config.idleThresholdSeconds);
   (f.namedItem("snoozeMinutes") as HTMLInputElement).value = String(config.snoozeMinutes);
   (f.namedItem("maxSnoozes") as HTMLInputElement).value = String(config.maxSnoozes);
   (f.namedItem("chime") as HTMLInputElement).checked = config.chime;
@@ -460,7 +349,7 @@ const openSettings = (): void => {
   for (const name of ["eyeBreaks", "workHours"] as const) {
     (f.namedItem(name) as HTMLInputElement).checked = config[name];
   }
-  for (const name of ["eyeBreakMinutes", "dailyGoalMinutes"] as const) {
+  for (const name of ["eyeBreakMinutes"] as const) {
     (f.namedItem(name) as HTMLInputElement).value = String(config[name]);
   }
   (f.namedItem("workStart") as HTMLInputElement).value = formatTimeOfDay(config.workStartMinutes);
@@ -497,15 +386,14 @@ settingsForm.addEventListener("submit", (e) => {
 
   const f = settingsForm.elements;
   const val = (name: string): HTMLInputElement => f.namedItem(name) as HTMLInputElement;
-  const idleThresholdSeconds = clampInt(val("idleThresholdSeconds").value, 30, 900, 60);
   const wantsSystem = val("systemIdle").checked;
   const systemOn = monitor.source === "system";
-  const systemChange = wantsSystem !== systemOn || (wantsSystem && idleThresholdSeconds !== config.idleThresholdSeconds);
+  const systemChange = wantsSystem !== systemOn;
 
   let systemResult: Promise<boolean> = Promise.resolve(systemOn);
   if (systemChange) {
     if (wantsSystem) {
-      systemResult = monitor.enableSystem(idleThresholdSeconds);
+      systemResult = monitor.enableSystem(config.idleThresholdSeconds);
     } else {
       monitor.disableSystem();
       systemResult = Promise.resolve(false);
@@ -515,14 +403,12 @@ settingsForm.addEventListener("submit", (e) => {
   config = {
     ...config,
     reminderIntervalSeconds: clampInt(val("reminderMinutes").value, 1, 180, 20) * 60,
-    idleThresholdSeconds,
     snoozeMinutes: clampInt(val("snoozeMinutes").value, 1, 60, 5),
     maxSnoozes: clampInt(val("maxSnoozes").value, 0, 10, 2),
     chime: val("chime").checked,
     headsUp: val("headsUp").checked,
     eyeBreaks: val("eyeBreaks").checked,
     eyeBreakMinutes: clampInt(val("eyeBreakMinutes").value, 5, 60, 10),
-    dailyGoalMinutes: clampInt(val("dailyGoalMinutes").value, 0, 960, 0),
     workHours: val("workHours").checked,
     workStartMinutes: parseTimeOfDay(val("workStart").value, 540),
     workEndMinutes: parseTimeOfDay(val("workEnd").value, 1080),
@@ -587,6 +473,12 @@ $("pause-btn").addEventListener("click", () => {
   persist();
   render();
 });
+$("meeting-btn").addEventListener("click", () => {
+  state.meetingMode = !state.meetingMode;
+  if (cardVisible) showCard(cardStretch, cardIsPreview, false);
+  persist();
+  render();
+});
 $("open-settings").addEventListener("click", openSettings);
 $("enable-system").addEventListener("click", () => void setSystemIdle(true));
 $("reset-data").addEventListener("click", () => {
@@ -627,6 +519,7 @@ document.addEventListener("keydown", (e) => {
 });
 
 initYoga();
+initPracticeGroups("meditation-practices", [{ id: "meditation", title: "Choose a quiet moment", practices: MEDITATION_PRACTICES }]);
 render();
 if (config.systemIdle) {
   void monitor.resumeSystem(config.idleThresholdSeconds).then(render);

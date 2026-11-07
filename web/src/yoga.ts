@@ -1,3 +1,18 @@
+export interface CardPractice {
+  id: string;
+  title: string;
+  english: string;
+  instruction: string;
+}
+
+export const MEETING_PRACTICES: CardPractice[] = [
+  { id: "meeting-eyes", title: "Netra Sanchalana", english: "Gentle eye movements", instruction: "Keep your head still and slowly look left, right, up and down without straining." },
+  { id: "meeting-palming", title: "Netra Vishrama", english: "Palming · rest your eyes", instruction: "Close your eyes and lightly cup clean palms over them without pressing on your eyes." },
+  { id: "meeting-equal", title: "Sama Vritti", english: "Equal breathing", instruction: "Breathe quietly in for 4 counts and out for 4, using a shorter equal count if needed, without holding your breath." },
+  { id: "meeting-shoulders", title: "Skandha Shithilikarana", english: "Shoulder release", instruction: "Keep your hands resting and gently let your shoulders drop away from your ears as you breathe out." },
+  { id: "meeting-ankles", title: "Gulpha Chakra", english: "Ankle circles under the desk", instruction: "With your feet under the desk, lift one foot slightly and make small ankle circles, then switch feet." },
+];
+
 export interface YogaPractice {
   id: string;
   title: string;

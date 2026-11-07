@@ -5,7 +5,9 @@
  * one back to back, so a reset never turns into a checklist.
  */
 
-export type ProtocolId = "water" | "posture" | "mobility" | "breathwork" | "alternate" | "desk-stretch";
+import { MEETING_PRACTICES } from "./yoga";
+
+export type ProtocolId = "water" | "posture" | "mobility" | "breathwork" | "alternate" | "desk-stretch" | "meeting-eyes" | "meeting-palming" | "meeting-equal" | "meeting-shoulders" | "meeting-ankles";
 
 export interface Protocol {
   id: ProtocolId;
@@ -16,7 +18,15 @@ export interface Protocol {
   why: string;
 }
 
+export const MEETING_PROTOCOL_ORDER: ProtocolId[] = ["meeting-eyes", "meeting-palming", "meeting-equal", "meeting-shoulders", "meeting-ankles"];
+
+const meetingProtocols = Object.fromEntries(MEETING_PRACTICES.map((practice) => [practice.id, {
+  id: practice.id, icon: "🌿", title: `${practice.title} · ${practice.english}`, durationLabel: "1 min",
+  action: practice.instruction, why: "Meeting mode: nothing anyone will notice",
+}])) as Record<typeof MEETING_PROTOCOL_ORDER[number], Protocol>;
+
 export const PROTOCOLS: Record<ProtocolId, Protocol> = {
+  ...meetingProtocols,
   water: {
     id: "water",
     icon: "💧",
@@ -68,6 +78,9 @@ export const PROTOCOLS: Record<ProtocolId, Protocol> = {
 };
 
 export const PROTOCOL_ORDER: ProtocolId[] = ["breathwork", "water", "posture", "mobility", "alternate", "desk-stretch"];
+
+export const isProtocolId = (value: unknown): value is ProtocolId =>
+  typeof value === "string" && Object.prototype.hasOwnProperty.call(PROTOCOLS, value);
 
 /** Length of a Bio-Reset, in seconds. */
 export const RESET_SECONDS = 5 * 60;
