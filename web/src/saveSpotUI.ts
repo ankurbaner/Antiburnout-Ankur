@@ -18,12 +18,14 @@ export const initSaveSpot = (store: LocalStore, chime: () => void) => {
   };
   const open = (manual = false, date = new Date()): void => {
     const day = dayKeyFor(date);
-    spot.promptDay = day;
-    saveSpot(store, spot);
+    if (!manual) {
+      spot.promptDay = day;
+      saveSpot(store, spot);
+    }
     const intention = loadIntention(store, day).text;
     meant.textContent = intention ? `Today you meant to: ${intention}` : "";
     meant.hidden = !intention;
-    input.value = spot.savedDay === day ? spot.text : "";
+    if (card.hidden || card.dataset.day !== day) input.value = spot.savedDay === day ? spot.text : "";
     input.setCustomValidity("");
     card.dataset.day = day;
     card.hidden = false;
@@ -56,7 +58,7 @@ export const initSaveSpot = (store: LocalStore, chime: () => void) => {
       refresh(date);
       const day = dayKeyFor(date);
       if (!card.hidden && card.dataset.day !== day) card.hidden = true;
-      if (canPrompt && card.hidden && spotDue(day, date.getHours(), date.getMinutes(), config.endOfDay, config.endOfDayTime, spot)) open(false, date);
+      if (canPrompt && spotDue(day, date.getHours(), date.getMinutes(), config.endOfDay, config.endOfDayTime, spot)) open(false, date);
     },
   };
 };

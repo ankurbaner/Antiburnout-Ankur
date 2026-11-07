@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, expect, it, vi } from "vitest";
 import { initSaveSpot } from "../src/saveSpotUI";
+import { loadSpot } from "../src/saveSpot";
 
 const setup = () => {
   vi.useFakeTimers();
@@ -23,4 +24,39 @@ it("scrolls an automatic card into view without moving keyboard focus", () => {
   expect(card.scrollIntoView).toHaveBeenCalledWith({ block: "center", behavior: "instant" });
   expect(document.activeElement).toBe(previousFocus);
   expect(chime).toHaveBeenCalledOnce();
+});
+
+it("does not suppress the scheduled prompt after an unfinished manual form or reload", () => {
+  const { store, card, chime, ui } = setup();
+  ui.open();
+  expect(loadSpot(store).promptDay).toBe("");
+  ui.reload();
+  ui.update(new Date(), { endOfDay: true, endOfDayTime: "18:00" }, true);
+  expect(card.hidden).toBe(false);
+  expect(chime).toHaveBeenCalledOnce();
+  expect(loadSpot(store).promptDay).toBe("2026-11-07");
+});
+
+it("brings an unfinished manual form back into view when due without losing its draft", () => {
+  const { card, chime, ui } = setup();
+  ui.open();
+  const input = card.querySelector("textarea")!;
+  input.value = "Keep this unfinished draft";
+  ui.update(new Date(), { endOfDay: true, endOfDayTime: "18:00" }, true);
+  expect(input.value).toBe("Keep this unfinished draft");
+  expect(card.scrollIntoView).toHaveBeenCalledTimes(2);
+  expect(chime).toHaveBeenCalledOnce();
+});
+
+it.each(["save", "skip"])("suppresses the scheduled prompt after an explicit manual %s", (action) => {
+  const { card, chime, ui } = setup();
+  ui.open();
+  if (action === "save") {
+    card.querySelector("textarea")!.value = "Read the draft";
+    card.querySelector("form")!.dispatchEvent(new Event("submit", { cancelable: true }));
+  } else card.querySelector<HTMLButtonElement>("#spot-skip")!.click();
+  ui.reload();
+  ui.update(new Date(), { endOfDay: true, endOfDayTime: "18:00" }, true);
+  expect(card.hidden).toBe(true);
+  expect(chime).not.toHaveBeenCalled();
 });
