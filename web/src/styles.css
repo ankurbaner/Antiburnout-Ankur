@@ -154,6 +154,7 @@ section h2 { font-size: clamp(30px, 3.6vw, 42px); }
 .source-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .source-actions:not(:has(button:not([hidden]))), #notification-status:empty { display: none; }
 .source-note:not(:has(button:not([hidden]))):has(#notification-status:empty) { display: none; }
+#settings-notify-status { font-size: 14px; margin: -4px 0 4px; }
 #notification-status { flex-basis: 100%; padding: 12px 14px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); color: var(--ink); max-width: 760px; }
 
 /* How */

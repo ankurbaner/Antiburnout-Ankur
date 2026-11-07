@@ -394,6 +394,7 @@ const openSettings = (): void => {
   (f.namedItem("systemIdle") as HTMLInputElement).checked = monitor.source === "system";
   $("system-idle-row").hidden = !systemIdleSupported();
   setText("test-notify", "Send a test notification");
+  $("settings-notify-status").hidden = true;
   settingsDialog.showModal();
 };
 
@@ -445,6 +446,31 @@ const setSystemIdle = async (on: boolean): Promise<void> => {
   saveConfig(store, config);
   render();
 };
+
+/** Ask for permission as soon as the box is ticked, and say right there if the browser refuses. */
+const notifyCheckbox = settingsForm.elements.namedItem("notifications") as HTMLInputElement;
+notifyCheckbox.addEventListener("change", async () => {
+  const hint = $("settings-notify-status");
+  if (!notifyCheckbox.checked) {
+    hint.hidden = true;
+    return;
+  }
+  let permission: NotificationPermission | "unsupported" = "unsupported";
+  if (notificationsSupported) {
+    permission =
+      Notification.permission === "default" ? await Notification.requestPermission() : Notification.permission;
+  }
+  if (permission !== "granted") notifyCheckbox.checked = false;
+  hint.textContent =
+    permission === "granted"
+      ? "Allowed. Click Save to turn notifications on."
+      : permission === "denied"
+        ? "Your browser is blocking notifications for this site, so this can't be turned on yet. Click the icon at the left of the address bar, set Notifications to Allow, reload the page, then tick this again."
+        : permission === "default"
+          ? "Notification permission wasn't given. If no prompt appeared, look for a bell icon in the address bar, then tick this again."
+          : "This browser doesn't support notifications.";
+  hint.hidden = false;
+});
 
 /**
  * Save from the Save button's submit event so permission prompts
