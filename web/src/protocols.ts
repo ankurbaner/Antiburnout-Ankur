@@ -5,9 +5,10 @@
  * one back to back, so a reset never turns into a checklist.
  */
 
-import { MEETING_PRACTICES } from "./yoga";
+import { GENTLE_PRACTICES, MEETING_PRACTICES } from "./yoga";
+import { DEFAULT_GENTLE, GentleSettings, isAllowed } from "./gentle";
 
-export type ProtocolId = "water" | "posture" | "mobility" | "breathwork" | "alternate" | "desk-stretch" | "meeting-eyes" | "meeting-palming" | "meeting-equal" | "meeting-shoulders" | "meeting-ankles";
+export type ProtocolId = "water" | "posture" | "mobility" | "breathwork" | "alternate" | "desk-stretch" | "meeting-eyes" | "meeting-palming" | "meeting-equal" | "meeting-shoulders" | "meeting-ankles" | "gentle-eyes" | "gentle-shoulders";
 
 export interface Protocol {
   id: ProtocolId;
@@ -27,6 +28,8 @@ const meetingProtocols = Object.fromEntries(MEETING_PRACTICES.map((practice) => 
 
 export const PROTOCOLS: Record<ProtocolId, Protocol> = {
   ...meetingProtocols,
+  "gentle-eyes": { id: "gentle-eyes", icon: "🌿", title: GENTLE_PRACTICES[0].english, durationLabel: "1 min", action: GENTLE_PRACTICES[0].instruction, why: "A quiet alternative for your Gentle settings. Stop if anything feels uncomfortable." },
+  "gentle-shoulders": { id: "gentle-shoulders", icon: "🌿", title: GENTLE_PRACTICES[1].english, durationLabel: "1 min", action: GENTLE_PRACTICES[1].instruction, why: "A quiet alternative for your Gentle settings. Stop if anything feels uncomfortable." },
   water: {
     id: "water",
     icon: "💧",
@@ -78,6 +81,11 @@ export const PROTOCOLS: Record<ProtocolId, Protocol> = {
 };
 
 export const PROTOCOL_ORDER: ProtocolId[] = ["breathwork", "water", "posture", "mobility", "alternate", "desk-stretch"];
+
+export const allowedProtocolOrder = (meeting: boolean, gentle: GentleSettings = DEFAULT_GENTLE): ProtocolId[] => {
+  const pool = (meeting ? MEETING_PROTOCOL_ORDER : PROTOCOL_ORDER).filter((id) => isAllowed({ id }, gentle));
+  return pool.length >= 2 ? pool : [...pool, "gentle-eyes", "gentle-shoulders"];
+};
 
 export const isProtocolId = (value: unknown): value is ProtocolId =>
   typeof value === "string" && Object.prototype.hasOwnProperty.call(PROTOCOLS, value);

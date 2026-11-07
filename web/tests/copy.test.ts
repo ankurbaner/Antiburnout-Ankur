@@ -29,11 +29,12 @@ describe("simplified page copy", () => {
     expect(document.querySelector("h1")?.textContent).toBe("Short breaks for your eyes, back and mind.");
   });
 
-  it("keeps only reminder and reset options and retained navigation", () => {
+  it("keeps reminder, reset and Gentle options and retained navigation", () => {
     expect(document.querySelector("#how, #privacy, .tips-title, #eye-break, #day-notice")).toBeNull();
     expect([...document.querySelectorAll(".nav a")].map((link) => link.textContent)).toEqual(["Breathe", "Yoga", "Meditation", "Contact"]);
     expect([...document.querySelectorAll("#settings input")].map((input) => input.getAttribute("name"))).toEqual([
       "reminderMinutes", "snoozeMinutes", "maxSnoozes", "chime", "meetingMode",
+      "gentle-back", "gentle-neck", "gentle-wrists", "gentle-pregnancy",
     ]);
     expect(document.querySelector("#settings")?.textContent).toContain("Quiet practices only (for meetings)");
     expect(document.querySelector("#reset #reset-action")).not.toBeNull();

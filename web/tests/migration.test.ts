@@ -1,5 +1,6 @@
 import { expect, it } from "vitest";
 import { clearAll, initialWebState, loadConfig, loadState, saveConfig, saveState } from "../src/storage";
+import { DEFAULT_GENTLE } from "../src/gentle";
 
 const store = () => {
   const data = new Map<string, string>();
@@ -30,7 +31,7 @@ it("drops retired config and paused state without losing reminders or quiet mode
     workHours: true, workStartMinutes: 540, workEndMinutes: 1080,
   }));
   const config = loadConfig(storage);
-  expect(config).toEqual({ idleThresholdSeconds: 60, reminderIntervalSeconds: 60, snoozeMinutes: 10, maxSnoozes: 3, chime: false });
+  expect(config).toEqual({ idleThresholdSeconds: 60, reminderIntervalSeconds: 60, snoozeMinutes: 10, maxSnoozes: 3, chime: false, gentle: DEFAULT_GENTLE });
   saveConfig(storage, config);
   expect(storage.getItem("anti-burnout:config")).not.toMatch(/systemIdle|eyeBreak|headsUp|work/);
   storage.setItem("anti-burnout:state", JSON.stringify({

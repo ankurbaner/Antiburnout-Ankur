@@ -2,6 +2,7 @@
 .yoga-safety { margin-top: 18px; padding: 14px 18px; border-left: 3px solid var(--sage); background: var(--surface); border-radius: 0 10px 10px 0; font-size: 14px; }
 .yoga-group { margin-top: 32px; }
 .yoga-group h3 { font-size: 27px; }
+.yoga-hidden { margin-top: 12px; font-size: 14px; }
 .yoga-practices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 18px; }
 .yoga-practice { border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; background: var(--surface); display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
 .yoga-practice h4, .yoga-practice h3 { margin: 0; font-family: var(--display); font-size: 23px; line-height: 1.2; font-weight: 400; overflow-wrap: anywhere; }

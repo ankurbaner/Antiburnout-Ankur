@@ -1,5 +1,6 @@
-import { CardPractice, MEETING_PRACTICES, YOGA_GROUPS } from "./yoga";
+import { CardPractice, GENTLE_PRACTICES, MEETING_PRACTICES, YOGA_GROUPS } from "./yoga";
 import { PRACTICE_TIMES, PracticeTime } from "./timeOfDay";
+import { DEFAULT_GENTLE, GentleSettings, filterPractices } from "./gentle";
 export type { CardPractice } from "./yoga";
 
 const yoga = (id: string, instruction: string): CardPractice => {
@@ -26,15 +27,15 @@ export const CARD_BANDS = [
 ];
 
 export const isCardPracticeId = (value: unknown): value is string =>
-  typeof value === "string" && [...CARD_BANDS.flat(), ...MEETING_PRACTICES].some((practice) => practice.id === value);
+  typeof value === "string" && [...CARD_BANDS.flat(), ...MEETING_PRACTICES, ...GENTLE_PRACTICES].some((practice) => practice.id === value);
 
 export const needsWater = (stretch: number): boolean => stretch > 90 * 60;
 
-export const practicePool = (stretch: number, meeting: boolean, time?: PracticeTime): CardPractice[] => {
-  if (meeting) return MEETING_PRACTICES;
-  const band = CARD_BANDS[stretch < 45 * 60 ? 0 : needsWater(stretch) ? 2 : 1];
-  const preferred = time ? band.filter((practice) => practice.times?.includes(time)) : band;
-  return preferred.length > 0 ? preferred : band;
+export const practicePool = (stretch: number, meeting: boolean, time?: PracticeTime, gentle: GentleSettings = DEFAULT_GENTLE): CardPractice[] => {
+  const band = filterPractices(meeting ? MEETING_PRACTICES : CARD_BANDS[stretch < 45 * 60 ? 0 : needsWater(stretch) ? 2 : 1], gentle);
+  const preferred = !meeting && time ? band.filter((practice) => practice.times?.includes(time)) : band;
+  const pool = preferred.length > 0 ? preferred : band;
+  return pool.length >= 2 ? pool : [...pool, ...GENTLE_PRACTICES.filter((practice) => !pool.some((item) => item.id === practice.id))];
 };
 
 const selectFromPool = (pool: CardPractice[], previous: string | null, rotation: number): CardPractice => {
@@ -44,15 +45,18 @@ const selectFromPool = (pool: CardPractice[], previous: string | null, rotation:
   return pool[index];
 };
 
-export const selectCardPractice = (stretch: number, meeting: boolean, previous: string | null, rotation = 0, time?: PracticeTime): CardPractice =>
-  selectFromPool(practicePool(stretch, meeting, time), previous, rotation);
+export const selectCardPractice = (stretch: number, meeting: boolean, previous: string | null, rotation = 0, time?: PracticeTime, gentle: GentleSettings = DEFAULT_GENTLE): CardPractice =>
+  selectFromPool(practicePool(stretch, meeting, time, gentle), previous, rotation);
 
 export const createPreviewSelector = () => {
   const previousByPool = new Map<string, string>();
-  return (stretch: number, meeting: boolean, previous: string | null, rotation = 0, time?: PracticeTime): CardPractice => {
-    const pool = practicePool(stretch, meeting, time);
+  let lastPreview: string | null = null;
+  return (stretch: number, meeting: boolean, previous: string | null, rotation = 0, time?: PracticeTime, gentle: GentleSettings = DEFAULT_GENTLE): CardPractice => {
+    const pool = practicePool(stretch, meeting, time, gentle);
     const key = `${meeting ? "meeting" : stretch < 2700 ? "short" : needsWater(stretch) ? "long" : "middle"}:${pool.map((practice) => practice.id).join(",")}`;
-    const practice = selectFromPool(pool, previousByPool.get(key) ?? previous, rotation);
+    let practice = selectFromPool(pool, previousByPool.get(key) ?? previous, rotation);
+    if (practice.id === lastPreview) practice = selectFromPool(pool, lastPreview, rotation);
+    lastPreview = practice.id;
     previousByPool.set(key, practice.id);
     return practice;
   };

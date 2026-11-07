@@ -5,6 +5,7 @@
 import { DEFAULT_CONFIG, TrackerState, createInitialState } from "../../src/tracker";
 import { ProtocolId, isProtocolId } from "./protocols";
 import { isCardPracticeId } from "./cards";
+import { DEFAULT_GENTLE, GentleSettings, loadGentle } from "./gentle";
 
 export interface WebConfig {
   idleThresholdSeconds: number;
@@ -12,6 +13,7 @@ export interface WebConfig {
   snoozeMinutes: number;
   chime: boolean;
   maxSnoozes: number;
+  gentle: GentleSettings;
 }
 
 export const DEFAULT_WEB_CONFIG: WebConfig = {
@@ -20,6 +22,7 @@ export const DEFAULT_WEB_CONFIG: WebConfig = {
   snoozeMinutes: 5,
   chime: true,
   maxSnoozes: 2,
+  gentle: DEFAULT_GENTLE,
 };
 
 export interface WebState {
@@ -87,6 +90,7 @@ export const loadConfig = (store: KV): WebConfig => {
     if (typeof out[key] === "number" && isFiniteNumber(v)) (out[key] as number) = v;
     if (typeof out[key] === "boolean" && typeof v === "boolean") (out[key] as boolean) = v;
   }
+  out.gentle = loadGentle(raw.gentle);
   return out;
 };
 

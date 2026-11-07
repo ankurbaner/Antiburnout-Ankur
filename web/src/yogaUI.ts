@@ -1,4 +1,5 @@
-import { YOGA_GROUPS, YogaGroup, practiceSecondsLeft } from "./yoga";
+import { YogaGroup, practiceSecondsLeft, yogaGroupsFor } from "./yoga";
+import { DEFAULT_GENTLE, GentleSettings } from "./gentle";
 import "./yoga.css";
 
 export const initPracticeGroups = (containerId: string, groups: YogaGroup[], featured = false): (() => void) => {
@@ -97,10 +98,20 @@ export const initPracticeGroups = (containerId: string, groups: YogaGroup[], fea
       return card;
     }));
     if (!featured) section.append(heading);
+    if (group.hidden?.length) {
+      const note = document.createElement("p");
+      note.className = "yoga-hidden muted";
+      note.textContent = `Hidden for your Gentle settings: ${group.hidden.join(", ")}.`;
+      section.append(note);
+    }
     section.append(cards);
     return section;
   }));
   return () => stopTimers.forEach((stop) => stop());
 };
 
-export const initYoga = (): void => { initPracticeGroups("yoga-groups", YOGA_GROUPS); };
+let stopYogaTimers: (() => void) | undefined;
+export const initYoga = (gentle: GentleSettings = DEFAULT_GENTLE): void => {
+  stopYogaTimers?.();
+  stopYogaTimers = initPracticeGroups("yoga-groups", yogaGroupsFor(gentle));
+};

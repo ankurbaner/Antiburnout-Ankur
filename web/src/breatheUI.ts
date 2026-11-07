@@ -1,10 +1,11 @@
 import { BREATH_PATTERNS, breathAt } from "./breathe";
 import { formatClock } from "./format";
 import "./breathe.css";
+import { DEFAULT_GENTLE, GentleSettings, filterPractices } from "./gentle";
 
-export const initBreathe = (): void => {
+export const initBreathe = (gentle: GentleSettings = DEFAULT_GENTLE): ((settings: GentleSettings) => void) => {
   const root = document.getElementById("breathe");
-  if (!root) return;
+  if (!root) return () => {};
   const patternSelect = root.querySelector<HTMLSelectElement>("#breath-pattern")!;
   const durationSelect = root.querySelector<HTMLSelectElement>("#breath-duration")!;
   const button = root.querySelector<HTMLButtonElement>("#breath-start")!;
@@ -12,7 +13,6 @@ export const initBreathe = (): void => {
   const cue = root.querySelector<HTMLElement>("#breath-cue")!;
   const remaining = root.querySelector<HTMLElement>("#breath-remaining")!;
   const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
-  patternSelect.replaceChildren(...BREATH_PATTERNS.map((pattern) => new Option(pattern.title, pattern.id)));
   let startedAt: number | null = null;
   let interval: number | undefined;
   let lastPhase = "";
@@ -64,4 +64,16 @@ export const initBreathe = (): void => {
   const resync = (): void => { lastPhase = ""; update(); };
   document.addEventListener("visibilitychange", resync);
   motion.addEventListener("change", resync);
+  const configure = (settings: GentleSettings): void => {
+    const selected = patternSelect.value;
+    const allowed = filterPractices(BREATH_PATTERNS, settings);
+    if (startedAt !== null && !allowed.some((pattern) => pattern.id === selected)) {
+      idle("Stopped for your Gentle settings. Breathe at your own pace.");
+      remaining.textContent = formatClock(Number(durationSelect.value) * 60);
+    }
+    patternSelect.replaceChildren(...allowed.map((pattern) => new Option(pattern.title, pattern.id)));
+    if (allowed.some((pattern) => pattern.id === selected)) patternSelect.value = selected;
+  };
+  configure(gentle);
+  return configure;
 };
