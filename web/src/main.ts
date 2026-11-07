@@ -157,7 +157,18 @@ const renderProtocol = (p: Protocol): void => {
   setText("reset-why", p.why);
 };
 
+let focusBeforeReset: HTMLElement | null = null;
+
+/** Make everything except the reset overlay inert, so keyboard focus can't leave it. */
+const setBackgroundInert = (inert: boolean): void => {
+  const overlay = $("reset");
+  for (const el of Array.from(overlay.parentElement?.children ?? [])) {
+    if (el !== overlay) (el as HTMLElement).inert = inert;
+  }
+};
+
 const startReset = (): void => {
+  focusBeforeReset = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   hideCard();
   const protocol = nextProtocol(state.lastProtocolId);
   state.lastProtocolId = protocol.id;
@@ -167,6 +178,7 @@ const startReset = (): void => {
   setText("reset-end", "I'm back");
   setText("reset-clock", formatClock(RESET_SECONDS));
   $("reset").hidden = false;
+  setBackgroundInert(true);
   document.body.classList.add("locked");
   $("reset-end").focus();
   persist();
@@ -189,7 +201,10 @@ const endReset = (): void => {
   state.resetsToday += 1;
   state.tracker = { ...state.tracker, currentStretchSeconds: 0, lastReminderAtStretch: 0, onBreak: true };
   $("reset").hidden = true;
+  setBackgroundInert(false);
   document.body.classList.remove("locked");
+  focusBeforeReset?.focus();
+  focusBeforeReset = null;
   persist();
   render();
 };
@@ -471,6 +486,21 @@ window.addEventListener("pagehide", persist);
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "hidden") persist();
 });
+$("reset").addEventListener("keydown", (e) => {
+  if (e.key !== "Tab") return;
+  const items = Array.from($("reset").querySelectorAll<HTMLElement>("button:not([hidden])"));
+  if (items.length === 0) return;
+  const first = items[0];
+  const last = items[items.length - 1];
+  if (e.shiftKey && document.activeElement === first) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && document.activeElement === last) {
+    e.preventDefault();
+    first.focus();
+  }
+});
+
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && cardVisible) hideCard();
 });

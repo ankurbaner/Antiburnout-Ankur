@@ -3,7 +3,21 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Anti-Burnout counts the time you actually spend at the screen, asks for a short physical break every so often, and helps the day end on time. Nothing leaves your browser." />
+    <meta name="description" content="Anti-Burnout counts the time you actively spend at the screen and, every 20 active minutes, asks for one small physical break. Private by design: your activity never leaves your browser." />
+    <link rel="canonical" href="https://ankurbaner.github.io/Antiburnout-Ankur/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Anti-Burnout" />
+    <meta property="og:title" content="Anti-Burnout: breaks for your eyes, your back and a glass of water" />
+    <meta property="og:description" content="Anti-Burnout counts the time you actively spend at the screen and, every 20 active minutes, asks for one small physical break. Private by design: your activity never leaves your browser." />
+    <meta property="og:url" content="https://ankurbaner.github.io/Antiburnout-Ankur/" />
+    <meta property="og:image" content="https://ankurbaner.github.io/Antiburnout-Ankur/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Anti-Burnout: The break is for your eyes, your back, and a glass of water. Not for more work." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Anti-Burnout" />
+    <meta name="twitter:description" content="Anti-Burnout counts the time you actively spend at the screen and, every 20 active minutes, asks for one small physical break. Private by design: your activity never leaves your browser." />
+    <meta name="twitter:image" content="https://ankurbaner.github.io/Antiburnout-Ankur/og-image.png" />
     <meta name="theme-color" content="#EDEAE2" />
     <title>Anti-Burnout</title>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
@@ -101,14 +115,16 @@
             <h3>It counts active time, not open time</h3>
             <p>
               The clock only runs while you're using the screen. Stop for a minute and that pause counts as a break:
-              your current stretch goes back to zero and no card is shown.
+              your current stretch goes back to zero and no card is shown. In the default mode, time in other tabs or
+              apps counts as active, because this page can't see them.
             </p>
           </article>
           <article class="step">
             <span class="step-num">2</span>
             <h3>Every 20 active minutes, a card appears</h3>
             <p>
-              It sits in the top-right corner and never covers the page. Click <em>Done</em> once you've done it, or
+              A small card slides into the corner. It doesn't take over the screen or steal focus. Click <em>Done</em>
+              once you've done it, or
               <em>Snooze</em> to see it again in 5 minutes.
             </p>
           </article>
@@ -155,13 +171,13 @@
         <ul class="privacy-list">
           <li><strong>It only knows whether you're active.</strong> By default that means a mouse, keyboard, scroll or touch event happened on this page, never which key or where.</li>
           <li><strong>No screen reading.</strong> No window titles, no screenshots, no clipboard.</li>
-          <li><strong>No network.</strong> No accounts, analytics, trackers or third-party fonts. After the page loads, nothing leaves your browser.</li>
+          <li><strong>Your activity never leaves your browser.</strong> No accounts, analytics, trackers or third-party fonts. The site only loads its own files (page, fonts, images) from this address.</li>
           <li><strong>Only a few numbers are stored</strong>, in this browser's local storage: your current stretch, today's screen time, cards done, resets taken and your settings. Clear them any time in Settings.</li>
           <li><strong>Whole-computer tracking and notifications are opt-in.</strong> Tracking uses the browser's Idle Detection permission, which reports only whether you're active or idle and whether the screen is locked.</li>
         </ul>
         <p class="muted desktop-note">
           Prefer an app? The
-          <a href="https://github.com/ankurbaner/calude-impact-lab-anti-burnout">desktop app</a> runs in your menu bar or
+          <a href="https://github.com/ankurbaner/Antiburnout-Ankur">desktop app</a> runs in your menu bar or
           system tray on macOS, Windows and Linux. It watches activity across the whole computer and shows the same
           cards. The 5-minute reset is adapted from
           <a href="https://github.com/ankurbaner/calude-impact-lab-off-duty">Off-Duty</a>.
@@ -182,7 +198,7 @@
     </main>
 
 
-    <!-- Recovery card: non-modal, top-right, never steals focus. -->
+    <!-- Recovery card: small non-modal overlay in the corner; never steals focus. -->
     <aside class="recovery-card" id="card" hidden aria-live="polite" aria-labelledby="card-heading">
       <div class="card-eyebrow">
         <span id="card-meta">at the screen</span>
@@ -224,7 +240,7 @@
       <form method="dialog" id="settings-form">
         <header class="settings-head">
           <h2 id="settings-title">Settings</h2>
-          <button class="btn btn-ghost btn-sm" type="submit" value="cancel" aria-label="Close settings">Close</button>
+          <button class="btn btn-ghost btn-sm" type="submit" value="cancel" formnovalidate aria-label="Close settings">Close</button>
         </header>
         <div class="field-grid">
           <label>Card every
