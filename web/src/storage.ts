@@ -9,6 +9,9 @@ export interface WebConfig {
   idleThresholdSeconds: number;
   reminderIntervalSeconds: number;
   snoozeMinutes: number;
+  chime: boolean;
+  headsUp: boolean;
+  maxSnoozes: number;
   /** Use the Idle Detection API when the browser supports it. */
   systemIdle: boolean;
 }
@@ -17,6 +20,9 @@ export const DEFAULT_WEB_CONFIG: WebConfig = {
   idleThresholdSeconds: DEFAULT_CONFIG.idleThresholdSeconds,
   reminderIntervalSeconds: DEFAULT_CONFIG.reminderIntervalSeconds,
   snoozeMinutes: 5,
+  chime: true,
+  headsUp: true,
+  maxSnoozes: 2,
   systemIdle: false,
 };
 
@@ -28,6 +34,7 @@ export interface WebState {
   cardsDoneToday: number;
   /** Bio-Resets completed today. */
   resetsToday: number;
+  snoozesInARow: number;
   lastProtocolId: ProtocolId | null;
   paused: boolean;
   /** Epoch ms of the last save, to detect an absence across a reload. */
@@ -45,6 +52,7 @@ export const initialWebState = (dayKey: string): WebState => ({
   rotation: 0,
   cardsDoneToday: 0,
   resetsToday: 0,
+  snoozesInARow: 0,
   lastProtocolId: null,
   paused: false,
   savedAt: 0,
@@ -117,6 +125,8 @@ export const loadState = (store: KV, dayKey: string): WebState => {
     rotation: num(raw.rotation),
     cardsDoneToday: sameDay ? num(raw.cardsDoneToday) : 0,
     resetsToday: sameDay ? num(raw.resetsToday) : 0,
+    snoozesInARow: !tracker.onBreak && tracker.currentStretchSeconds > 0 && isFiniteNumber(raw.snoozesInARow)
+      ? Math.max(0, Math.floor(raw.snoozesInARow)) : 0,
     lastProtocolId:
       protocol === "water" || protocol === "posture" || protocol === "mobility" || protocol === "breathwork"
         ? protocol
@@ -132,7 +142,7 @@ export const loadState = (store: KV, dayKey: string): WebState => {
  */
 export const applyAbsence = (state: WebState, now: number, idleThresholdSeconds: number): WebState =>
   state.savedAt > 0 && now - state.savedAt >= idleThresholdSeconds * 1000
-    ? { ...state, tracker: { ...state.tracker, currentStretchSeconds: 0, lastReminderAtStretch: 0, onBreak: true } }
+    ? { ...state, snoozesInARow: 0, tracker: { ...state.tracker, currentStretchSeconds: 0, lastReminderAtStretch: 0, onBreak: true } }
     : state;
 
 export const saveState = (store: KV, state: WebState, now = Date.now()): void => {

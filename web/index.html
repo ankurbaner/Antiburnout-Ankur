@@ -233,18 +233,32 @@
           <h2 id="settings-title">Settings</h2>
           <button class="btn btn-ghost btn-sm" type="submit" value="cancel" formnovalidate aria-label="Close settings">Close</button>
         </header>
-        <div class="field-grid">
-          <label>Card every
-            <span class="input-suffix"><input type="number" name="reminderMinutes" min="1" max="180" step="1" required /> active min</span>
-          </label>
-          <label>Counts as a break after
-            <span class="input-suffix"><input type="number" name="idleThresholdSeconds" min="30" max="900" step="5" required /> sec idle</span>
-          </label>
-          <label>Snooze for
-            <span class="input-suffix"><input type="number" name="snoozeMinutes" min="1" max="60" step="1" required /> min</span>
-          </label>
-        </div>
-        <label class="check" id="system-idle-row"><input type="checkbox" name="systemIdle" /> Track the whole computer (Idle Detection permission)</label>
+        <fieldset class="settings-group">
+          <legend>Reminders</legend>
+          <div class="field-grid">
+            <label>Card every
+              <span class="input-suffix"><input type="number" name="reminderMinutes" min="1" max="180" step="1" required /> active min</span>
+            </label>
+            <label>Snooze for
+              <span class="input-suffix"><input type="number" name="snoozeMinutes" min="1" max="60" step="1" required /> min</span>
+            </label>
+            <label>Snoozes allowed in a row
+              <input type="number" name="maxSnoozes" min="0" max="10" step="1" required aria-describedby="snooze-limit-hint" />
+              <span id="snooze-limit-hint">0 = no limit</span>
+            </label>
+          </div>
+          <label class="check"><input type="checkbox" name="chime" /> Play a soft chime when a card is due</label>
+          <label class="check"><input type="checkbox" name="headsUp" /> Warn 10 seconds before a card</label>
+        </fieldset>
+        <fieldset class="settings-group">
+          <legend>Tracking</legend>
+          <div class="field-grid">
+            <label>Counts as a break after
+              <span class="input-suffix"><input type="number" name="idleThresholdSeconds" min="30" max="900" step="5" required /> sec idle</span>
+            </label>
+          </div>
+          <label class="check" id="system-idle-row"><input type="checkbox" name="systemIdle" /> Track the whole computer (Idle Detection permission)</label>
+        </fieldset>
         <footer class="settings-foot">
           <button class="btn btn-link danger" type="button" id="reset-data">Clear all data</button>
           <button class="btn btn-primary" type="submit" value="save">Save</button>

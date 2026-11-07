@@ -9,6 +9,8 @@ import "./styles.css";
 import { StretchBand, bandForStretch, tick } from "../../src/tracker";
 import { CardContent, buildCardContent } from "../../src/cardContent";
 import { ActivityMonitor, systemIdleSupported } from "./activity";
+import { playChime, unlockChime } from "./chime";
+import { headsUpSeconds, snoozeAllowed } from "./schedule";
 import { formatClock, formatIdleThreshold, formatMinutes } from "./format";
 import { PROTOCOLS, PROTOCOL_ORDER, Protocol, RESET_SECONDS, countsAsReset, nextProtocol } from "./protocols";
 import {
@@ -102,6 +104,7 @@ const renderCard = (content: CardContent, preview: boolean): void => {
   $("card").hidden = false;
   cardVisible = true;
   cardIsPreview = preview;
+  render();
 };
 
 const showDueCard = (): void => {
@@ -111,6 +114,7 @@ const showDueCard = (): void => {
   });
   state.rotation += 1;
   renderCard(content, false);
+  if (config.chime) playChime();
 };
 
 const previewCard = (): void => {
@@ -164,6 +168,7 @@ const startReset = (): void => {
   document.body.classList.add("locked");
   $("reset-end").focus();
   persist();
+  render();
 };
 
 const nextResetActivity = (): void => {
@@ -182,6 +187,7 @@ const endReset = (): void => {
   reset = null;
   rollDay(new Date());
   if (countsAsReset(elapsedSeconds)) state.resetsToday += 1;
+  state.snoozesInARow = 0;
   state.tracker = { ...state.tracker, currentStretchSeconds: 0, lastReminderAtStretch: 0, onBreak: true };
   $("reset").hidden = true;
   setBackgroundInert(false);
@@ -228,6 +234,7 @@ const step = (): void => {
     });
 
     state.tracker = result.state;
+    if (result.state.onBreak || result.state.currentStretchSeconds === 0) state.snoozesInARow = 0;
     // Stepping away already was the break, so a card left open is now stale.
     if (result.state.onBreak && cardVisible && !cardIsPreview) hideCard();
     if (result.showCard) showDueCard();
@@ -254,6 +261,11 @@ const render = (): void => {
   );
 
   const untilNext = Math.max(0, config.reminderIntervalSeconds - (t.currentStretchSeconds - t.lastReminderAtStretch));
+  const headsUp = !state.paused && !reset && !cardVisible && !t.onBreak
+    ? headsUpSeconds(untilNext, config.headsUp) : null;
+  const canSnooze = cardIsPreview || snoozeAllowed(state.snoozesInARow, config.maxSnoozes);
+  $<HTMLButtonElement>("card-snooze").disabled = !canSnooze;
+  setText("card-snooze", canSnooze ? "Snooze" : "No more snoozes");
   if (state.paused) {
     setText("m-next", "Paused");
     setText("m-next-sub", "nothing is being counted");
@@ -272,7 +284,7 @@ const render = (): void => {
     status = "You're away, which counts as a break. The stretch has reset.";
     chip.dataset.state = "away";
   } else {
-    status = "Counting active time.";
+    status = headsUp !== null ? `Next card in ${headsUp} seconds.` : "Counting active time.";
     chip.dataset.state = "active";
   }
   setText("status-line", status);
@@ -306,7 +318,11 @@ const render = (): void => {
   // Tab title doubles as the menu-bar counter from the desktop app.
   document.title = state.paused
     ? "Paused · Anti-Burnout"
-    : `${formatMinutes(t.currentStretchSeconds)} · Anti-Burnout`;
+    : !reset && cardVisible && !cardIsPreview
+      ? "Break due · Anti-Burnout"
+      : headsUp !== null
+        ? `Card in ${headsUp}s · Anti-Burnout`
+        : `${formatMinutes(t.currentStretchSeconds)} · Anti-Burnout`;
 };
 
 /* ---------- Settings ---------- */
@@ -319,6 +335,9 @@ const openSettings = (): void => {
   (f.namedItem("reminderMinutes") as HTMLInputElement).value = String(Math.round(config.reminderIntervalSeconds / 60));
   (f.namedItem("idleThresholdSeconds") as HTMLInputElement).value = String(config.idleThresholdSeconds);
   (f.namedItem("snoozeMinutes") as HTMLInputElement).value = String(config.snoozeMinutes);
+  (f.namedItem("maxSnoozes") as HTMLInputElement).value = String(config.maxSnoozes);
+  (f.namedItem("chime") as HTMLInputElement).checked = config.chime;
+  (f.namedItem("headsUp") as HTMLInputElement).checked = config.headsUp;
   (f.namedItem("systemIdle") as HTMLInputElement).checked = monitor.source === "system";
   $("system-idle-row").hidden = !systemIdleSupported();
   settingsDialog.showModal();
@@ -371,6 +390,9 @@ settingsForm.addEventListener("submit", (e) => {
     reminderIntervalSeconds: clampInt(val("reminderMinutes").value, 1, 180, 20) * 60,
     idleThresholdSeconds,
     snoozeMinutes: clampInt(val("snoozeMinutes").value, 1, 60, 5),
+    maxSnoozes: clampInt(val("maxSnoozes").value, 0, 10, 2),
+    chime: val("chime").checked,
+    headsUp: val("headsUp").checked,
   };
   saveConfig(store, config);
   settingsDialog.close();
@@ -413,13 +435,18 @@ document.addEventListener("click", (e) => {
 });
 
 $("card-done").addEventListener("click", () => {
-  if (!cardIsPreview) state.cardsDoneToday += 1;
+  if (!cardIsPreview) {
+    state.cardsDoneToday += 1;
+    state.snoozesInARow = 0;
+  }
   hideCard();
   persist();
   render();
 });
 $("card-snooze").addEventListener("click", () => {
   if (!cardIsPreview) {
+    if (!snoozeAllowed(state.snoozesInARow, config.maxSnoozes)) return;
+    state.snoozesInARow += 1;
 
     // Pull the next reminder to `snoozeMinutes` from now instead of a full interval away.
     state.tracker = {
@@ -452,6 +479,8 @@ $("reset-data").addEventListener("click", () => {
   render();
 });
 window.addEventListener("pagehide", persist);
+window.addEventListener("pointerdown", unlockChime);
+window.addEventListener("keydown", unlockChime);
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "hidden") persist();
 });
