@@ -108,6 +108,7 @@ export const loadConfig = (store: KV): WebConfig => {
   const raw = read(store, CONFIG_KEY) ?? {};
   const out = { ...DEFAULT_WEB_CONFIG };
   for (const key of Object.keys(out) as (keyof WebConfig)[]) {
+    if (key === "idleThresholdSeconds") continue;
     const v = raw[key];
     if (typeof out[key] === "number" && isFiniteNumber(v)) (out[key] as number) = v;
     if (typeof out[key] === "boolean" && typeof v === "boolean") (out[key] as boolean) = v;

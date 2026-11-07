@@ -10,6 +10,18 @@ const store = () => {
   };
 };
 
+it("ignores legacy idle thresholds while keeping other settings", () => {
+  for (const idleThresholdSeconds of [30, 900, "120", null]) {
+    const storage = store();
+    storage.setItem("anti-burnout:config", JSON.stringify({ idleThresholdSeconds, snoozeMinutes: 10 }));
+    const config = loadConfig(storage);
+    expect(config.idleThresholdSeconds).toBe(60);
+    expect(config.snoozeMinutes).toBe(10);
+    saveConfig(storage, config);
+    expect(loadConfig(storage)).toEqual(config);
+  }
+});
+
 it("loads legacy goal/history data without recording it again", () => {
   const storage = store();
   storage.setItem("anti-burnout:config", JSON.stringify({ dailyGoalMinutes: 360, snoozeMinutes: 10 }));

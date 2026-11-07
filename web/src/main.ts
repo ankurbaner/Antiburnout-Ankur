@@ -341,7 +341,6 @@ const settingsForm = $<HTMLFormElement>("settings-form");
 const openSettings = (): void => {
   const f = settingsForm.elements;
   (f.namedItem("reminderMinutes") as HTMLInputElement).value = String(Math.round(config.reminderIntervalSeconds / 60));
-  (f.namedItem("idleThresholdSeconds") as HTMLInputElement).value = String(config.idleThresholdSeconds);
   (f.namedItem("snoozeMinutes") as HTMLInputElement).value = String(config.snoozeMinutes);
   (f.namedItem("maxSnoozes") as HTMLInputElement).value = String(config.maxSnoozes);
   (f.namedItem("chime") as HTMLInputElement).checked = config.chime;
@@ -386,15 +385,14 @@ settingsForm.addEventListener("submit", (e) => {
 
   const f = settingsForm.elements;
   const val = (name: string): HTMLInputElement => f.namedItem(name) as HTMLInputElement;
-  const idleThresholdSeconds = clampInt(val("idleThresholdSeconds").value, 30, 900, 60);
   const wantsSystem = val("systemIdle").checked;
   const systemOn = monitor.source === "system";
-  const systemChange = wantsSystem !== systemOn || (wantsSystem && idleThresholdSeconds !== config.idleThresholdSeconds);
+  const systemChange = wantsSystem !== systemOn;
 
   let systemResult: Promise<boolean> = Promise.resolve(systemOn);
   if (systemChange) {
     if (wantsSystem) {
-      systemResult = monitor.enableSystem(idleThresholdSeconds);
+      systemResult = monitor.enableSystem(config.idleThresholdSeconds);
     } else {
       monitor.disableSystem();
       systemResult = Promise.resolve(false);
@@ -404,7 +402,6 @@ settingsForm.addEventListener("submit", (e) => {
   config = {
     ...config,
     reminderIntervalSeconds: clampInt(val("reminderMinutes").value, 1, 180, 20) * 60,
-    idleThresholdSeconds,
     snoozeMinutes: clampInt(val("snoozeMinutes").value, 1, 60, 5),
     maxSnoozes: clampInt(val("maxSnoozes").value, 0, 10, 2),
     chime: val("chime").checked,

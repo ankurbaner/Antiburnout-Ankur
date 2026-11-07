@@ -19,6 +19,7 @@ describe("simplified page copy", () => {
     expect(document.querySelector("#pause-btn")?.textContent).toBe("Pause");
     expect(document.querySelector("#meeting-btn")?.getAttribute("aria-pressed")).toBe("false");
     expect(document.querySelector('[name="dailyGoalMinutes"]')).toBeNull();
+    expect(document.querySelector('[name="idleThresholdSeconds"]')).toBeNull();
     expect(document.querySelector("h1")?.textContent).toBe("Short breaks for your eyes, back and mind.");
   });
 
