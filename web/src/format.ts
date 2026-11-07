@@ -1,5 +1,12 @@
 /** Small display helpers. */
 
+export const formatIdleThreshold = (totalSeconds: number): string => {
+  const seconds = Math.max(0, Math.round(totalSeconds));
+  const minutes = Math.floor(seconds / 60);
+  const remainder = seconds % 60;
+  return minutes > 0 ? `${minutes} min${remainder > 0 ? ` ${remainder} sec` : ""}` : `${seconds} sec`;
+};
+
 /** 0 -> "0m", 75 -> "1h 15m". */
 export const formatMinutes = (totalSeconds: number): string => {
   const mins = Math.floor(Math.max(0, totalSeconds) / 60);
