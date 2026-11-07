@@ -392,8 +392,10 @@ const render = (): void => {
   setText("card-snooze", canSnooze ? "Snooze" : "No more snoozes");
   if (state.paused) {
     setText("m-next", "Paused");
+    setText("m-next-sub", "Press Resume to continue");
   } else {
     setText("m-next", formatMinutes(Math.ceil(untilNext / 60) * 60));
+    setText("m-next-sub", "of screen time");
   }
 
   // Status line + chip
