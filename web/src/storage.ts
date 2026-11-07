@@ -61,6 +61,8 @@ export const initialWebState = (dayKey: string): WebState => ({
 
 const CONFIG_KEY = "anti-burnout:config";
 const STATE_KEY = "anti-burnout:state";
+// Retired notes remain clearable without loading their data.
+const LEGACY_KEYS = ["anti-burnout:intention", "anti-burnout:spot"];
 
 type KV = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
@@ -163,6 +165,5 @@ export const saveState = (store: KV, state: WebState, now = Date.now()): void =>
 export const clearAll = (store: KV): void => {
   store.removeItem(CONFIG_KEY);
   store.removeItem(STATE_KEY);
-  store.removeItem("anti-burnout:intention");
-  store.removeItem("anti-burnout:spot");
+  for (const key of LEGACY_KEYS) store.removeItem(key);
 };
