@@ -363,6 +363,7 @@ const render = (): void => {
   $("enable-system").hidden = systemOn || !systemIdleSupported();
   syncNotificationPermission();
   $("enable-notify").hidden = !("Notification" in window) || notificationsEnabled();
+  $("test-notify").hidden = !notificationsEnabled();
   setText(
     "enable-notify",
     notificationsSupported && Notification.permission === "denied"
@@ -392,6 +393,7 @@ const openSettings = (): void => {
   (f.namedItem("notifications") as HTMLInputElement).checked = notificationsEnabled();
   (f.namedItem("systemIdle") as HTMLInputElement).checked = monitor.source === "system";
   $("system-idle-row").hidden = !systemIdleSupported();
+  setText("test-notify", "Send a test notification");
   settingsDialog.showModal();
 };
 
@@ -400,12 +402,15 @@ const clampInt = (raw: string, min: number, max: number, fallback: number): numb
   return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
 };
 
-const sendTestNotification = async (): Promise<void> => {
-  const sent = await showNotification(
+const showTestNotification = (): Promise<boolean> =>
+  showNotification(
     "Notifications are on",
     "Anti-Burnout cards will appear here when its tab is in the background.",
     "anti-burnout-test",
   );
+
+const sendTestNotification = async (): Promise<void> => {
+  const sent = await showTestNotification();
   const el = $("notification-status");
   el.textContent += sent
     ? " A test notification was just sent. Didn't see it? Check Do Not Disturb / Focus and your browser's notification settings in Windows (Settings > System > Notifications) or macOS (System Settings > Notifications)."
@@ -545,6 +550,10 @@ $("pause-btn").addEventListener("click", () => {
 });
 $("open-settings").addEventListener("click", openSettings);
 $("enable-system").addEventListener("click", () => void setSystemIdle(true));
+$("test-notify").addEventListener("click", async () => {
+  const sent = await showTestNotification();
+  setText("test-notify", sent ? "Test sent. Send another" : "Couldn't show one. Check system settings");
+});
 $("enable-notify").addEventListener("click", async () => {
   config.notifications = await enableNotifications();
   saveConfig(store, config);
