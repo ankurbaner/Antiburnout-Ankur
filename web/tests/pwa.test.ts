@@ -29,6 +29,8 @@ it("uses relative app URLs and real PNG icons of the declared sizes", () => {
   expect(manifest.start_url).toBe("./");
   expect(manifest.scope).toBe("./");
   expect(manifest.display).toBe("standalone");
+  expect(manifest.theme_color).toBe("#EDEAE2");
+  expect(readFileSync(resolve("index.html"), "utf8")).toContain('<meta name="theme-color" content="#EDEAE2" />');
   for (const icon of manifest.icons) {
     const bytes = readFileSync(resolve("public", icon.src));
     expect(bytes.subarray(1, 4).toString()).toBe("PNG");
