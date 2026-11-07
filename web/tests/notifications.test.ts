@@ -63,6 +63,25 @@ describe("notification permission synchronization", () => {
     expect(button().hidden).toBe(true);
   });
 
+  it.each(["granted", "denied", "default"] as const)("explains inside Settings when ticking the box gets %s", async (outcome) => {
+    permission = "default";
+    const requestPermission = vi.fn().mockImplementation(async () => {
+      permission = outcome;
+      return outcome;
+    });
+    vi.stubGlobal("Notification", { get permission() { return permission; }, requestPermission });
+    await import("../src/main");
+    openSettings();
+    checkbox().checked = true;
+    checkbox().dispatchEvent(new Event("change"));
+    await vi.advanceTimersByTimeAsync(0);
+    const hint = document.getElementById("settings-notify-status")!;
+    expect(requestPermission).toHaveBeenCalledOnce();
+    expect(hint.hidden).toBe(false);
+    expect(checkbox().checked).toBe(outcome === "granted");
+    expect(hint.textContent).toContain(outcome === "granted" ? "Click Save" : outcome === "denied" ? "blocking notifications" : "bell icon");
+  });
+
   it.each(["granted", "denied", "default"] as const)("reconciles saved opt-in with %s permission on load", async (value) => {
     permission = value;
     saveConfig(localStorage, { ...DEFAULT_WEB_CONFIG, notifications: true });

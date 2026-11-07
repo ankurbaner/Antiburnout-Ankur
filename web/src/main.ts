@@ -117,22 +117,57 @@ const renderCard = (content: CardContent, preview: boolean): void => {
   cardIsPreview = preview;
 };
 
-const notify = (content: CardContent): void => {
-  if (!notificationsEnabled()) return;
-  if (document.visibilityState === "visible" && document.hasFocus()) return;
+const notificationsSupported = "Notification" in window;
+
+/**
+ * Some browsers (Chrome on Android) only allow notifications through a service worker.
+ * Registered only once notifications are actually used, so visitors who never opt in get none.
+ */
+let swRegistration: Promise<ServiceWorkerRegistration | null> | null = null;
+const getSwRegistration = (): Promise<ServiceWorkerRegistration | null> =>
+  (swRegistration ??=
+    "serviceWorker" in navigator
+      ? navigator.serviceWorker
+          .register("./sw.js")
+          .then(() => navigator.serviceWorker.ready)
+          .catch(() => {
+            swRegistration = null;
+            return null;
+          })
+      : Promise.resolve(null));
+
+const showNotification = async (title: string, body: string, tag: string): Promise<boolean> => {
+  if (!notificationsSupported) return false;
+  const options: NotificationOptions = { body, tag, icon: "./favicon.svg" };
   try {
-    const n = new Notification(content.heading, {
-      body: content.steps.map((s) => `${s.icon} ${s.text}`).join("\n"),
-      tag: "anti-burnout-card",
-      icon: "./favicon.svg",
-    });
+    const reg = await getSwRegistration();
+    if (reg) {
+      await reg.showNotification(title, options);
+      return true;
+    }
+  } catch {
+    // fall through to the page-level constructor
+  }
+  try {
+    const n = new Notification(title, options);
     n.onclick = () => {
       window.focus();
       n.close();
     };
+    return true;
   } catch {
-    /* some platforms only allow notifications from a service worker */
+    return false;
   }
+};
+
+const notify = (content: CardContent): void => {
+  if (!notificationsEnabled()) return;
+  if (document.visibilityState === "visible" && document.hasFocus()) return;
+  void showNotification(
+    content.heading,
+    content.steps.map((s) => `${s.icon} ${s.text}`).join("\n"),
+    "anti-burnout-card",
+  );
 };
 
 const showDueCard = (): void => {
@@ -328,6 +363,13 @@ const render = (): void => {
   $("enable-system").hidden = systemOn || !systemIdleSupported();
   syncNotificationPermission();
   $("enable-notify").hidden = !("Notification" in window) || notificationsEnabled();
+  $("test-notify").hidden = !notificationsEnabled();
+  setText(
+    "enable-notify",
+    notificationsSupported && Notification.permission === "denied"
+      ? "Notifications blocked: how to fix"
+      : "Turn on notifications",
+  );
 
   document.body.classList.toggle("locked", Boolean(reset));
 
@@ -351,6 +393,8 @@ const openSettings = (): void => {
   (f.namedItem("notifications") as HTMLInputElement).checked = notificationsEnabled();
   (f.namedItem("systemIdle") as HTMLInputElement).checked = monitor.source === "system";
   $("system-idle-row").hidden = !systemIdleSupported();
+  setText("test-notify", "Send a test notification");
+  $("settings-notify-status").hidden = true;
   settingsDialog.showModal();
 };
 
@@ -359,8 +403,25 @@ const clampInt = (raw: string, min: number, max: number, fallback: number): numb
   return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
 };
 
+const showTestNotification = (): Promise<boolean> =>
+  showNotification(
+    "Notifications are on",
+    "Anti-Burnout cards will appear here when its tab is in the background.",
+    // A fresh tag each time, so a repeat test alerts again instead of silently replacing the last one.
+    `anti-burnout-test-${Date.now()}`,
+  );
+
+const sendTestNotification = async (): Promise<void> => {
+  const sent = await showTestNotification();
+  const el = $("notification-status");
+  el.textContent += sent
+    ? " A test notification was just sent. Didn't see it? Check Do Not Disturb / Focus and your browser's notification settings in Windows (Settings > System > Notifications) or macOS (System Settings > Notifications)."
+    : " This browser couldn't show a test notification. Check your system's notification settings, or try another browser.";
+};
+
 const enableNotifications = async (): Promise<boolean> => {
   if (!("Notification" in window)) return false;
+  const wasOn = notificationsEnabled();
   const permission =
     Notification.permission === "default" ? await Notification.requestPermission() : Notification.permission;
   setText(
@@ -371,6 +432,7 @@ const enableNotifications = async (): Promise<boolean> => {
         ? "Notifications are blocked. To enable them, open your browser's site settings (the lock icon in the address bar) and allow notifications."
         : "Notification permission wasn't given. You can try again with Turn on notifications.",
   );
+  if (permission === "granted" && !wasOn) void sendTestNotification();
   return permission === "granted";
 };
 
@@ -384,6 +446,31 @@ const setSystemIdle = async (on: boolean): Promise<void> => {
   saveConfig(store, config);
   render();
 };
+
+/** Ask for permission as soon as the box is ticked, and say right there if the browser refuses. */
+const notifyCheckbox = settingsForm.elements.namedItem("notifications") as HTMLInputElement;
+notifyCheckbox.addEventListener("change", async () => {
+  const hint = $("settings-notify-status");
+  if (!notifyCheckbox.checked) {
+    hint.hidden = true;
+    return;
+  }
+  let permission: NotificationPermission | "unsupported" = "unsupported";
+  if (notificationsSupported) {
+    permission =
+      Notification.permission === "default" ? await Notification.requestPermission() : Notification.permission;
+  }
+  if (permission !== "granted") notifyCheckbox.checked = false;
+  hint.textContent =
+    permission === "granted"
+      ? "Allowed. Click Save to turn notifications on."
+      : permission === "denied"
+        ? "Your browser is blocking notifications for this site, so this can't be turned on yet. Click the icon at the left of the address bar, set Notifications to Allow, reload the page, then tick this again."
+        : permission === "default"
+          ? "Notification permission wasn't given. If no prompt appeared, look for a bell icon in the address bar, then tick this again."
+          : "This browser doesn't support notifications.";
+  hint.hidden = false;
+});
 
 /**
  * Save from the Save button's submit event so permission prompts
@@ -490,6 +577,10 @@ $("pause-btn").addEventListener("click", () => {
 });
 $("open-settings").addEventListener("click", openSettings);
 $("enable-system").addEventListener("click", () => void setSystemIdle(true));
+$("test-notify").addEventListener("click", async () => {
+  const sent = await showTestNotification();
+  setText("test-notify", sent ? "Test sent. Send another" : "Couldn't show one. Check system settings");
+});
 $("enable-notify").addEventListener("click", async () => {
   config.notifications = await enableNotifications();
   saveConfig(store, config);
