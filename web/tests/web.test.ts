@@ -4,6 +4,7 @@ import { pageIdleSeconds, systemIdleSeconds } from "../src/activity";
 import { PROTOCOL_ORDER, nextProtocol } from "../src/protocols";
 import { formatClock, formatHour, formatMinutes } from "../src/format";
 import {
+  applyAbsence,
   DEFAULT_WEB_CONFIG,
   dayKeyFor,
   initialWebState,
@@ -133,12 +134,25 @@ describe("storage", () => {
     st.resetsToday = 2;
     st.rotation = 7;
     st.lastProtocolId = "posture";
-    saveState(s, st);
-    expect(loadState(s, "2026-11-07")).toEqual(st);
+    saveState(s, st, 123);
+    expect(loadState(s, "2026-11-07")).toEqual({ ...st, savedAt: 123 });
+
     const next = loadState(s, "2026-11-08");
     expect(next.cardsDoneToday).toBe(0);
     expect(next.resetsToday).toBe(0);
     expect(next.rotation).toBe(7);
+  });
+
+  it("treats an absence across a reload as a break", () => {
+    const st = initialWebState("2026-11-07");
+    st.tracker = { ...st.tracker, currentStretchSeconds: 1500, lastReminderAtStretch: 1200 };
+    st.savedAt = 1_000_000;
+    expect(applyAbsence(st, 1_000_000 + 30_000, 60).tracker.currentStretchSeconds).toBe(1500);
+    const away = applyAbsence(st, 1_000_000 + 60_000, 60);
+    expect(away.tracker.currentStretchSeconds).toBe(0);
+    expect(away.tracker.lastReminderAtStretch).toBe(0);
+    expect(away.tracker.onBreak).toBe(true);
+    expect(applyAbsence(initialWebState("2026-11-07"), 5e12, 60).tracker.onBreak).toBe(false);
   });
 
   it("builds local day keys", () => {

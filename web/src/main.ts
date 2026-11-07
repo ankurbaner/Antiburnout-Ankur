@@ -13,7 +13,9 @@ import { curfewStatus } from "./curfew";
 import { formatClock, formatHour, formatMinutes } from "./format";
 import { PROTOCOLS, PROTOCOL_ORDER, Protocol, RESET_SECONDS, nextProtocol } from "./protocols";
 import {
+  applyAbsence,
   WebConfig,
+
   WebState,
   clearAll,
   dayKeyFor,
@@ -40,7 +42,7 @@ const setText = (id: string, text: string): void => {
 
 const store = window.localStorage;
 let config: WebConfig = loadConfig(store);
-let state: WebState = loadState(store, dayKeyFor(new Date()));
+let state: WebState = applyAbsence(loadState(store, dayKeyFor(new Date())), Date.now(), config.idleThresholdSeconds);
 const monitor = new ActivityMonitor();
 
 let lastTickMs = Date.now();

@@ -45,6 +45,8 @@ export interface WebState {
   dayEndedAt: string | null;
   /** ISO time until which auto-lock stays off after "Unlock anyway". */
   lockOverrideUntil: string | null;
+  /** Epoch ms of the last save, to detect an absence across a reload. */
+  savedAt: number;
 }
 
 /** Local calendar day as YYYY-MM-DD. */
@@ -62,6 +64,7 @@ export const initialWebState = (dayKey: string): WebState => ({
   paused: false,
   dayEndedAt: null,
   lockOverrideUntil: null,
+  savedAt: 0,
 });
 
 const CONFIG_KEY = "anti-burnout:config";
@@ -138,12 +141,24 @@ export const loadState = (store: KV, dayKey: string): WebState => {
     paused: raw.paused === true,
     dayEndedAt: typeof raw.dayEndedAt === "string" ? raw.dayEndedAt : null,
     lockOverrideUntil: typeof raw.lockOverrideUntil === "string" ? raw.lockOverrideUntil : null,
+    savedAt: num(raw.savedAt),
   };
 };
 
-export const saveState = (store: KV, state: WebState): void => {
+/**
+ * Treat time since the last save as a break when it reaches the idle
+ * threshold, so closing the tab for lunch doesn't continue the old stretch.
+ */
+export const applyAbsence = (state: WebState, now: number, idleThresholdSeconds: number): WebState =>
+  state.savedAt > 0 && now - state.savedAt >= idleThresholdSeconds * 1000
+    ? { ...state, tracker: { ...state.tracker, currentStretchSeconds: 0, lastReminderAtStretch: 0, onBreak: true } }
+    : state;
+
+export const saveState = (store: KV, state: WebState, now = Date.now()): void => {
   try {
+    state.savedAt = now;
     store.setItem(STATE_KEY, JSON.stringify(state));
+
   } catch {
     /* ignore */
   }
