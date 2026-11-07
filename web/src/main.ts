@@ -157,7 +157,17 @@ const renderProtocol = (p: Protocol): void => {
   setText("reset-why", p.why);
 };
 
+let focusBeforeReset: HTMLElement | null = null;
+
+/** Make everything except the reset overlay inert, so keyboard focus can't leave it. */
+const setBackgroundInert = (inert: boolean): void => {
+  for (const el of Array.from(document.body.children)) {
+    if (el.id !== "reset") (el as HTMLElement).inert = inert;
+  }
+};
+
 const startReset = (): void => {
+  focusBeforeReset = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   hideCard();
   const protocol = nextProtocol(state.lastProtocolId);
   state.lastProtocolId = protocol.id;
@@ -167,6 +177,7 @@ const startReset = (): void => {
   setText("reset-end", "I'm back");
   setText("reset-clock", formatClock(RESET_SECONDS));
   $("reset").hidden = false;
+  setBackgroundInert(true);
   document.body.classList.add("locked");
   $("reset-end").focus();
   persist();
@@ -189,7 +200,10 @@ const endReset = (): void => {
   state.resetsToday += 1;
   state.tracker = { ...state.tracker, currentStretchSeconds: 0, lastReminderAtStretch: 0, onBreak: true };
   $("reset").hidden = true;
+  setBackgroundInert(false);
   document.body.classList.remove("locked");
+  focusBeforeReset?.focus();
+  focusBeforeReset = null;
   persist();
   render();
 };
