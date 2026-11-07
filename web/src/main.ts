@@ -234,6 +234,8 @@ const updateDayEnd = (now: Date): void => {
   if (state.lockOverrideUntil && now.getTime() >= new Date(state.lockOverrideUntil).getTime()) {
     state.lockOverrideUntil = null;
   }
+  // Runs after the clear above on purpose: if `now` already sits inside a later
+  // curfew window (e.g. the tab was closed for a day), auto-lock re-locks it.
   if (config.autoLock && !state.dayEndedAt && !state.lockOverrideUntil && curfewStatus(now, curfewCfg()).inCurfew) {
     hideCard();
     state.dayEndedAt = now.toISOString();
