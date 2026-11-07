@@ -27,7 +27,8 @@ export const initSaveSpot = (store: LocalStore, chime: () => void) => {
     input.setCustomValidity("");
     card.dataset.day = day;
     card.hidden = false;
-    if (manual) { card.scrollIntoView({ block: "center" }); input.focus({ preventScroll: true }); }
+    card.scrollIntoView({ block: "center", behavior: "instant" });
+    if (manual) input.focus({ preventScroll: true });
     else chime();
   };
   input.addEventListener("input", () => input.setCustomValidity(""));
