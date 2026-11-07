@@ -381,7 +381,7 @@ const render = (): void => {
   const breaksTaken = state.cardsDoneToday + state.resetsToday;
   setText(
     "m-today-sub",
-    `${config.dailyGoalMinutes > 0 ? `of ${formatMinutes(config.dailyGoalMinutes * 60)} goal · ` : ""}${breaksTaken} break${breaksTaken === 1 ? "" : "s"} taken`,
+    `${config.dailyGoalMinutes > 0 ? `of ${formatMinutes(config.dailyGoalMinutes * 60)} goal · ` : ""}${breaksTaken} guided break${breaksTaken === 1 ? "" : "s"}`,
   );
 
   const untilNext = Math.max(0, config.reminderIntervalSeconds - (t.currentStretchSeconds - t.lastReminderAtStretch));

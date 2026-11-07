@@ -10,7 +10,7 @@ describe("simplified page copy", () => {
       "Since your last break", "Screen time today", "Next reminder in",
     ]);
     expect(document.getElementById("m-stretch-sub")?.textContent).toBe("Resets after 1 min away");
-    expect(document.getElementById("m-today-sub")?.textContent).toBe("0 breaks taken");
+    expect(document.getElementById("m-today-sub")?.textContent).toBe("0 guided breaks");
     expect(document.getElementById("m-next-sub")?.textContent).toBe("of screen time");
   });
 
