@@ -18,8 +18,10 @@
     <meta name="twitter:title" content="Anti-Burnout" />
     <meta name="twitter:description" content="Quiet desk-yoga reminders for your eyes, back and mind. Meeting mode keeps breaks call-safe. Private by design: nothing leaves your browser." />
     <meta name="twitter:image" content="https://ankurbaner.github.io/Antiburnout-Ankur/og-image.png" />
-    <meta name="theme-color" content="#EDEAE2" />
     <title>Anti-Burnout</title>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <meta name="theme-color" content="#EDEAE2" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
   </head>
   <body>
@@ -32,6 +34,7 @@
           <span>Anti-Burnout</span>
         </a>
         <nav class="nav" aria-label="Sections">
+          <a href="#breathe">Breathe</a>
           <a href="#yoga">Yoga</a>
           <a href="#meditation">Meditation</a>
           <a href="#contact">Contact</a>
@@ -48,6 +51,60 @@
         <div class="hero-actions">
           <button class="btn btn-primary" type="button" data-action="start-reset">Take a 5-minute reset</button>
           <button class="btn btn-ghost" type="button" data-action="preview-card">Preview a card</button>
+          <button class="btn btn-ghost" type="button" id="save-spot-open">Save my spot</button>
+          <button class="btn btn-ghost btn-sm" type="button" id="install-app" hidden>Install app</button>
+        </div>
+      </section>
+
+      <section class="wrap day-panel" id="morning-note" aria-label="Where you left off" hidden>
+        <div class="day-note"><p id="morning-text"></p><div class="day-note-actions"><button class="btn btn-ghost btn-sm" id="morning-done" type="button">Done</button></div></div>
+      </section>
+      <section class="wrap day-panel" id="intention-panel" aria-label="Today's intention">
+        <div class="day-note">
+          <h2>Today's intention</h2>
+          <form id="intention-form">
+            <label>One small thing for today <input id="intention-input" type="text" maxlength="120" required autocomplete="off" /></label>
+            <div class="intention-chips" aria-label="Suggestions">
+              <button class="btn btn-ghost btn-sm" type="button" data-intention>I'll take my breaks</button>
+              <button class="btn btn-ghost btn-sm" type="button" data-intention>One thing at a time</button>
+              <button class="btn btn-ghost btn-sm" type="button" data-intention>Kind to myself and others</button>
+              <button class="btn btn-ghost btn-sm" type="button" data-intention>Leave on time</button>
+            </div>
+            <div class="day-note-actions"><button class="btn btn-primary btn-sm" type="submit">Save</button><button class="btn btn-ghost btn-sm" id="intention-skip" type="button">Skip</button></div>
+          </form>
+          <div id="intention-saved" hidden><p id="intention-text"></p><button class="btn btn-ghost btn-sm" id="intention-edit" type="button">Edit</button></div>
+        </div>
+      </section>
+
+      <section class="wrap day-panel" id="save-spot" aria-labelledby="spot-title" hidden>
+        <div class="day-note">
+          <h2 id="spot-title">Save your spot for tomorrow</h2>
+          <p id="spot-intention" hidden></p>
+          <form id="spot-form">
+            <label>Where will you start tomorrow? <textarea id="spot-input" rows="1" maxlength="200" required></textarea></label>
+            <div class="day-note-actions"><button class="btn btn-primary btn-sm" type="submit">Save</button><button class="btn btn-ghost btn-sm" id="spot-skip" type="button">Not today</button></div>
+          </form>
+        </div>
+      </section>
+
+      <section class="wrap" id="practice-of-the-day" aria-labelledby="daily-title">
+        <h2 id="daily-title">Practice of the day</h2>
+        <div id="daily-practice"></div>
+      </section>
+
+      <section class="wrap" id="breathe" aria-labelledby="breathe-title">
+        <p class="eyebrow">A quiet moment</p>
+        <h2 id="breathe-title">Breathe with the circle</h2>
+        <p class="yoga-intro muted">Follow the circle in and out, without holding your breath. Everything is silent. Keep it gentle; stop and breathe naturally if the pace feels uncomfortable.</p>
+        <div class="breath-guide">
+          <div class="breath-controls">
+            <label>Breathing pattern <select id="breath-pattern"></select></label>
+            <label>Duration <select id="breath-duration"><option value="1">1 min</option><option value="2">2 min</option><option value="3">3 min</option></select></label>
+            <button class="btn btn-primary" type="button" id="breath-start">Start</button>
+          </div>
+          <div class="breath-stage" aria-hidden="true"><div class="breath-circle"></div></div>
+          <p class="breath-cue" id="breath-cue" role="status" aria-live="polite">Choose a pattern, then press Start.</p>
+          <p class="breath-time">Time left: <span id="breath-remaining" role="timer" aria-live="off">01:00</span></p>
         </div>
       </section>
 
@@ -87,6 +144,7 @@
         <span class="chip chip-accent" id="card-chip">now</span>
       </div>
       <h2 id="card-heading">Rest your eyes</h2>
+      <p class="card-footnote" id="card-time" hidden></p>
       <ul class="card-steps" id="card-steps"></ul>
       <p class="card-footnote" id="card-footnote" hidden></p>
       <p class="card-reminder">This break is for you, not for more work.</p>
@@ -140,6 +198,19 @@
           </div>
           <label class="check"><input type="checkbox" name="chime" /> Play a soft chime for cards (silent with quiet practices)</label>
           <label class="check"><input type="checkbox" name="meetingMode" /> Quiet practices only (for meetings)</label>
+        </fieldset>
+        <fieldset class="settings-group">
+          <legend>Go gently for</legend>
+          <p class="muted">Hide practices that may put extra strain on these areas. This is not medical advice; check with your doctor if needed.</p>
+          <label class="check"><input type="checkbox" name="gentle-back" /> Back</label>
+          <label class="check"><input type="checkbox" name="gentle-neck" /> Neck</label>
+          <label class="check"><input type="checkbox" name="gentle-wrists" /> Wrists</label>
+          <label class="check"><input type="checkbox" name="gentle-pregnancy" /> Pregnancy</label>
+        </fieldset>
+        <fieldset class="settings-group">
+          <legend>End of day</legend>
+          <label class="check"><input type="checkbox" name="endOfDay" /> Show an end-of-day card</label>
+          <label>Time <input type="time" name="endOfDayTime" required /></label>
         </fieldset>
         <footer class="settings-foot">
           <button class="btn btn-link danger" type="button" id="reset-data">Clear all data</button>
