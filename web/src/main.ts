@@ -57,6 +57,7 @@ let previewIndex = 0;
 let cardVisible = false;
 /** Previews don't count as done and don't move the schedule. */
 let cardIsPreview = false;
+let cardStretch = 0;
 let reset: { startedAt: number; endsAt: number; protocol: Protocol; finished: boolean } | null = null;
 let eyeBreakEndsAt: number | null = null;
 
@@ -100,6 +101,7 @@ const rollDay = (now: Date): void => {
 
 const renderCard = (practice: CardPractice, preview: boolean, stretch = state.tracker.currentStretchSeconds): void => {
   hideEyeBreak();
+  cardStretch = stretch;
   setText("card-meta", "A quiet yoga break");
   setText("card-chip", preview ? "Preview" : "1 min");
   setText("card-heading", `${practice.title} · ${practice.english}`);
@@ -116,20 +118,25 @@ const renderCard = (practice: CardPractice, preview: boolean, stretch = state.tr
   render();
 };
 
+const showCard = (stretch: number, preview: boolean, advance = true): void => {
+  const practice = selectCardPractice(stretch, state.meetingMode, state.lastPracticeId, state.rotation + (preview ? previewIndex : 0));
+  if (!preview) {
+    state.lastPracticeId = practice.id;
+    if (advance) state.rotation += 1;
+  }
+  renderCard(practice, preview, stretch);
+};
+
 const showDueCard = (): void => {
-  const practice = selectCardPractice(state.tracker.currentStretchSeconds, state.meetingMode, state.lastPracticeId, state.rotation);
-  state.lastPracticeId = practice.id;
-  state.rotation += 1;
   state.lastEyeBreakAtStretch = state.tracker.currentStretchSeconds;
-  renderCard(practice, false);
+  showCard(state.tracker.currentStretchSeconds, false);
   chime();
 };
 
 const previewCard = (): void => {
   const stretch = PREVIEW_STRETCHES[previewIndex % PREVIEW_STRETCHES.length];
   previewIndex += 1;
-  const practice = selectCardPractice(stretch, state.meetingMode, state.lastPracticeId, state.rotation + previewIndex);
-  renderCard(practice, true, stretch);
+  showCard(stretch, true);
 };
 
 const hideCard = (): void => {
@@ -465,11 +472,7 @@ $("pause-btn").addEventListener("click", () => {
 });
 $("meeting-btn").addEventListener("click", () => {
   state.meetingMode = !state.meetingMode;
-  if (cardVisible) {
-    const practice = selectCardPractice(state.tracker.currentStretchSeconds, state.meetingMode, state.lastPracticeId, state.rotation++);
-    if (!cardIsPreview) state.lastPracticeId = practice.id;
-    renderCard(practice, cardIsPreview);
-  }
+  if (cardVisible) showCard(cardStretch, cardIsPreview, false);
   persist();
   render();
 });
