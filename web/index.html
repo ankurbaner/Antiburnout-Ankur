@@ -60,7 +60,7 @@
         <div class="section-head">
           <div>
             <h2 id="today-title">Today</h2>
-            <p class="muted" id="status-line" aria-live="polite">Tracking starts as soon as the page is open.</p>
+            <p class="muted" id="status-line" aria-live="polite">Counting your screen time.</p>
           </div>
           <div class="today-controls">
             <div class="today-controls-row">
@@ -68,7 +68,7 @@
               <button class="btn btn-ghost btn-sm" type="button" id="pause-btn" aria-pressed="false">Pause</button>
             </div>
             <p id="source-text">
-              This mode only sees this tab. When you switch to another tab or app, it assumes you're still working, so time spent there still counts.
+              Only this tab is watched, so time in other tabs still counts.
             </p>
           </div>
         </div>
@@ -79,35 +79,25 @@
         </div>
         <div class="metrics">
           <article class="metric metric-terracotta">
-            <p class="metric-label">Current stretch</p>
+            <p class="metric-label">Since your last break</p>
             <p class="metric-value" id="m-stretch">0m</p>
-            <p class="metric-sub" id="m-stretch-sub">since your last reset or idle break</p>
+            <p class="metric-sub" id="m-stretch-sub">Resets after 1 min away</p>
           </article>
           <article class="metric metric-periwinkle">
-            <p class="metric-label">Active today</p>
+            <p class="metric-label">Screen time today</p>
             <p class="metric-value" id="m-today">0m</p>
-            <p class="metric-sub" id="m-today-sub">0 cards done · 0 resets</p>
+            <p class="metric-sub" id="m-today-sub">0 guided breaks</p>
           </article>
           <article class="metric metric-sage">
-            <p class="metric-label">Next card</p>
+            <p class="metric-label">Next reminder in</p>
             <p class="metric-value" id="m-next">20m</p>
-            <p class="metric-sub" id="m-next-sub">of active time from now</p>
+            <p class="metric-sub" id="m-next-sub">of screen time</p>
           </article>
-        </div>
-
-        <div class="bands" aria-label="What the next card will ask for">
-          <p class="bands-title">What the next card will ask for</p>
-          <ol class="band-track" id="band-track">
-            <li data-band="eyes"><span class="band-time">Under 45 min</span><span class="band-ask">Eyes</span></li>
-            <li data-band="eyes-posture"><span class="band-time">45 to 90 min</span><span class="band-ask">Eyes, then posture</span></li>
-            <li data-band="eyes-posture-water"><span class="band-time">90 min to 3 h</span><span class="band-ask">Eyes, posture, water, plus a movement</span></li>
-            <li data-band="eyes-posture-water-day"><span class="band-time">Over 3 h</span><span class="band-ask">All of it, plus the day's water</span></li>
-          </ol>
         </div>
 
         <div class="history" aria-labelledby="history-title">
           <h3 id="history-title">Last 7 days</h3>
-          <p class="muted" id="history-goal-note" hidden>Sage bars mark days that met your active-time goal.</p>
+          <p class="muted" id="history-goal-note" hidden>Green bars = days you hit your goal.</p>
           <ol class="history-chart" id="history-chart"></ol>
         </div>
 
@@ -121,67 +111,35 @@
         <div class="steps">
           <article class="step">
             <span class="step-num">1</span>
-            <h3>It counts active time, not open time</h3>
-            <p>
-              The clock only runs while you're using the screen. Stop for a minute and that pause counts as a break:
-              your current stretch goes back to zero and no card is shown. In the default mode, time in other tabs or
-              apps counts as active, because this page can't see them.
-            </p>
+            <h3>It counts only the time you're using the screen</h3>
+            <p>Step away for a minute and it counts as a break. The timer starts again from zero.</p>
           </article>
           <article class="step">
             <span class="step-num">2</span>
-            <h3>Every 20 active minutes, a card appears</h3>
-            <p>
-              A small card slides into the corner. It doesn't take over the screen or steal focus. Click <em>Done</em>
-              once you've done it, or
-              <em>Snooze</em> to see it again in 5 minutes.
-            </p>
+            <h3>Every 20 minutes, a small reminder appears</h3>
+            <p>It asks you to rest your eyes, stretch or drink water. Click Done, or Snooze to be reminded in 5 minutes.</p>
           </article>
           <article class="step">
             <span class="step-num">3</span>
-            <h3>The longer you go, the more it asks</h3>
-            <p>
-              Under 45 minutes it's just your eyes. Then posture, then water and a stretch. The wording changes from card
-              to card, so it doesn't read the same each time.
-            </p>
-          </article>
-          <article class="step">
-            <span class="step-num">4</span>
-            <h3>A 5-minute reset when you need more</h3>
-            <p>
-              <em>Take a 5-minute reset</em> opens a full-screen timer with one activity. Finishing it, or clicking
-              <em>I'm back</em>, counts as a break and starts a fresh stretch.
-            </p>
+            <h3>Need a proper break? Take 5 minutes</h3>
+            <p>The 5-minute reset shows one simple activity to do away from the screen.</p>
           </article>
         </div>
 
-        <div class="reset-preview">
-          <div>
-            <h3>The 5-minute reset</h3>
-            <p class="muted">
-              A 5-minute timer and one activity on screen. Each takes a minute or two; spend the rest of the time away
-              from the screen, or click <em>Try another activity</em>. The same activity never comes up twice in a row.
-            </p>
-          </div>
-          <ul class="protocol-list" id="protocol-list"></ul>
-        </div>
-
-        <h3 class="tips-title">Getting the most out of it</h3>
+        <h3 class="tips-title">Tips</h3>
         <ul class="privacy-list">
-          <li><strong>Keep this tab open.</strong> Nothing is counted while it's closed. When you come back after more than a minute, that gap counts as a break.</li>
-          <li><strong>On Chrome or Edge, track the whole computer.</strong> It then knows when you actually walk away, instead of assuming you're working whenever this tab is in the background.</li>
-          <li><strong>Press Pause</strong> when you don't want time counted, such as during a call. Settings let you change the card interval, the break length and the snooze time.</li>
+          <li>Keep this tab open. Nothing is counted while it's closed.</li>
+          <li>On Chrome or Edge, click Track the whole computer so it knows when you walk away.</li>
+          <li>Press Pause during calls or meetings.</li>
         </ul>
       </section>
 
       <section class="wrap privacy" id="privacy" aria-labelledby="privacy-title">
-        <h2 id="privacy-title">Privacy: what it does <em>not</em> do</h2>
+        <h2 id="privacy-title">Privacy</h2>
         <ul class="privacy-list">
-          <li><strong>It only knows whether you're active.</strong> By default that means a mouse, keyboard, scroll or touch event happened on this page, never which key or where.</li>
-          <li><strong>No screen reading.</strong> No window titles, no screenshots, no clipboard.</li>
-          <li><strong>Your activity never leaves your browser.</strong> No accounts, analytics, trackers or third-party fonts. The site only loads its own files (page, fonts, images) from this address.</li>
-          <li><strong>Only a few numbers are stored</strong>, in this browser's local storage: your current stretch, today's totals, the last 7 days of activity, card and reset totals, and your settings. Clear them any time in Settings.</li>
-          <li><strong>Whole-computer tracking is opt-in.</strong> Tracking uses the browser's Idle Detection permission, which reports only whether you're active or idle and whether the screen is locked.</li>
+          <li>Everything stays in this browser. No accounts, no analytics, no trackers.</li>
+          <li>It only knows whether you're active or away, never what you type or look at.</li>
+          <li>It keeps today's numbers, the last 7 days and your settings. Clear them any time in Settings.</li>
         </ul>
       </section>
 

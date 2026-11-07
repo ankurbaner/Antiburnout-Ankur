@@ -139,19 +139,6 @@ section h2 { font-size: clamp(30px, 3.6vw, 42px); }
 .metric-value { font-family: var(--display); font-weight: 300; font-size: 52px; line-height: 1.05; letter-spacing: -0.03em; margin: 10px 0 6px; font-variant-numeric: tabular-nums; }
 .metric-sub { font-size: 14px; color: var(--ink-muted); }
 
-.bands { margin-top: 18px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 22px; }
-.bands-title { font-size: 13px; font-weight: 600; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
-.band-track { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-.band-track li {
-  border-radius: 12px; padding: 12px 14px; background: var(--surface-alt); border: 1px solid transparent;
-  display: flex; flex-direction: column; gap: 2px; transition: background-color 0.3s, border-color 0.3s;
-}
-.band-time { font-size: 12.5px; color: var(--ink-muted); font-weight: 600; }
-.band-ask { font-size: 14.5px; }
-.band-track li.is-past { opacity: 0.55; }
-.band-track li.is-current { background: color-mix(in srgb, var(--terracotta) 12%, var(--surface)); border-color: color-mix(in srgb, var(--terracotta) 45%, transparent); }
-.band-track li.is-current .band-time { color: var(--terracotta-dark); }
-
 .source-note { margin-top: 18px; }
 .history { margin-top: 18px; padding: 18px 22px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
 .history h3 { font-size: 18px; }
@@ -165,25 +152,16 @@ section h2 { font-size: clamp(30px, 3.6vw, 42px); }
 .source-note:not(:has(button:not([hidden]))) { display: none; }
 
 /* How */
-.steps { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 24px; }
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 24px; }
 .step { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
 .step h3 { font-size: 24px; margin: 14px 0 8px; }
 .step p { color: var(--ink-muted); }
 .step-num { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--ink); color: var(--canvas); font-weight: 700; font-size: 14px; }
 
-.reset-preview { margin-top: 16px; display: grid; grid-template-columns: 1fr 1.6fr; gap: 24px; align-items: start; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
-.reset-preview h3 { font-size: 26px; margin-bottom: 8px; }
-.protocol-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.protocol-list li { background: var(--surface-alt); border-radius: 12px; padding: 12px 14px; display: flex; gap: 12px; }
-.protocol-list .p-icon { font-size: 22px; line-height: 1.2; }
-.protocol-list strong { display: block; font-size: 15px; }
-.protocol-list span { font-size: 13.5px; color: var(--ink-muted); }
-
 /* Privacy */
 .tips-title { font-size: 24px; margin: 40px 0 0; }
 .privacy-list { list-style: none; padding: 0; margin: 24px 0 0; display: grid; gap: 10px; max-width: 820px; }
 .privacy-list li { padding: 14px 18px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; color: var(--ink-muted); }
-.privacy-list strong { color: var(--ink); }
 
 /* Contact */
 .contact { padding-bottom: 72px; }
@@ -259,9 +237,7 @@ input[type="number"] { width: 88px; }
 
 @media (max-width: 900px) {
   .metrics { grid-template-columns: 1fr; }
-  .band-track { grid-template-columns: repeat(2, 1fr); }
   .steps { grid-template-columns: 1fr; }
-  .reset-preview { grid-template-columns: 1fr; }
 }
 @media (max-width: 600px) {
   .history { padding: 16px 12px; }
@@ -273,7 +249,7 @@ input[type="number"] { width: 88px; }
   .header-inner { justify-content: space-between; }
   .hero { padding-top: 44px; }
   .metric-value { font-size: 40px; }
-  .protocol-list, .field-grid { grid-template-columns: 1fr; }
+  .field-grid { grid-template-columns: 1fr; }
   .contact-card { flex-direction: column; text-align: center; padding: 24px; }
   .contact-photo { width: 140px; height: 140px; }
   .recovery-card { top: auto; bottom: 16px; right: 16px; }
