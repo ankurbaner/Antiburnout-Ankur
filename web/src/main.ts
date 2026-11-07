@@ -50,6 +50,19 @@ let reset: { endsAt: number; protocol: Protocol; finished: boolean } | null = nu
 
 const persist = (): void => saveState(store, state);
 
+/**
+ * Start a new day's counters at local midnight. Runs on every step, even
+ * while paused, mid-reset or after the day was ended, so nothing from
+ * yesterday leaks into today.
+ */
+const rollDay = (now: Date): void => {
+  const today = dayKeyFor(now);
+  if (state.tracker.dayKey === today) return;
+  state.cardsDoneToday = 0;
+  state.resetsToday = 0;
+  state.tracker = { ...state.tracker, todayActiveSeconds: 0, dayKey: today };
+};
+
 /* ---------- Recovery card ---------- */
 
 const renderCard = (content: CardContent, preview: boolean): void => {
@@ -156,6 +169,7 @@ const nextResetActivity = (): void => {
 const endReset = (): void => {
   if (!reset) return;
   reset = null;
+  rollDay(new Date());
   state.resetsToday += 1;
   state.tracker = { ...state.tracker, currentStretchSeconds: 0, lastReminderAtStretch: 0, onBreak: true };
   $("reset").hidden = true;
@@ -221,16 +235,13 @@ const step = (): void => {
   const elapsed = (nowMs - lastTickMs) / 1000;
   lastTickMs = nowMs;
 
+  rollDay(now);
   updateDayEnd(now);
 
   // Nothing counts while paused, during a reset (that *is* the break), or
   // after the day has been ended.
   if (!state.paused && !reset && !state.dayEndedAt) {
     const result = tick(state.tracker, monitor.idleSeconds(nowMs), elapsed, dayKeyFor(now), config);
-    if (result.state.dayKey !== state.tracker.dayKey) {
-      state.cardsDoneToday = 0;
-      state.resetsToday = 0;
-    }
     state.tracker = result.state;
     if (result.showCard) showDueCard();
   }
