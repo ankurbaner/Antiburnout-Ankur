@@ -11,7 +11,7 @@ static site with no backend.
 - **Recovery cards** every 20 active minutes, built by the shared
   `../src/cardContent.ts` and `../src/exercises.ts`, so the eyes → posture →
   water → movement escalation and the rotating wording match the desktop app
-  exactly. Done / Snooze, plus optional browser notifications.
+  exactly, with Done / Snooze controls on each in-page card.
 - **5-minute reset**: a full-screen countdown showing one activity at a time
   (never the same one twice in a row).
 

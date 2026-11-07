@@ -9,8 +9,6 @@ export interface WebConfig {
   idleThresholdSeconds: number;
   reminderIntervalSeconds: number;
   snoozeMinutes: number;
-  /** Also raise a system notification when a card is due and the tab is in the background. */
-  notifications: boolean;
   /** Use the Idle Detection API when the browser supports it. */
   systemIdle: boolean;
 }
@@ -19,7 +17,6 @@ export const DEFAULT_WEB_CONFIG: WebConfig = {
   idleThresholdSeconds: DEFAULT_CONFIG.idleThresholdSeconds,
   reminderIntervalSeconds: DEFAULT_CONFIG.reminderIntervalSeconds,
   snoozeMinutes: 5,
-  notifications: false,
   systemIdle: false,
 };
 

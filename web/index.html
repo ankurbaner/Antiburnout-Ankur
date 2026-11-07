@@ -102,11 +102,7 @@
         </div>
 
         <div class="source-note" id="source-note">
-          <div class="source-actions">
-            <button class="btn btn-ghost btn-sm" type="button" id="enable-system" hidden>Track the whole computer</button>
-            <button class="btn btn-ghost btn-sm" type="button" id="enable-notify">Turn on notifications</button>
-          </div>
-          <p id="notification-status" role="status" aria-live="polite"></p>
+          <button class="btn btn-ghost btn-sm" type="button" id="enable-system" hidden>Track the whole computer</button>
         </div>
       </section>
 
@@ -163,7 +159,6 @@
         <h3 class="tips-title">Getting the most out of it</h3>
         <ul class="privacy-list">
           <li><strong>Keep this tab open.</strong> Nothing is counted while it's closed. When you come back after more than a minute, that gap counts as a break.</li>
-          <li><strong>Turn on notifications</strong> so a card still reaches you when you're in another tab or app.</li>
           <li><strong>On Chrome or Edge, track the whole computer.</strong> It then knows when you actually walk away, instead of assuming you're working whenever this tab is in the background.</li>
           <li><strong>Press Pause</strong> when you don't want time counted, such as during a call. Settings let you change the card interval, the break length and the snooze time.</li>
         </ul>
@@ -176,7 +171,7 @@
           <li><strong>No screen reading.</strong> No window titles, no screenshots, no clipboard.</li>
           <li><strong>Your activity never leaves your browser.</strong> No accounts, analytics, trackers or third-party fonts. The site only loads its own files (page, fonts, images) from this address.</li>
           <li><strong>Only a few numbers are stored</strong>, in this browser's local storage: your current stretch, today's screen time, cards done, resets taken and your settings. Clear them any time in Settings.</li>
-          <li><strong>Whole-computer tracking and notifications are opt-in.</strong> Tracking uses the browser's Idle Detection permission, which reports only whether you're active or idle and whether the screen is locked.</li>
+          <li><strong>Whole-computer tracking is opt-in.</strong> Tracking uses the browser's Idle Detection permission, which reports only whether you're active or idle and whether the screen is locked.</li>
         </ul>
         <p class="muted desktop-note">
           Prefer an app? The
@@ -256,7 +251,6 @@
             <span class="input-suffix"><input type="number" name="snoozeMinutes" min="1" max="60" step="1" required /> min</span>
           </label>
         </div>
-        <label class="check"><input type="checkbox" name="notifications" /> Send a notification when a card is due and this tab is in the background</label>
         <label class="check" id="system-idle-row"><input type="checkbox" name="systemIdle" /> Track the whole computer (Idle Detection permission)</label>
         <footer class="settings-foot">
           <button class="btn btn-link danger" type="button" id="reset-data">Clear all data</button>

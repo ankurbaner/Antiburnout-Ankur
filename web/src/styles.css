@@ -149,11 +149,8 @@ section h2 { font-size: clamp(30px, 3.6vw, 42px); }
 .band-track li.is-current { background: color-mix(in srgb, var(--terracotta) 12%, var(--surface)); border-color: color-mix(in srgb, var(--terracotta) 45%, transparent); }
 .band-track li.is-current .band-time { color: var(--terracotta-dark); }
 
-.source-note { margin-top: 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 14.5px; color: var(--ink-muted); }
-.source-note p { max-width: 640px; }
-.source-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-.source-actions:not(:has(button:not([hidden]))), #notification-status:empty { display: none; }
-.source-note:not(:has(button:not([hidden]))):has(#notification-status:empty) { display: none; }
+.source-note { margin-top: 18px; }
+.source-note:not(:has(button:not([hidden]))) { display: none; }
 
 /* How */
 .steps { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 24px; }
