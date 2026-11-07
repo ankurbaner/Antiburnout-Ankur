@@ -90,6 +90,8 @@ const persist = (): void => {
 const rollDay = (now: Date): void => {
   const today = dayKeyFor(now);
   if (state.tracker.dayKey === today) return;
+  state.meetingMode = false;
+  if (cardVisible) showCard(cardStretch, cardIsPreview, false);
   state.cardsDoneToday = 0;
   state.resetsToday = 0;
   state.wrapUpNoticeDay = "";

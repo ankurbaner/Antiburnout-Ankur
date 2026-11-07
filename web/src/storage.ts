@@ -160,7 +160,7 @@ export const loadState = (store: KV, dayKey: string): WebState => {
     wrapUpNoticeDay: noticeDay(raw.wrapUpNoticeDay),
     lastProtocolId: isProtocolId(protocol) ? protocol : null,
     paused: raw.paused === true,
-    meetingMode: raw.meetingMode === true,
+    meetingMode: sameDay && raw.meetingMode === true,
     lastPracticeId: isCardPracticeId(raw.lastPracticeId) ? raw.lastPracticeId : null,
     savedAt: num(raw.savedAt),
   };

@@ -36,7 +36,8 @@ it("persists meeting mode and the previous card/reset without letting malformed 
   const storage = store();
   const state = { ...initialWebState("2026-11-07"), meetingMode: true, lastPracticeId: "meeting-equal", lastProtocolId: "meeting-ankles" as const };
   saveState(storage, state);
-  expect(loadState(storage, "2026-11-08")).toMatchObject({ meetingMode: true, lastPracticeId: "meeting-equal", lastProtocolId: "meeting-ankles" });
+  expect(loadState(storage, "2026-11-07")).toMatchObject({ meetingMode: true, lastPracticeId: "meeting-equal", lastProtocolId: "meeting-ankles" });
+  expect(loadState(storage, "2026-11-08")).toMatchObject({ meetingMode: false, lastPracticeId: "meeting-equal", lastProtocolId: "meeting-ankles" });
   storage.setItem("anti-burnout:state", JSON.stringify({ meetingMode: "true", lastPracticeId: "unknown", lastProtocolId: "__proto__" }));
   expect(loadState(storage, "2026-11-07")).toMatchObject({ meetingMode: false, lastPracticeId: null, lastProtocolId: null });
 });
