@@ -153,6 +153,15 @@ section h2 { font-size: clamp(30px, 3.6vw, 42px); }
 .band-track li.is-current .band-time { color: var(--terracotta-dark); }
 
 .source-note { margin-top: 18px; }
+.history { margin-top: 18px; padding: 18px 22px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.history h3 { font-size: 18px; }
+#history-goal-note { font-size: 13px; margin-top: 6px; }
+.history-chart { list-style: none; padding: 0; margin: 18px 0 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px; }
+.history-chart li { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; text-align: center; font-size: 13px; color: var(--ink-muted); }
+.history-track { height: 110px; width: min(100%, 44px); display: flex; align-items: flex-end; border-bottom: 1px solid var(--border); }
+.history-bar { width: 100%; background: var(--periwinkle); border-radius: 6px 6px 0 0; }
+.goal-met .history-bar { background: var(--sage); }
+.history-time { font-size: 12px; font-variant-numeric: tabular-nums; }
 .source-note:not(:has(button:not([hidden]))) { display: none; }
 
 /* How */
@@ -255,6 +264,8 @@ input[type="number"] { width: 88px; }
   .reset-preview { grid-template-columns: 1fr; }
 }
 @media (max-width: 600px) {
+  .history { padding: 16px 12px; }
+  .history-chart { gap: 5px; }
   .today .section-head { flex-direction: column; align-items: flex-start; }
   .today-controls { align-items: flex-start; }
   #source-text { text-align: left; }

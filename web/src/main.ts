@@ -15,6 +15,7 @@ import { formatClock, formatIdleThreshold, formatMinutes } from "./format";
 import { PROTOCOLS, PROTOCOL_ORDER, Protocol, RESET_SECONDS, countsAsReset, nextProtocol } from "./protocols";
 import {
   applyAbsence,
+  archiveDay,
   WebConfig,
 
   WebState,
@@ -89,6 +90,15 @@ const persist = (): void => {
 const rollDay = (now: Date): void => {
   const today = dayKeyFor(now);
   if (state.tracker.dayKey === today) return;
+  if (state.tracker.dayKey < today) {
+    state.history = archiveDay(state.history, {
+      day: state.tracker.dayKey,
+      activeSeconds: state.tracker.todayActiveSeconds,
+      cardsDone: state.cardsDoneToday,
+      resets: state.resetsToday,
+    });
+  }
+  state.history = state.history.filter((entry) => entry.day < today);
   state.cardsDoneToday = 0;
   state.resetsToday = 0;
   $("day-notice").hidden = true;
@@ -232,6 +242,53 @@ const updateReset = (now: number): void => {
 
 /* ---------- Main loop ---------- */
 
+const renderHistory = (): void => {
+  const now = new Date();
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6 + i);
+    const day = dayKeyFor(date);
+    const entry = i === 6
+      ? { day, activeSeconds: state.tracker.todayActiveSeconds, cardsDone: state.cardsDoneToday, resets: state.resetsToday }
+      : state.history.find((item) => item.day === day);
+    return { entry, day, label: i === 6 ? "Today" : date.toLocaleDateString("en", { weekday: "short" }) };
+  });
+  const maxSeconds = Math.max(1, ...days.map(({ entry }) => entry?.activeSeconds ?? 0));
+  const chart = $("history-chart");
+  const signature = JSON.stringify([days, config.dailyGoalMinutes]);
+  if (chart.dataset.signature === signature) return;
+  chart.dataset.signature = signature;
+  chart.replaceChildren(...days.map(({ entry, day, label }) => {
+    const li = document.createElement("li");
+    li.dataset.day = day;
+    const hasData = entry && (entry.activeSeconds > 0 || entry.cardsDone > 0 || entry.resets > 0);
+    const description = hasData
+      ? `${label}: ${formatMinutes(entry.activeSeconds)} active, ${entry.cardsDone} cards done, ${entry.resets} resets`
+      : `${label}: no activity recorded`;
+    li.title = description;
+    li.setAttribute("aria-label", description);
+    const track = document.createElement("div");
+    track.className = "history-track";
+    const bar = document.createElement("div");
+    bar.className = "history-bar";
+    bar.style.height = `${((entry?.activeSeconds ?? 0) / maxSeconds) * 100}%`;
+    const metGoal = config.dailyGoalMinutes > 0 && (entry?.activeSeconds ?? 0) >= config.dailyGoalMinutes * 60;
+    li.classList.toggle("goal-met", metGoal);
+    if (metGoal) {
+      li.title += " · Goal met";
+      li.setAttribute("aria-label", li.title);
+    }
+    track.append(bar);
+    const dayLabel = document.createElement("span");
+    dayLabel.textContent = label;
+    const active = document.createElement("span");
+    active.className = "history-time";
+    active.textContent = hasData ? formatMinutes(entry.activeSeconds) : "–";
+    li.append(track, dayLabel, active);
+    return li;
+  }));
+  $("history-goal-note").hidden = config.dailyGoalMinutes <= 0;
+};
+
 const step = (): void => {
   const nowMs = Date.now();
   const now = new Date(nowMs);
@@ -298,6 +355,7 @@ const step = (): void => {
 
 const render = (): void => {
   const t = state.tracker;
+  renderHistory();
   const working = workingNow();
   if (!working && cardVisible && !cardIsPreview) hideCard();
   if (state.paused || reset || !working || !config.eyeBreaks) hideEyeBreak();

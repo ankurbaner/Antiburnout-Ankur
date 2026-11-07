@@ -105,6 +105,12 @@
           </ol>
         </div>
 
+        <div class="history" aria-labelledby="history-title">
+          <h3 id="history-title">Last 7 days</h3>
+          <p class="muted" id="history-goal-note" hidden>Sage bars mark days that met your active-time goal.</p>
+          <ol class="history-chart" id="history-chart"></ol>
+        </div>
+
         <div class="source-note" id="source-note">
           <button class="btn btn-ghost btn-sm" type="button" id="enable-system" hidden>Track the whole computer</button>
         </div>
@@ -174,7 +180,7 @@
           <li><strong>It only knows whether you're active.</strong> By default that means a mouse, keyboard, scroll or touch event happened on this page, never which key or where.</li>
           <li><strong>No screen reading.</strong> No window titles, no screenshots, no clipboard.</li>
           <li><strong>Your activity never leaves your browser.</strong> No accounts, analytics, trackers or third-party fonts. The site only loads its own files (page, fonts, images) from this address.</li>
-          <li><strong>Only a few numbers are stored</strong>, in this browser's local storage: your current stretch, today's screen time, cards done, resets taken and your settings. Clear them any time in Settings.</li>
+          <li><strong>Only a few numbers are stored</strong>, in this browser's local storage: your current stretch, today's totals, the last 7 days of activity, card and reset totals, and your settings. Clear them any time in Settings.</li>
           <li><strong>Whole-computer tracking is opt-in.</strong> Tracking uses the browser's Idle Detection permission, which reports only whether you're active or idle and whether the screen is locked.</li>
         </ul>
       </section>
