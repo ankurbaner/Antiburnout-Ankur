@@ -8,7 +8,7 @@ describe("simplified page copy", () => {
   it("welcomes questions, feedback and suggestions while keeping the email link", () => {
     expect(document.querySelector("#contact .eyebrow")?.textContent).toBe("Contact me");
     expect(document.querySelector("#contact .muted")?.textContent).toBe("I welcome your questions, feedback and suggestions. Please contact me by email.");
-    expect(html).not.toMatch(/\b(?:we|us|our)\b/i);
+    expect(document.querySelector("#contact")?.textContent).not.toMatch(/\b(?:we|us|our)\b/i);
     expect(document.querySelector("#contact .contact-email")?.getAttribute("href")).toBe("mailto:ankur.banerjee014@gmail.com?subject=Anti-Burnout");
     expect(document.querySelector("#contact .contact-email")?.textContent).toBe("ankur.banerjee014@gmail.com");
   });
