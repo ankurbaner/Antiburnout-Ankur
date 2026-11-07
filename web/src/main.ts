@@ -9,8 +9,8 @@ import "./styles.css";
 import { StretchBand, bandForStretch, tick } from "../../src/tracker";
 import { CardContent, buildCardContent } from "../../src/cardContent";
 import { ActivityMonitor, systemIdleSupported } from "./activity";
-import { formatClock, formatMinutes } from "./format";
-import { PROTOCOLS, PROTOCOL_ORDER, Protocol, RESET_SECONDS, nextProtocol } from "./protocols";
+import { formatClock, formatIdleThreshold, formatMinutes } from "./format";
+import { PROTOCOLS, PROTOCOL_ORDER, Protocol, RESET_SECONDS, countsAsReset, nextProtocol } from "./protocols";
 import {
   applyAbsence,
   WebConfig,
@@ -55,7 +55,7 @@ let previewIndex = 0;
 let cardVisible = false;
 /** Previews don't count as done and don't move the schedule. */
 let cardIsPreview = false;
-let reset: { endsAt: number; protocol: Protocol; finished: boolean } | null = null;
+let reset: { startedAt: number; endsAt: number; protocol: Protocol; finished: boolean } | null = null;
 
 let lastPersistMs = 0;
 const persist = (): void => {
@@ -153,7 +153,8 @@ const startReset = (): void => {
   hideCard();
   const protocol = nextProtocol(state.lastProtocolId);
   state.lastProtocolId = protocol.id;
-  reset = { endsAt: Date.now() + RESET_SECONDS * 1000, protocol, finished: false };
+  const startedAt = Date.now();
+  reset = { startedAt, endsAt: startedAt + RESET_SECONDS * 1000, protocol, finished: false };
   renderProtocol(protocol);
   $("reset-done").hidden = true;
   setText("reset-end", "I'm back");
@@ -177,9 +178,10 @@ const nextResetActivity = (): void => {
 /** Stepping away is the break: end the reset and start a fresh stretch. */
 const endReset = (): void => {
   if (!reset) return;
+  const elapsedSeconds = (Date.now() - reset.startedAt) / 1000;
   reset = null;
   rollDay(new Date());
-  state.resetsToday += 1;
+  if (countsAsReset(elapsedSeconds)) state.resetsToday += 1;
   state.tracker = { ...state.tracker, currentStretchSeconds: 0, lastReminderAtStretch: 0, onBreak: true };
   $("reset").hidden = true;
   setBackgroundInert(false);
@@ -241,6 +243,7 @@ const render = (): void => {
 
   // Metrics
   setText("m-stretch", formatMinutes(t.currentStretchSeconds));
+  setText("m-stretch-sub", `since you were last idle for ${formatIdleThreshold(config.idleThresholdSeconds)}`);
   setText("m-today", formatMinutes(t.todayActiveSeconds));
   setText(
     "m-today-sub",
@@ -290,7 +293,7 @@ const render = (): void => {
   setText(
     "source-text",
     systemOn
-      ? "Tracking the whole computer with the browser's Idle Detection permission. It reports only active or idle, nothing else."
+      ? "Uses the browser's Idle Detection permission, which reports only active or idle, nothing else."
       : "This mode only sees this tab. When you switch to another tab or app, it assumes you're still working, so time spent there still counts.",
   );
   $("enable-system").hidden = systemOn || !systemIdleSupported();

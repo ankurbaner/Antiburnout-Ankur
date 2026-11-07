@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { pageIdleSeconds, systemIdleSeconds } from "../src/activity";
-import { PROTOCOL_ORDER, nextProtocol } from "../src/protocols";
-import { formatClock, formatMinutes } from "../src/format";
+import { PROTOCOL_ORDER, countsAsReset, nextProtocol } from "../src/protocols";
+import { formatClock, formatIdleThreshold, formatMinutes } from "../src/format";
 import {
   applyAbsence,
   DEFAULT_WEB_CONFIG,
@@ -40,6 +40,10 @@ describe("activity", () => {
 });
 
 describe("protocols", () => {
+  it.each([[-1, false], [0, false], [1, false], [59.999, false], [60, true], [300, true]])(
+    "counts a %s-second reset as %s",
+    (seconds, expected) => expect(countsAsReset(seconds as number)).toBe(expected),
+  );
   it("starts with the first activity and never repeats back to back", () => {
     let last = nextProtocol(null);
     expect(last.id).toBe(PROTOCOL_ORDER[0]);
@@ -61,6 +65,10 @@ describe("protocols", () => {
 });
 
 describe("format", () => {
+  it.each([[0, "0 sec"], [30, "30 sec"], [60, "1 min"], [90, "1 min 30 sec"], [120, "2 min"], [900, "15 min"]])(
+    "formats the %s-second idle threshold",
+    (seconds, expected) => expect(formatIdleThreshold(seconds as number)).toBe(expected),
+  );
   it("formats durations and hours", () => {
     expect(formatMinutes(0)).toBe("0m");
     expect(formatMinutes(75 * 60 + 59)).toBe("1h 15m");

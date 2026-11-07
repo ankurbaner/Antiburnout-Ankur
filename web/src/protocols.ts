@@ -56,6 +56,8 @@ export const PROTOCOL_ORDER: ProtocolId[] = ["breathwork", "water", "posture", "
 /** Length of a Bio-Reset, in seconds. */
 export const RESET_SECONDS = 5 * 60;
 
+export const countsAsReset = (elapsedSeconds: number): boolean => elapsedSeconds >= 60;
+
 /**
  * Pick the activity that follows `lastId` in the rotation.
  *
