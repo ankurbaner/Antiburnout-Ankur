@@ -150,7 +150,6 @@ section h2 { font-size: clamp(30px, 3.6vw, 42px); }
 .source-note { margin-top: 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 14.5px; color: var(--ink-muted); }
 .source-note p { max-width: 640px; }
 .source-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-.today-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
 
 /* How */
 .steps { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 24px; }
