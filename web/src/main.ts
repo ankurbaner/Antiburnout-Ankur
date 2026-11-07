@@ -52,6 +52,7 @@ const syncNotificationPermission = (): void => {
   if (config.notifications && !notificationsEnabled()) {
     config.notifications = false;
     saveConfig(store, config);
+    setText("notification-status", "");
     ($<HTMLFormElement>("settings-form").elements.namedItem("notifications") as HTMLInputElement).checked = false;
   }
 };
@@ -388,6 +389,7 @@ settingsForm.addEventListener("submit", (e) => {
   const systemChange = wantsSystem !== systemOn || (wantsSystem && idleThresholdSeconds !== config.idleThresholdSeconds);
 
   const notifyPermission = wantsNotify ? enableNotifications() : Promise.resolve(false);
+  if (!wantsNotify) setText("notification-status", "");
   let systemResult: Promise<boolean> = Promise.resolve(systemOn);
   if (systemChange) {
     if (wantsSystem) {
