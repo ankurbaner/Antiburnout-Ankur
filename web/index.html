@@ -73,6 +73,10 @@
           </div>
         </div>
 
+        <div class="day-notice" id="day-notice" hidden>
+          <p id="day-notice-text" role="status" aria-live="polite"></p>
+          <button class="btn btn-ghost btn-sm" type="button" id="day-notice-dismiss">Dismiss</button>
+        </div>
         <div class="metrics">
           <article class="metric metric-terracotta">
             <p class="metric-label">Current stretch</p>
@@ -99,6 +103,12 @@
             <li data-band="eyes-posture-water"><span class="band-time">90 min to 3 h</span><span class="band-ask">Eyes, posture, water, plus a movement</span></li>
             <li data-band="eyes-posture-water-day"><span class="band-time">Over 3 h</span><span class="band-ask">All of it, plus the day's water</span></li>
           </ol>
+        </div>
+
+        <div class="history" aria-labelledby="history-title">
+          <h3 id="history-title">Last 7 days</h3>
+          <p class="muted" id="history-goal-note" hidden>Sage bars mark days that met your active-time goal.</p>
+          <ol class="history-chart" id="history-chart"></ol>
         </div>
 
         <div class="source-note" id="source-note">
@@ -170,7 +180,7 @@
           <li><strong>It only knows whether you're active.</strong> By default that means a mouse, keyboard, scroll or touch event happened on this page, never which key or where.</li>
           <li><strong>No screen reading.</strong> No window titles, no screenshots, no clipboard.</li>
           <li><strong>Your activity never leaves your browser.</strong> No accounts, analytics, trackers or third-party fonts. The site only loads its own files (page, fonts, images) from this address.</li>
-          <li><strong>Only a few numbers are stored</strong>, in this browser's local storage: your current stretch, today's screen time, cards done, resets taken and your settings. Clear them any time in Settings.</li>
+          <li><strong>Only a few numbers are stored</strong>, in this browser's local storage: your current stretch, today's totals, the last 7 days of activity, card and reset totals, and your settings. Clear them any time in Settings.</li>
           <li><strong>Whole-computer tracking is opt-in.</strong> Tracking uses the browser's Idle Detection permission, which reports only whether you're active or idle and whether the screen is locked.</li>
         </ul>
       </section>
@@ -205,6 +215,14 @@
       </div>
     </aside>
 
+    <aside class="recovery-card" id="eye-break" hidden aria-labelledby="eye-break-heading">
+      <p class="eyebrow">Short eye break</p>
+      <h2 id="eye-break-heading" aria-live="polite">Look 20 feet away</h2>
+      <p>Rest your eyes on something far away for 20 seconds.</p>
+      <p id="eye-break-countdown" aria-live="off">20 s</p>
+      <button class="btn btn-ghost" type="button" id="eye-break-skip">Skip</button>
+    </aside>
+
     <!-- 5-minute reset overlay. -->
     <div class="overlay overlay-reset" id="reset" hidden role="dialog" aria-modal="true" aria-labelledby="reset-title">
       <div class="overlay-inner">
@@ -233,18 +251,52 @@
           <h2 id="settings-title">Settings</h2>
           <button class="btn btn-ghost btn-sm" type="submit" value="cancel" formnovalidate aria-label="Close settings">Close</button>
         </header>
-        <div class="field-grid">
-          <label>Card every
-            <span class="input-suffix"><input type="number" name="reminderMinutes" min="1" max="180" step="1" required /> active min</span>
-          </label>
-          <label>Counts as a break after
-            <span class="input-suffix"><input type="number" name="idleThresholdSeconds" min="30" max="900" step="5" required /> sec idle</span>
-          </label>
-          <label>Snooze for
-            <span class="input-suffix"><input type="number" name="snoozeMinutes" min="1" max="60" step="1" required /> min</span>
-          </label>
-        </div>
-        <label class="check" id="system-idle-row"><input type="checkbox" name="systemIdle" /> Track the whole computer (Idle Detection permission)</label>
+        <fieldset class="settings-group">
+          <legend>Reminders</legend>
+          <div class="field-grid">
+            <label>Card every
+              <span class="input-suffix"><input type="number" name="reminderMinutes" min="1" max="180" step="1" required /> active min</span>
+            </label>
+            <label>Snooze for
+              <span class="input-suffix"><input type="number" name="snoozeMinutes" min="1" max="60" step="1" required /> min</span>
+            </label>
+            <label>Snoozes allowed in a row
+              <input type="number" name="maxSnoozes" min="0" max="10" step="1" required aria-describedby="snooze-limit-hint" />
+              <span id="snooze-limit-hint">0 = no limit</span>
+            </label>
+          </div>
+          <label class="check"><input type="checkbox" name="chime" /> Play a soft chime for cards and notices</label>
+          <label class="check"><input type="checkbox" name="headsUp" /> Warn 10 seconds before a card</label>
+          <label class="check"><input type="checkbox" name="eyeBreaks" /> Short eye breaks between cards</label>
+          <div class="field-grid">
+            <label>Eye break every
+              <span class="input-suffix"><input type="number" name="eyeBreakMinutes" min="5" max="60" step="1" required /> active min</span>
+            </label>
+          </div>
+        </fieldset>
+        <fieldset class="settings-group">
+          <legend>Your day</legend>
+          <div class="field-grid">
+            <label>Daily active-time goal
+              <span class="input-suffix"><input type="number" name="dailyGoalMinutes" min="0" max="960" step="1" required aria-describedby="goal-hint" /> min</span>
+              <span id="goal-hint">0 = off</span>
+            </label>
+          </div>
+          <label class="check"><input type="checkbox" name="workHours" /> Only show cards during working hours</label>
+          <div class="field-grid">
+            <label>Start <input type="time" name="workStart" required /></label>
+            <label>End <input type="time" name="workEnd" required /></label>
+          </div>
+        </fieldset>
+        <fieldset class="settings-group">
+          <legend>Tracking</legend>
+          <div class="field-grid">
+            <label>Counts as a break after
+              <span class="input-suffix"><input type="number" name="idleThresholdSeconds" min="30" max="900" step="5" required /> sec idle</span>
+            </label>
+          </div>
+          <label class="check" id="system-idle-row"><input type="checkbox" name="systemIdle" /> Track the whole computer (Idle Detection permission)</label>
+        </fieldset>
         <footer class="settings-foot">
           <button class="btn btn-link danger" type="button" id="reset-data">Clear all data</button>
           <button class="btn btn-primary" type="submit" value="save">Save</button>
