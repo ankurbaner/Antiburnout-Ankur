@@ -73,6 +73,10 @@
           </div>
         </div>
 
+        <div class="day-notice" id="day-notice" hidden>
+          <p id="day-notice-text" role="status" aria-live="polite"></p>
+          <button class="btn btn-ghost btn-sm" type="button" id="day-notice-dismiss">Dismiss</button>
+        </div>
         <div class="metrics">
           <article class="metric metric-terracotta">
             <p class="metric-label">Current stretch</p>
@@ -205,6 +209,14 @@
       </div>
     </aside>
 
+    <aside class="recovery-card" id="eye-break" hidden aria-labelledby="eye-break-heading">
+      <p class="eyebrow">Short eye break</p>
+      <h2 id="eye-break-heading" aria-live="polite">Look 20 feet away</h2>
+      <p>Rest your eyes on something far away for 20 seconds.</p>
+      <p id="eye-break-countdown" aria-live="off">20 s</p>
+      <button class="btn btn-ghost" type="button" id="eye-break-skip">Skip</button>
+    </aside>
+
     <!-- 5-minute reset overlay. -->
     <div class="overlay overlay-reset" id="reset" hidden role="dialog" aria-modal="true" aria-labelledby="reset-title">
       <div class="overlay-inner">
@@ -249,6 +261,26 @@
           </div>
           <label class="check"><input type="checkbox" name="chime" /> Play a soft chime when a card is due</label>
           <label class="check"><input type="checkbox" name="headsUp" /> Warn 10 seconds before a card</label>
+          <label class="check"><input type="checkbox" name="eyeBreaks" /> Short eye breaks between cards</label>
+          <div class="field-grid">
+            <label>Eye break every
+              <span class="input-suffix"><input type="number" name="eyeBreakMinutes" min="5" max="60" step="1" required /> active min</span>
+            </label>
+          </div>
+        </fieldset>
+        <fieldset class="settings-group">
+          <legend>Your day</legend>
+          <div class="field-grid">
+            <label>Daily active-time goal
+              <span class="input-suffix"><input type="number" name="dailyGoalMinutes" min="0" max="960" step="1" required aria-describedby="goal-hint" /> min</span>
+              <span id="goal-hint">0 = off</span>
+            </label>
+          </div>
+          <label class="check"><input type="checkbox" name="workHours" /> Only show cards during working hours</label>
+          <div class="field-grid">
+            <label>Start <input type="time" name="workStart" required /></label>
+            <label>End <input type="time" name="workEnd" required /></label>
+          </div>
         </fieldset>
         <fieldset class="settings-group">
           <legend>Tracking</legend>

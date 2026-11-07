@@ -12,6 +12,12 @@ export interface WebConfig {
   chime: boolean;
   headsUp: boolean;
   maxSnoozes: number;
+  eyeBreaks: boolean;
+  eyeBreakMinutes: number;
+  dailyGoalMinutes: number;
+  workHours: boolean;
+  workStartMinutes: number;
+  workEndMinutes: number;
   /** Use the Idle Detection API when the browser supports it. */
   systemIdle: boolean;
 }
@@ -23,6 +29,12 @@ export const DEFAULT_WEB_CONFIG: WebConfig = {
   chime: true,
   headsUp: true,
   maxSnoozes: 2,
+  eyeBreaks: false,
+  eyeBreakMinutes: 10,
+  dailyGoalMinutes: 0,
+  workHours: false,
+  workStartMinutes: 540,
+  workEndMinutes: 1080,
   systemIdle: false,
 };
 
@@ -35,6 +47,9 @@ export interface WebState {
   /** Bio-Resets completed today. */
   resetsToday: number;
   snoozesInARow: number;
+  lastEyeBreakAtStretch: number;
+  goalNoticeDay: string;
+  wrapUpNoticeDay: string;
   lastProtocolId: ProtocolId | null;
   paused: boolean;
   /** Epoch ms of the last save, to detect an absence across a reload. */
@@ -53,6 +68,9 @@ export const initialWebState = (dayKey: string): WebState => ({
   cardsDoneToday: 0,
   resetsToday: 0,
   snoozesInARow: 0,
+  lastEyeBreakAtStretch: 0,
+  goalNoticeDay: "",
+  wrapUpNoticeDay: "",
   lastProtocolId: null,
   paused: false,
   savedAt: 0,
@@ -64,6 +82,11 @@ const STATE_KEY = "anti-burnout:state";
 type KV = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
 const isFiniteNumber = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
+const noticeDay = (value: unknown): string => {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return "";
+  const date = new Date(`${value}T00:00:00Z`);
+  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value ? value : "";
+};
 
 const read = (store: KV, key: string): Record<string, unknown> | null => {
   try {
@@ -127,6 +150,10 @@ export const loadState = (store: KV, dayKey: string): WebState => {
     resetsToday: sameDay ? num(raw.resetsToday) : 0,
     snoozesInARow: !tracker.onBreak && tracker.currentStretchSeconds > 0 && isFiniteNumber(raw.snoozesInARow)
       ? Math.max(0, Math.floor(raw.snoozesInARow)) : 0,
+    lastEyeBreakAtStretch: !tracker.onBreak && tracker.currentStretchSeconds > 0 && isFiniteNumber(raw.lastEyeBreakAtStretch)
+      ? Math.max(0, Math.min(tracker.currentStretchSeconds, raw.lastEyeBreakAtStretch)) : 0,
+    goalNoticeDay: noticeDay(raw.goalNoticeDay),
+    wrapUpNoticeDay: noticeDay(raw.wrapUpNoticeDay),
     lastProtocolId:
       protocol === "water" || protocol === "posture" || protocol === "mobility" || protocol === "breathwork"
         ? protocol
@@ -142,7 +169,7 @@ export const loadState = (store: KV, dayKey: string): WebState => {
  */
 export const applyAbsence = (state: WebState, now: number, idleThresholdSeconds: number): WebState =>
   state.savedAt > 0 && now - state.savedAt >= idleThresholdSeconds * 1000
-    ? { ...state, snoozesInARow: 0, tracker: { ...state.tracker, currentStretchSeconds: 0, lastReminderAtStretch: 0, onBreak: true } }
+    ? { ...state, snoozesInARow: 0, lastEyeBreakAtStretch: 0, tracker: { ...state.tracker, currentStretchSeconds: 0, lastReminderAtStretch: 0, onBreak: true } }
     : state;
 
 export const saveState = (store: KV, state: WebState, now = Date.now()): void => {

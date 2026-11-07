@@ -10,7 +10,7 @@ import { StretchBand, bandForStretch, tick } from "../../src/tracker";
 import { CardContent, buildCardContent } from "../../src/cardContent";
 import { ActivityMonitor, systemIdleSupported } from "./activity";
 import { playChime, unlockChime } from "./chime";
-import { headsUpSeconds, snoozeAllowed } from "./schedule";
+import { crossedWorkEnd, eyeBreakDue, formatTimeOfDay, headsUpSeconds, parseTimeOfDay, snoozeAllowed, withinWorkingHours } from "./schedule";
 import { formatClock, formatIdleThreshold, formatMinutes } from "./format";
 import { PROTOCOLS, PROTOCOL_ORDER, Protocol, RESET_SECONDS, countsAsReset, nextProtocol } from "./protocols";
 import {
@@ -58,6 +58,22 @@ let cardVisible = false;
 /** Previews don't count as done and don't move the schedule. */
 let cardIsPreview = false;
 let reset: { startedAt: number; endsAt: number; protocol: Protocol; finished: boolean } | null = null;
+let eyeBreakEndsAt: number | null = null;
+
+const workingNow = (now = new Date()): boolean => !config.workHours ||
+  withinWorkingHours(now.getHours() * 60 + now.getMinutes(), config.workStartMinutes, config.workEndMinutes);
+
+const hideEyeBreak = (): void => {
+  eyeBreakEndsAt = null;
+  $("eye-break").hidden = true;
+};
+
+const showNotice = (message: string): void => {
+  setText("day-notice-text", message);
+  $("day-notice").hidden = false;
+  if (config.chime) playChime();
+  persist();
+};
 
 let lastPersistMs = 0;
 const persist = (): void => {
@@ -75,12 +91,14 @@ const rollDay = (now: Date): void => {
   if (state.tracker.dayKey === today) return;
   state.cardsDoneToday = 0;
   state.resetsToday = 0;
+  $("day-notice").hidden = true;
   state.tracker = { ...state.tracker, todayActiveSeconds: 0, dayKey: today };
 };
 
 /* ---------- Recovery card ---------- */
 
 const renderCard = (content: CardContent, preview: boolean): void => {
+  hideEyeBreak();
   setText("card-meta", `${content.stretchMinutes} min at the screen`);
   setText("card-chip", preview ? "Preview" : `${formatMinutes(content.todayMinutes * 60)} today`);
   setText("card-heading", content.heading);
@@ -113,6 +131,7 @@ const showDueCard = (): void => {
     hourOfDay: CARD_HOUR,
   });
   state.rotation += 1;
+  state.lastEyeBreakAtStretch = state.tracker.currentStretchSeconds;
   renderCard(content, false);
   if (config.chime) playChime();
 };
@@ -155,6 +174,7 @@ const setBackgroundInert = (inert: boolean): void => {
 const startReset = (): void => {
   focusBeforeReset = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   hideCard();
+  hideEyeBreak();
   const protocol = nextProtocol(state.lastProtocolId);
   state.lastProtocolId = protocol.id;
   const startedAt = Date.now();
@@ -188,6 +208,7 @@ const endReset = (): void => {
   rollDay(new Date());
   if (countsAsReset(elapsedSeconds)) state.resetsToday += 1;
   state.snoozesInARow = 0;
+  state.lastEyeBreakAtStretch = 0;
   state.tracker = { ...state.tracker, currentStretchSeconds: 0, lastReminderAtStretch: 0, onBreak: true };
   $("reset").hidden = true;
   setBackgroundInert(false);
@@ -214,6 +235,7 @@ const updateReset = (now: number): void => {
 const step = (): void => {
   const nowMs = Date.now();
   const now = new Date(nowMs);
+  const previousTickMs = lastTickMs;
   const sinceLastStep = (nowMs - lastTickMs) / 1000;
   lastTickMs = nowMs;
 
@@ -234,12 +256,41 @@ const step = (): void => {
     });
 
     state.tracker = result.state;
-    if (result.state.onBreak || result.state.currentStretchSeconds === 0) state.snoozesInARow = 0;
+    if (result.state.onBreak || result.state.currentStretchSeconds === 0) {
+      state.snoozesInARow = 0;
+      state.lastEyeBreakAtStretch = 0;
+      hideEyeBreak();
+    }
     // Stepping away already was the break, so a card left open is now stale.
     if (result.state.onBreak && cardVisible && !cardIsPreview) hideCard();
-    if (result.showCard) showDueCard();
+    if (result.showCard && workingNow(now)) showDueCard();
+    if (config.eyeBreaks && workingNow(now) && !cardVisible && !state.tracker.onBreak && eyeBreakEndsAt === null) {
+      const stretch = state.tracker.currentStretchSeconds;
+      const untilNext = config.reminderIntervalSeconds - (stretch - state.tracker.lastReminderAtStretch);
+      const due = eyeBreakDue(stretch, state.lastEyeBreakAtStretch, config.eyeBreakMinutes * 60, untilNext);
+      if (due !== "no") state.lastEyeBreakAtStretch = stretch;
+      if (due === "show") {
+        eyeBreakEndsAt = nowMs + 20_000;
+        setText("eye-break-countdown", "20 s");
+        $("eye-break").hidden = false;
+        if (config.chime) playChime();
+      }
+    }
   }
 
+  if (eyeBreakEndsAt !== null) {
+    if (nowMs >= eyeBreakEndsAt) hideEyeBreak();
+    else setText("eye-break-countdown", `${Math.ceil((eyeBreakEndsAt - nowMs) / 1000)} s`);
+  }
+  const today = dayKeyFor(now);
+  if (config.dailyGoalMinutes > 0 && state.tracker.todayActiveSeconds >= config.dailyGoalMinutes * 60 && state.goalNoticeDay !== today) {
+    state.goalNoticeDay = today;
+    showNotice(`You've reached today's ${formatMinutes(config.dailyGoalMinutes * 60)} goal. A good time to start wrapping up.`);
+  }
+  if (config.workHours && state.wrapUpNoticeDay !== today && crossedWorkEnd(previousTickMs, nowMs, config.workEndMinutes)) {
+    state.wrapUpNoticeDay = today;
+    showNotice(`It's ${formatTimeOfDay(config.workEndMinutes)}, the end of your working hours. Time to wrap up.`);
+  }
   updateReset(nowMs);
   render();
   if (nowMs - lastPersistMs >= PERSIST_MS) persist();
@@ -247,6 +298,9 @@ const step = (): void => {
 
 const render = (): void => {
   const t = state.tracker;
+  const working = workingNow();
+  if (!working && cardVisible && !cardIsPreview) hideCard();
+  if (state.paused || reset || !working || !config.eyeBreaks) hideEyeBreak();
 
   // Metrics
   setText("m-stretch", formatMinutes(t.currentStretchSeconds));
@@ -257,11 +311,11 @@ const render = (): void => {
   setText("m-today", formatMinutes(t.todayActiveSeconds));
   setText(
     "m-today-sub",
-    `${state.cardsDoneToday} card${state.cardsDoneToday === 1 ? "" : "s"} done · ${state.resetsToday} reset${state.resetsToday === 1 ? "" : "s"}`,
+    `${config.dailyGoalMinutes > 0 ? `of ${formatMinutes(config.dailyGoalMinutes * 60)} goal · ` : ""}${state.cardsDoneToday} card${state.cardsDoneToday === 1 ? "" : "s"} done · ${state.resetsToday} reset${state.resetsToday === 1 ? "" : "s"}`,
   );
 
   const untilNext = Math.max(0, config.reminderIntervalSeconds - (t.currentStretchSeconds - t.lastReminderAtStretch));
-  const headsUp = !state.paused && !reset && !cardVisible && !t.onBreak
+  const headsUp = working && !state.paused && !reset && !cardVisible && eyeBreakEndsAt === null && !t.onBreak
     ? headsUpSeconds(untilNext, config.headsUp) : null;
   const canSnooze = cardIsPreview || snoozeAllowed(state.snoozesInARow, config.maxSnoozes);
   $<HTMLButtonElement>("card-snooze").disabled = !canSnooze;
@@ -280,6 +334,9 @@ const render = (): void => {
   if (state.paused) {
     status = "Paused. Nothing is counted until you resume.";
     chip.dataset.state = "paused";
+  } else if (!working) {
+    status = `Outside working hours. No cards until ${formatTimeOfDay(config.workStartMinutes)}.`;
+    chip.dataset.state = "away";
   } else if (t.onBreak) {
     status = "You're away, which counts as a break. The stretch has reset.";
     chip.dataset.state = "away";
@@ -320,9 +377,11 @@ const render = (): void => {
     ? "Paused · Anti-Burnout"
     : !reset && cardVisible && !cardIsPreview
       ? "Break due · Anti-Burnout"
-      : headsUp !== null
-        ? `Card in ${headsUp}s · Anti-Burnout`
-        : `${formatMinutes(t.currentStretchSeconds)} · Anti-Burnout`;
+      : eyeBreakEndsAt !== null
+        ? "Eye break · Anti-Burnout"
+        : headsUp !== null
+          ? `Card in ${headsUp}s · Anti-Burnout`
+          : `${formatMinutes(t.currentStretchSeconds)} · Anti-Burnout`;
 };
 
 /* ---------- Settings ---------- */
@@ -338,6 +397,14 @@ const openSettings = (): void => {
   (f.namedItem("maxSnoozes") as HTMLInputElement).value = String(config.maxSnoozes);
   (f.namedItem("chime") as HTMLInputElement).checked = config.chime;
   (f.namedItem("headsUp") as HTMLInputElement).checked = config.headsUp;
+  for (const name of ["eyeBreaks", "workHours"] as const) {
+    (f.namedItem(name) as HTMLInputElement).checked = config[name];
+  }
+  for (const name of ["eyeBreakMinutes", "dailyGoalMinutes"] as const) {
+    (f.namedItem(name) as HTMLInputElement).value = String(config[name]);
+  }
+  (f.namedItem("workStart") as HTMLInputElement).value = formatTimeOfDay(config.workStartMinutes);
+  (f.namedItem("workEnd") as HTMLInputElement).value = formatTimeOfDay(config.workEndMinutes);
   (f.namedItem("systemIdle") as HTMLInputElement).checked = monitor.source === "system";
   $("system-idle-row").hidden = !systemIdleSupported();
   settingsDialog.showModal();
@@ -393,6 +460,12 @@ settingsForm.addEventListener("submit", (e) => {
     maxSnoozes: clampInt(val("maxSnoozes").value, 0, 10, 2),
     chime: val("chime").checked,
     headsUp: val("headsUp").checked,
+    eyeBreaks: val("eyeBreaks").checked,
+    eyeBreakMinutes: clampInt(val("eyeBreakMinutes").value, 5, 60, 10),
+    dailyGoalMinutes: clampInt(val("dailyGoalMinutes").value, 0, 960, 0),
+    workHours: val("workHours").checked,
+    workStartMinutes: parseTimeOfDay(val("workStart").value, 540),
+    workEndMinutes: parseTimeOfDay(val("workEnd").value, 1080),
   };
   saveConfig(store, config);
   settingsDialog.close();
@@ -460,6 +533,8 @@ $("card-snooze").addEventListener("click", () => {
   render();
 });
 $("reset-next").addEventListener("click", nextResetActivity);
+$("eye-break-skip").addEventListener("click", () => { hideEyeBreak(); render(); });
+$("day-notice-dismiss").addEventListener("click", () => { $("day-notice").hidden = true; });
 $("reset-end").addEventListener("click", endReset);
 $("pause-btn").addEventListener("click", () => {
   state.paused = !state.paused;
@@ -476,6 +551,8 @@ $("reset-data").addEventListener("click", () => {
   state = loadState(store, dayKeyFor(new Date()));
   settingsDialog.close();
   hideCard();
+  hideEyeBreak();
+  $("day-notice").hidden = true;
   render();
 });
 window.addEventListener("pagehide", persist);

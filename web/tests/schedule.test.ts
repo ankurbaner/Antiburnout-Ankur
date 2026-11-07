@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { headsUpSeconds, snoozeAllowed } from "../src/schedule";
+import { crossedWorkEnd, eyeBreakDue, formatTimeOfDay, headsUpSeconds, parseTimeOfDay, snoozeAllowed, withinWorkingHours } from "../src/schedule";
 import { DEFAULT_WEB_CONFIG, applyAbsence, initialWebState, loadConfig, loadState, saveState } from "../src/storage";
 
 const memoryStore = () => {
@@ -33,6 +33,24 @@ describe("snooze limit", () => {
 });
 
 describe("schedule persistence", () => {
+  it("validates eye-break offsets and notice dates", () => {
+    const store = memoryStore();
+    const state = initialWebState("2026-11-07");
+    state.tracker.currentStretchSeconds = 900;
+    state.lastEyeBreakAtStretch = 600;
+    state.goalNoticeDay = "2026-11-07";
+    state.wrapUpNoticeDay = "2026-11-06";
+    saveState(store, state);
+    expect(loadState(store, "2026-11-07")).toMatchObject({ lastEyeBreakAtStretch: 600, goalNoticeDay: "2026-11-07", wrapUpNoticeDay: "2026-11-06" });
+    store.setItem("anti-burnout:state", JSON.stringify({ ...state, lastEyeBreakAtStretch: -10, goalNoticeDay: "2026-02-30", wrapUpNoticeDay: 123 }));
+    expect(loadState(store, "2026-11-07")).toMatchObject({ lastEyeBreakAtStretch: 0, goalNoticeDay: "", wrapUpNoticeDay: "" });
+    store.setItem("anti-burnout:state", JSON.stringify({ ...state, lastEyeBreakAtStretch: 2000, goalNoticeDay: "bad", wrapUpNoticeDay: "" }));
+    expect(loadState(store, "2026-11-07")).toMatchObject({ lastEyeBreakAtStretch: 900, goalNoticeDay: "", wrapUpNoticeDay: "" });
+    expect(loadState(memoryStore(), "2026-11-07")).toMatchObject({ lastEyeBreakAtStretch: 0, goalNoticeDay: "", wrapUpNoticeDay: "" });
+    state.savedAt = 1000;
+    state.snoozesInARow = 2;
+    expect(applyAbsence(state, 61_000, 60)).toMatchObject({ lastEyeBreakAtStretch: 0, snoozesInARow: 0 });
+  });
   it("adds defaults to old or malformed config", () => {
     const store = memoryStore();
     store.setItem("anti-burnout:config", JSON.stringify({ snoozeMinutes: 10 }));
@@ -66,5 +84,47 @@ describe("schedule persistence", () => {
     state.tracker.onBreak = true;
     saveState(store, state);
     expect(loadState(store, "2026-11-07").snoozesInARow).toBe(0);
+  });
+});
+
+describe("eye breaks", () => {
+  it("waits for the interval, shows when far from a card, and skips near cards", () => {
+    expect(eyeBreakDue(599, 0, 600, 601)).toBe("no");
+    expect(eyeBreakDue(600, 0, 600, 121)).toBe("show");
+    expect(eyeBreakDue(600, 0, 600, 120)).toBe("skip");
+    expect(eyeBreakDue(600, 0, 600, 0)).toBe("skip");
+    expect(eyeBreakDue(601, 600, 600, 600)).toBe("no");
+    expect(eyeBreakDue(NaN, 0, 600, 600)).toBe("no");
+  });
+});
+
+describe("working hours", () => {
+  it("includes the start and excludes the end", () => {
+    expect(withinWorkingHours(539, 540, 1080)).toBe(false);
+    expect(withinWorkingHours(540, 540, 1080)).toBe(true);
+    expect(withinWorkingHours(1079, 540, 1080)).toBe(true);
+    expect(withinWorkingHours(1080, 540, 1080)).toBe(false);
+  });
+  it("supports overnight ranges and treats equal endpoints as all day", () => {
+    expect(withinWorkingHours(1320, 1320, 360)).toBe(true);
+    expect(withinWorkingHours(359, 1320, 360)).toBe(true);
+    expect(withinWorkingHours(360, 1320, 360)).toBe(false);
+    expect(withinWorkingHours(800, 1320, 360)).toBe(false);
+    expect(withinWorkingHours(0, 540, 540)).toBe(true);
+  });
+  it("formats and validates time inputs", () => {
+    expect(formatTimeOfDay(540)).toBe("09:00");
+    expect(formatTimeOfDay(1439)).toBe("23:59");
+    expect(parseTimeOfDay("00:00", 540)).toBe(0);
+    expect(parseTimeOfDay("23:59", 540)).toBe(1439);
+    for (const value of ["", "24:00", "09:60", "9:00", "bad"]) expect(parseTimeOfDay(value, 540)).toBe(540);
+  });
+  it("detects end crossings, including overnight and suspended tabs, but not startup after the end", () => {
+    const at = (day: number, hour: number, minute = 0): number => new Date(2026, 10, day, hour, minute).getTime();
+    expect(crossedWorkEnd(at(7, 17, 59), at(7, 18), 1080)).toBe(true);
+    expect(crossedWorkEnd(at(7, 18), at(7, 18, 1), 1080)).toBe(false);
+    expect(crossedWorkEnd(at(7, 19), at(7, 19), 1080)).toBe(false);
+    expect(crossedWorkEnd(at(7, 23), at(8, 6), 360)).toBe(true);
+    expect(crossedWorkEnd(at(7, 17), at(8, 8), 1080)).toBe(true);
   });
 });
