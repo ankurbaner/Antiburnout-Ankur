@@ -15,6 +15,7 @@ import { TIME_LABELS, timeOfDay } from "./timeOfDay";
 import { GENTLE_AREAS, loadGentle } from "./gentle";
 import { initIntention } from "./intentionUI";
 import { initSaveSpot } from "./saveSpotUI";
+import { initInstall, registerWorker } from "./pwa";
 import { playChime, unlockChime } from "./chime";
 import { initPracticeGroups, initYoga } from "./yogaUI";
 import { MEDITATION_PRACTICES } from "./meditation";
@@ -391,6 +392,8 @@ document.addEventListener("keydown", (e) => {
 const updateBreatheGentle = initBreathe(config.gentle);
 const intention = initIntention(store);
 const spot = initSaveSpot(store, chime);
+initInstall();
+registerWorker();
 $("save-spot-open").addEventListener("click", () => spot?.open());
 initDailyPractice(new Date(), config.gentle);
 initYoga(config.gentle);
