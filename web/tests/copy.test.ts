@@ -5,6 +5,11 @@ import html from "../index.html?raw";
 const document = new DOMParser().parseFromString(html, "text/html");
 
 describe("simplified page copy", () => {
+  it("welcomes questions, feedback and suggestions while keeping the email link", () => {
+    expect(document.querySelector("#contact .muted")?.textContent).toBe("We welcome your questions, feedback and suggestions. Please contact us by email.");
+    expect(document.querySelector("#contact .contact-email")?.getAttribute("href")).toBe("mailto:ankur.banerjee014@gmail.com?subject=Anti-Burnout");
+    expect(document.querySelector("#contact .contact-email")?.textContent).toBe("ankur.banerjee014@gmail.com");
+  });
   it("keeps desk yoga immediately after the hero", () => {
     expect(document.querySelector(".hero + section")?.id).toBe("yoga");
     expect(document.querySelector('.nav a[href="#yoga"]')?.textContent).toBe("Yoga");
