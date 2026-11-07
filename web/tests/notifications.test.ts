@@ -15,6 +15,7 @@ beforeEach(() => {
   vi.useFakeTimers();
   document.documentElement.innerHTML = html;
   HTMLDialogElement.prototype.showModal = vi.fn();
+  HTMLDialogElement.prototype.close = vi.fn();
   localStorage.clear();
   permission = "granted";
   status = { onchange: null };
@@ -29,6 +30,39 @@ afterEach(() => {
 });
 
 describe("notification permission synchronization", () => {
+  it.each(["granted", "denied", "default"] as const)("shows persistent feedback for %s after clicking enable", async (outcome) => {
+    permission = "default";
+    const requestPermission = vi.fn().mockImplementation(async () => {
+      permission = outcome;
+      return outcome;
+    });
+    vi.stubGlobal("Notification", { get permission() { return permission; }, requestPermission });
+    await import("../src/main");
+    button().click();
+    await vi.advanceTimersByTimeAsync(1000);
+    const message = document.getElementById("notification-status")!;
+    expect(requestPermission).toHaveBeenCalledOnce();
+    expect(message.getAttribute("aria-live")).toBe("polite");
+    expect(message.textContent).toContain(outcome === "granted" ? "Notifications are on" : outcome === "denied" ? "site settings (the lock icon" : "You can try again");
+    expect(message.hidden).toBe(false);
+    expect(button().hidden).toBe(outcome === "granted");
+    expect(loadConfig(localStorage).notifications).toBe(outcome === "granted");
+  });
+
+  it("shows the same feedback when enabling from Settings", async () => {
+    await import("../src/main");
+    openSettings();
+    checkbox().checked = true;
+    const form = document.getElementById("settings-form")!;
+    form.dispatchEvent(new SubmitEvent("submit", {
+      cancelable: true,
+      submitter: form.querySelector<HTMLButtonElement>('[value="save"]'),
+    }));
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(document.getElementById("notification-status")!.textContent).toContain("Notifications are on");
+    expect(button().hidden).toBe(true);
+  });
+
   it.each(["granted", "denied", "default"] as const)("reconciles saved opt-in with %s permission on load", async (value) => {
     permission = value;
     saveConfig(localStorage, { ...DEFAULT_WEB_CONFIG, notifications: true });

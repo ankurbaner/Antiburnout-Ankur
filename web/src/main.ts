@@ -347,6 +347,14 @@ const enableNotifications = async (): Promise<boolean> => {
   if (!("Notification" in window)) return false;
   const permission =
     Notification.permission === "default" ? await Notification.requestPermission() : Notification.permission;
+  setText(
+    "notification-status",
+    permission === "granted"
+      ? "Notifications are on. You'll get one when a card is due while this tab is in the background."
+      : permission === "denied"
+        ? "Notifications are blocked. To enable them, open your browser's site settings (the lock icon in the address bar) and allow notifications."
+        : "Notification permission wasn't given. You can try again with Turn on notifications.",
+  );
   return permission === "granted";
 };
 
