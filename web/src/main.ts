@@ -45,6 +45,19 @@ const setText = (id: string, text: string): void => {
 
 const store = window.localStorage;
 let config: WebConfig = loadConfig(store);
+const notificationsEnabled = (): boolean =>
+  config.notifications && "Notification" in window && Notification.permission === "granted";
+
+const syncNotificationPermission = (): void => {
+  if (config.notifications && !notificationsEnabled()) {
+    config.notifications = false;
+    saveConfig(store, config);
+    setText("notification-status", "");
+    ($<HTMLFormElement>("settings-form").elements.namedItem("notifications") as HTMLInputElement).checked = false;
+  }
+};
+
+syncNotificationPermission();
 let state: WebState = applyAbsence(loadState(store, dayKeyFor(new Date())), Date.now(), config.idleThresholdSeconds);
 const monitor = new ActivityMonitor();
 
@@ -124,6 +137,7 @@ const getSwRegistration = (): Promise<ServiceWorkerRegistration | null> =>
       : Promise.resolve(null));
 
 const showNotification = async (title: string, body: string, tag: string): Promise<boolean> => {
+  if (!notificationsSupported) return false;
   const options: NotificationOptions = { body, tag, icon: "./favicon.svg" };
   try {
     const reg = await getSwRegistration();
@@ -147,7 +161,7 @@ const showNotification = async (title: string, body: string, tag: string): Promi
 };
 
 const notify = (content: CardContent): void => {
-  if (!config.notifications || !notificationsSupported || Notification.permission !== "granted") return;
+  if (!notificationsEnabled()) return;
   if (document.visibilityState === "visible" && document.hasFocus()) return;
   void showNotification(
     content.heading,
@@ -347,17 +361,14 @@ const render = (): void => {
       : "This mode only sees this tab. When you switch to another tab or app, it assumes you're still working, so time spent there still counts.",
   );
   $("enable-system").hidden = systemOn || !systemIdleSupported();
-  const notifyBtn = $("enable-notify");
-  notifyBtn.hidden = !notificationsSupported;
-  if (notificationsSupported) {
-    const permission = Notification.permission;
-    notifyBtn.textContent =
-      permission === "denied"
-        ? "Notifications blocked: how to fix"
-        : config.notifications && permission === "granted"
-          ? "Send a test notification"
-          : "Turn on notifications";
-  }
+  syncNotificationPermission();
+  $("enable-notify").hidden = !("Notification" in window) || notificationsEnabled();
+  setText(
+    "enable-notify",
+    notificationsSupported && Notification.permission === "denied"
+      ? "Notifications blocked: how to fix"
+      : "Turn on notifications",
+  );
 
   document.body.classList.toggle("locked", Boolean(reset));
 
@@ -373,11 +384,12 @@ const settingsDialog = $<HTMLDialogElement>("settings");
 const settingsForm = $<HTMLFormElement>("settings-form");
 
 const openSettings = (): void => {
+  syncNotificationPermission();
   const f = settingsForm.elements;
   (f.namedItem("reminderMinutes") as HTMLInputElement).value = String(Math.round(config.reminderIntervalSeconds / 60));
   (f.namedItem("idleThresholdSeconds") as HTMLInputElement).value = String(config.idleThresholdSeconds);
   (f.namedItem("snoozeMinutes") as HTMLInputElement).value = String(config.snoozeMinutes);
-  (f.namedItem("notifications") as HTMLInputElement).checked = config.notifications;
+  (f.namedItem("notifications") as HTMLInputElement).checked = notificationsEnabled();
   (f.namedItem("systemIdle") as HTMLInputElement).checked = monitor.source === "system";
   $("system-idle-row").hidden = !systemIdleSupported();
   settingsDialog.showModal();
@@ -388,44 +400,33 @@ const clampInt = (raw: string, min: number, max: number, fallback: number): numb
   return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
 };
 
-const enableNotifications = async (): Promise<boolean> => {
-  if (!notificationsSupported) return false;
-  const permission =
-    Notification.permission === "default" ? await Notification.requestPermission() : Notification.permission;
-  return permission === "granted";
-};
-
-const setNotifyStatus = (text: string): void => {
-  const el = $("notify-status");
-  el.textContent = text;
-  el.hidden = false;
-};
-
-/** Explain the outcome of a notification request, and send a test one when allowed. */
-const reportNotifications = async (): Promise<void> => {
-  const permission = Notification.permission;
-  if (permission === "denied") {
-    setNotifyStatus(
-      "Your browser is blocking notifications for this site, so it can't ask again. To allow them, click the icon at the left of the address bar, set Notifications to Allow, then reload this page.",
-    );
-    return;
-  }
-  if (permission === "default") {
-    setNotifyStatus(
-      "Notifications weren't allowed. If no prompt appeared, look for a bell icon at the right of the address bar, or click the button again.",
-    );
-    return;
-  }
+const sendTestNotification = async (): Promise<void> => {
   const sent = await showNotification(
     "Notifications are on",
     "Anti-Burnout cards will appear here when its tab is in the background.",
     "anti-burnout-test",
   );
-  setNotifyStatus(
-    sent
-      ? "Notifications are on, and a test notification has just been sent. Cards will now reach you when this tab is in the background. Didn't see it? Your computer may be hiding notifications from your browser: check Do Not Disturb / Focus, and the notification settings for your browser (Windows: Settings > System > Notifications; macOS: System Settings > Notifications)."
-      : "Notifications are allowed, but this browser couldn't show one. Try a different browser, or check your system's notification settings.",
+  const el = $("notification-status");
+  el.textContent += sent
+    ? " A test notification was just sent. Didn't see it? Check Do Not Disturb / Focus and your browser's notification settings in Windows (Settings > System > Notifications) or macOS (System Settings > Notifications)."
+    : " This browser couldn't show a test notification. Check your system's notification settings, or try another browser.";
+};
+
+const enableNotifications = async (): Promise<boolean> => {
+  if (!("Notification" in window)) return false;
+  const wasOn = notificationsEnabled();
+  const permission =
+    Notification.permission === "default" ? await Notification.requestPermission() : Notification.permission;
+  setText(
+    "notification-status",
+    permission === "granted"
+      ? "Notifications are on. You'll get one when a card is due while this tab is in the background."
+      : permission === "denied"
+        ? "Notifications are blocked. To enable them, open your browser's site settings (the lock icon in the address bar) and allow notifications."
+        : "Notification permission wasn't given. You can try again with Turn on notifications.",
   );
+  if (permission === "granted" && !wasOn) void sendTestNotification();
+  return permission === "granted";
 };
 
 const setSystemIdle = async (on: boolean): Promise<void> => {
@@ -458,6 +459,7 @@ settingsForm.addEventListener("submit", (e) => {
   const systemChange = wantsSystem !== systemOn || (wantsSystem && idleThresholdSeconds !== config.idleThresholdSeconds);
 
   const notifyPermission = wantsNotify ? enableNotifications() : Promise.resolve(false);
+  if (!wantsNotify) setText("notification-status", "");
   let systemResult: Promise<boolean> = Promise.resolve(systemOn);
   if (systemChange) {
     if (wantsSystem) {
@@ -479,12 +481,9 @@ settingsForm.addEventListener("submit", (e) => {
   render();
 
   void Promise.all([notifyPermission, systemResult]).then(([notifications, systemIdle]) => {
-    const turnedOn = notifications && !config.notifications;
     config = { ...config, notifications, systemIdle };
     saveConfig(store, config);
     render();
-    if (wantsNotify && (turnedOn || !notifications)) void reportNotifications();
-    if (!wantsNotify) $("notify-status").hidden = true;
   });
 });
 
@@ -550,7 +549,6 @@ $("enable-notify").addEventListener("click", async () => {
   config.notifications = await enableNotifications();
   saveConfig(store, config);
   render();
-  await reportNotifications();
 });
 $("reset-data").addEventListener("click", () => {
   if (!window.confirm("Clear all counters and settings stored in this browser?")) return;
@@ -587,6 +585,14 @@ document.addEventListener("keydown", (e) => {
 
 renderProtocolList();
 render();
+if (navigator.permissions?.query) {
+  void navigator.permissions.query({ name: "notifications" }).then((status) => {
+    status.onchange = () => render();
+    render();
+  }).catch(() => {
+    /* notification permission queries are not supported in every browser */
+  });
+}
 if (config.systemIdle) {
   void monitor.resumeSystem(config.idleThresholdSeconds).then(render);
 }
