@@ -81,12 +81,18 @@ describe("storage", () => {
 
   it("round-trips config and drops wrongly typed fields", () => {
     const s = memoryStore();
-    saveConfig(s, { ...DEFAULT_WEB_CONFIG, reminderIntervalSeconds: 600, notifications: true });
+    saveConfig(s, { ...DEFAULT_WEB_CONFIG, reminderIntervalSeconds: 600, systemIdle: true });
     expect(loadConfig(s).reminderIntervalSeconds).toBe(600);
-    expect(loadConfig(s).notifications).toBe(true);
-    s.data.set("anti-burnout:config", JSON.stringify({ snoozeMinutes: "ten", notifications: 1 }));
+    expect(loadConfig(s).systemIdle).toBe(true);
+    s.data.set("anti-burnout:config", JSON.stringify({ snoozeMinutes: "ten", systemIdle: 1 }));
     expect(loadConfig(s).snoozeMinutes).toBe(DEFAULT_WEB_CONFIG.snoozeMinutes);
-    expect(loadConfig(s).notifications).toBe(false);
+    expect(loadConfig(s).systemIdle).toBe(false);
+  });
+
+  it("ignores obsolete saved config fields while preserving current settings", () => {
+    const s = memoryStore();
+    s.data.set("anti-burnout:config", JSON.stringify({ obsoleteOption: true, snoozeMinutes: 10 }));
+    expect(loadConfig(s)).toEqual({ ...DEFAULT_WEB_CONFIG, snoozeMinutes: 10 });
   });
 
   it("keeps same-day counters and resets them on a new day", () => {
