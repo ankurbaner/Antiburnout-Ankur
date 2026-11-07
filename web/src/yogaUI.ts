@@ -1,10 +1,10 @@
-import { YOGA_GROUPS, practiceSecondsLeft } from "./yoga";
+import { YOGA_GROUPS, YogaGroup, practiceSecondsLeft } from "./yoga";
 import "./yoga.css";
 
-export const initYoga = (): void => {
-  const container = document.getElementById("yoga-groups");
+export const initPracticeGroups = (containerId: string, groups: YogaGroup[]): void => {
+  const container = document.getElementById(containerId);
   if (!container) return;
-  container.replaceChildren(...YOGA_GROUPS.map((group) => {
+  container.replaceChildren(...groups.map((group) => {
     const section = document.createElement("div");
     section.className = "yoga-group";
     const heading = document.createElement("h3");
@@ -20,7 +20,7 @@ export const initYoga = (): void => {
       card.dataset.practice = practice.id;
       const duration = document.createElement("p");
       duration.className = "yoga-duration";
-      duration.textContent = "1 min";
+      duration.textContent = `${practice.seconds / 60} min`;
       const title = document.createElement("h4");
       title.id = `yoga-practice-${practice.id}`;
       title.textContent = practice.title;
@@ -90,3 +90,5 @@ export const initYoga = (): void => {
     return section;
   }));
 };
+
+export const initYoga = (): void => initPracticeGroups("yoga-groups", YOGA_GROUPS);

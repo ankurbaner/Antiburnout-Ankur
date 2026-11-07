@@ -10,7 +10,8 @@ import { tick } from "../../src/tracker";
 import { CardPractice, createPreviewSelector, needsWater, selectCardPractice } from "./cards";
 import { ActivityMonitor, systemIdleSupported } from "./activity";
 import { playChime, unlockChime } from "./chime";
-import { initYoga } from "./yogaUI";
+import { initPracticeGroups, initYoga } from "./yogaUI";
+import { MEDITATION_PRACTICES } from "./meditation";
 import { crossedWorkEnd, eyeBreakDue, formatTimeOfDay, headsUpSeconds, parseTimeOfDay, snoozeAllowed, withinWorkingHours } from "./schedule";
 import { formatClock, formatIdleThreshold } from "./format";
 import { MEETING_PROTOCOL_ORDER, PROTOCOL_ORDER, Protocol, RESET_SECONDS, countsAsReset, nextProtocol } from "./protocols";
@@ -518,6 +519,7 @@ document.addEventListener("keydown", (e) => {
 });
 
 initYoga();
+initPracticeGroups("meditation-practices", [{ id: "meditation", title: "Choose a quiet moment", practices: MEDITATION_PRACTICES }]);
 render();
 if (config.systemIdle) {
   void monitor.resumeSystem(config.idleThresholdSeconds).then(render);
