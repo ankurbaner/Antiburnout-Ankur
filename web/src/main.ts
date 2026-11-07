@@ -161,8 +161,9 @@ let focusBeforeReset: HTMLElement | null = null;
 
 /** Make everything except the reset overlay inert, so keyboard focus can't leave it. */
 const setBackgroundInert = (inert: boolean): void => {
-  for (const el of Array.from(document.body.children)) {
-    if (el.id !== "reset") (el as HTMLElement).inert = inert;
+  const overlay = $("reset");
+  for (const el of Array.from(overlay.parentElement?.children ?? [])) {
+    if (el !== overlay) (el as HTMLElement).inert = inert;
   }
 };
 
