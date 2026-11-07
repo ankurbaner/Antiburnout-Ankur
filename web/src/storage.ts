@@ -105,18 +105,22 @@ const isHistoryEntry = (value: unknown): value is HistoryEntry => {
     isFiniteNumber(entry.resets) && Number.isInteger(entry.resets) && entry.resets >= 0;
 };
 
-const normalizeHistory = (entries: HistoryEntry[]): HistoryEntry[] => {
+const normalizeHistory = (entries: HistoryEntry[], today: string): HistoryEntry[] => {
+  const cutoff = new Date(`${today}T00:00:00Z`);
+  cutoff.setUTCDate(cutoff.getUTCDate() - 7);
+  const oldestDay = cutoff.toISOString().slice(0, 10);
   const days = new Map<string, HistoryEntry>();
   for (const entry of entries) {
-    if (isHistoryEntry(entry) && (entry.activeSeconds > 0 || entry.cardsDone > 0 || entry.resets > 0)) {
+    if (isHistoryEntry(entry) && entry.day >= oldestDay && entry.day < today &&
+      (entry.activeSeconds > 0 || entry.cardsDone > 0 || entry.resets > 0)) {
       days.set(entry.day, { day: entry.day, activeSeconds: entry.activeSeconds, cardsDone: entry.cardsDone, resets: entry.resets });
     }
   }
   return [...days.values()].sort((a, b) => a.day.localeCompare(b.day)).slice(-7);
 };
 
-export const archiveDay = (history: HistoryEntry[], entry: HistoryEntry): HistoryEntry[] =>
-  normalizeHistory([...history, entry]);
+export const archiveDay = (history: HistoryEntry[], entry: HistoryEntry, today: string): HistoryEntry[] =>
+  normalizeHistory([...history, entry], today);
 
 const read = (store: KV, key: string): Record<string, unknown> | null => {
   try {
@@ -173,14 +177,14 @@ export const loadState = (store: KV, dayKey: string): WebState => {
   const num = (v: unknown): number => (isFiniteNumber(v) ? v : 0);
   const protocol = raw.lastProtocolId;
   let history = normalizeHistory(Array.isArray(raw.history)
-    ? raw.history.filter(isHistoryEntry).filter((entry) => entry.day < dayKey) : []);
+    ? raw.history.filter(isHistoryEntry) : [], dayKey);
   if (tracker.dayKey < dayKey) {
     history = archiveDay(history, {
       day: tracker.dayKey,
       activeSeconds: Math.max(0, tracker.todayActiveSeconds),
       cardsDone: Math.max(0, Math.floor(num(raw.cardsDoneToday))),
       resets: Math.max(0, Math.floor(num(raw.resetsToday))),
-    });
+    }, dayKey);
   }
   if (!sameDay) {
     tracker.todayActiveSeconds = 0;

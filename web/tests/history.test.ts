@@ -14,14 +14,14 @@ const memoryStore = () => {
 describe("daily history", () => {
   it("starts empty and ignores days without any activity", () => {
     expect(initialWebState("2026-11-07").history).toEqual([]);
-    expect(archiveDay([], { day: "2026-11-06", activeSeconds: 0, cardsDone: 0, resets: 0 })).toEqual([]);
-    expect(archiveDay([], entry("2026-11-06", 0))).toEqual([entry("2026-11-06", 0)]);
+    expect(archiveDay([], { day: "2026-11-06", activeSeconds: 0, cardsDone: 0, resets: 0 }, "2026-11-07")).toEqual([]);
+    expect(archiveDay([], entry("2026-11-06", 0), "2026-11-07")).toEqual([entry("2026-11-06", 0)]);
   });
 
   it("replaces duplicate days without mutating inputs, sorts, and keeps seven past days", () => {
     const history = Array.from({ length: 8 }, (_, i) => entry(`2026-11-${String(i + 1).padStart(2, "0")}`)).reverse();
     const snapshot = structuredClone(history);
-    const result = archiveDay(history, entry("2026-11-07", 7200));
+    const result = archiveDay(history, entry("2026-11-07", 7200), "2026-11-09");
     expect(history).toEqual(snapshot);
     expect(result.map((item) => item.day)).toEqual(["2026-11-02", "2026-11-03", "2026-11-04", "2026-11-05", "2026-11-06", "2026-11-07", "2026-11-08"]);
     expect(result.find((item) => item.day === "2026-11-07")?.activeSeconds).toBe(7200);
@@ -42,7 +42,22 @@ describe("daily history", () => {
     expect(loadState(store, "2026-11-07").history).toEqual([entry("2026-11-05")]);
     store.setItem("anti-burnout:state", JSON.stringify({ history: {} }));
     expect(loadState(store, "2026-11-07").history).toEqual([]);
-    expect(archiveDay([], entry("2026-11-06", Infinity))).toEqual([]);
+    expect(archiveDay([], entry("2026-11-06", Infinity), "2026-11-07")).toEqual([]);
+  });
+
+  it("expires entries by calendar age on load and archive, including across year boundaries", () => {
+    const history = [entry("2025-12-24"), entry("2025-12-25"), entry("2025-12-31")];
+    expect(archiveDay(history, entry("2025-12-30"), "2026-01-01")).toEqual([
+      entry("2025-12-25"), entry("2025-12-30"), entry("2025-12-31"),
+    ]);
+    expect(archiveDay(history, entry("2026-01-01"), "2026-01-01")).toEqual(history.slice(1));
+    const store = memoryStore();
+    const state = initialWebState("2025-12-24");
+    state.tracker.todayActiveSeconds = 3600;
+    state.history = history;
+    saveState(store, state);
+    expect(loadState(store, "2026-01-01").history).toEqual(history.slice(1));
+    expect(loadState(store, "2026-02-01").history).toEqual([]);
   });
 
   it("archives yesterday's full counters on load before clearing today's totals", () => {

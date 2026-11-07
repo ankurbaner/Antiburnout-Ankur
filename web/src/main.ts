@@ -96,7 +96,7 @@ const rollDay = (now: Date): void => {
       activeSeconds: state.tracker.todayActiveSeconds,
       cardsDone: state.cardsDoneToday,
       resets: state.resetsToday,
-    });
+    }, today);
   }
   state.history = state.history.filter((entry) => entry.day < today);
   state.cardsDoneToday = 0;
