@@ -27,6 +27,8 @@ import {
 const TICK_MS = 1000;
 /** How often the 1-second loop writes to localStorage; user actions save immediately. */
 const PERSIST_MS = 5000;
+/** Fixed daytime hour for card content, so the shared library never adds its late-evening "stop for the day" line. */
+const CARD_HOUR = 12;
 const BANDS: StretchBand[] = ["eyes", "eyes-posture", "eyes-posture-water", "eyes-posture-water-day"];
 /** Stretch lengths the "Preview a card" button cycles through, one per band. */
 const PREVIEW_STRETCHES = [25 * 60, 60 * 60, 120 * 60, 200 * 60];
@@ -123,6 +125,7 @@ const notify = (content: CardContent): void => {
 const showDueCard = (): void => {
   const content = buildCardContent(state.tracker.currentStretchSeconds, state.tracker.todayActiveSeconds, {
     rotation: state.rotation,
+    hourOfDay: CARD_HOUR,
   });
   state.rotation += 1;
   renderCard(content, false);
@@ -134,6 +137,7 @@ const previewCard = (): void => {
   previewIndex += 1;
   const content = buildCardContent(stretch, Math.max(stretch, state.tracker.todayActiveSeconds), {
     rotation: state.rotation + previewIndex,
+    hourOfDay: CARD_HOUR,
   });
   renderCard(content, true);
 };
