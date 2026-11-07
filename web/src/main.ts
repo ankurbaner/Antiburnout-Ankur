@@ -44,6 +44,8 @@ let state: WebState = loadState(store, dayKeyFor(new Date()));
 const monitor = new ActivityMonitor();
 
 let lastTickMs = Date.now();
+/** Whether the previous step counted time; the first counting step credits nothing. */
+let wasCounting = false;
 let previewIndex = 0;
 let cardVisible = false;
 /** Previews don't count as done and don't move the schedule. */
@@ -235,15 +237,21 @@ const updateDayEnd = (now: Date): void => {
 const step = (): void => {
   const nowMs = Date.now();
   const now = new Date(nowMs);
-  const elapsed = (nowMs - lastTickMs) / 1000;
+  const sinceLastStep = (nowMs - lastTickMs) / 1000;
   lastTickMs = nowMs;
 
   rollDay(now);
   updateDayEnd(now);
 
   // Nothing counts while paused, during a reset (that *is* the break), or
-  // after the day has been ended.
-  if (!state.paused && !reset && !state.dayEndedAt) {
+  // after the day has been ended. Time spent in those states is never
+  // credited, even if timers were suspended across the transition. Large
+  // gaps from background-tab throttling or sleep are clamped by tick().
+  const counting = !state.paused && !reset && !state.dayEndedAt;
+  const elapsed = counting && wasCounting ? sinceLastStep : 0;
+  wasCounting = counting;
+  if (counting) {
+
     const result = tick(state.tracker, monitor.idleSeconds(nowMs), elapsed, dayKeyFor(now), config);
     state.tracker = result.state;
     // Stepping away already was the break, so a card left open is now stale.
