@@ -11,10 +11,8 @@ export const initPracticeGroups = (containerId: string, groups: YogaGroup[], fea
     const heading = document.createElement("h3");
     heading.id = `${containerId}-group-${group.id}`;
     heading.textContent = group.title;
-    if (!featured) {
-      section.setAttribute("role", "group");
-      section.setAttribute("aria-labelledby", heading.id);
-    }
+    section.setAttribute("role", "group");
+    section.setAttribute("aria-labelledby", heading.id);
     const cards = document.createElement("div");
     cards.className = featured ? "yoga-practices daily-practices" : "yoga-practices";
     cards.replaceChildren(...group.practices.map((practice) => {
@@ -24,7 +22,7 @@ export const initPracticeGroups = (containerId: string, groups: YogaGroup[], fea
       const duration = document.createElement("p");
       duration.className = "yoga-duration";
       duration.textContent = `${practice.seconds / 60} min`;
-      const title = document.createElement(featured ? "h3" : "h4");
+      const title = document.createElement("h4");
       title.id = `${containerId}-practice-${practice.id}`;
       title.textContent = practice.title;
       const english = document.createElement("p");
@@ -90,7 +88,7 @@ export const initPracticeGroups = (containerId: string, groups: YogaGroup[], fea
       card.append(duration, title, english, instruction, start, timer, status);
       return card;
     }));
-    if (!featured) section.append(heading);
+    section.append(heading);
     section.append(cards);
     return section;
   }));
