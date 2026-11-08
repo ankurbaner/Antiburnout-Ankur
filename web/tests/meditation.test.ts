@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, expect, it, vi } from "vitest";
+import { formatClock } from "../src/format";
 import html from "../index.html?raw";
 import { MEDITATION_PRACTICES } from "../src/meditation";
 import { initPracticeGroups } from "../src/yogaUI";
@@ -45,16 +46,16 @@ it.each(MEDITATION_PRACTICES)("renders and runs the $title timer, completes, clo
   const done = timer.querySelector<HTMLButtonElement>("button")!;
   const countdown = card.querySelector(".yoga-countdown")!;
   start.click();
-  expect(countdown.textContent).toBe(`${practice.seconds} s`);
+  expect(countdown.textContent).toBe(formatClock(practice.seconds));
   expect(timer.hidden).toBe(false);
   vi.advanceTimersByTime(1000);
-  expect(countdown.textContent).toBe(`${practice.seconds - 1} s`);
+  expect(countdown.textContent).toBe(formatClock(practice.seconds - 1));
   done.click();
   expect(timer.hidden).toBe(true);
   expect(document.activeElement).toBe(start);
   start.click();
   vi.advanceTimersByTime(practice.seconds * 1000);
-  expect(countdown.textContent).toBe("0 s");
+  expect(countdown.textContent).toBe("00:00");
   expect(card.querySelector('[role="status"]')?.textContent).toContain("All done");
   expect(vi.getTimerCount()).toBe(0);
   done.click();

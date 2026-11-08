@@ -3,6 +3,7 @@ import { afterEach, expect, it, vi } from "vitest";
 import { initDailyPractice } from "../src/dailyPracticeUI";
 import { dailyPracticePair } from "../src/dailyPractice";
 import { initYoga } from "../src/yogaUI";
+import { formatClock } from "../src/format";
 
 afterEach(() => { vi.useRealTimers(); document.body.replaceChildren(); });
 
@@ -31,7 +32,7 @@ it("reuses the timer without Roots, avoids duplicate IDs and cleans up on a new 
   expect(new Set(ids).size).toBe(ids.length);
   card.querySelector<HTMLButtonElement>("button")!.click();
   vi.advanceTimersByTime(1000);
-  expect(card.querySelector(".yoga-countdown")?.textContent).toBe(`${practice.seconds - 1} s`);
+  expect(card.querySelector(".yoga-countdown")?.textContent).toBe(formatClock(practice.seconds - 1));
   card.querySelector<HTMLButtonElement>(".yoga-timer button")!.click();
   expect(card.querySelector<HTMLElement>(".yoga-timer")!.hidden).toBe(true);
   card.querySelector<HTMLButtonElement>("button")!.click();
@@ -56,15 +57,15 @@ it("runs both timers independently and cleans both up on a new day", () => {
     card.querySelector<HTMLButtonElement>("button")!.click();
   });
   vi.advanceTimersByTime(1000);
-  cards.forEach((card, index) => expect(card.querySelector(".yoga-countdown")?.textContent).toBe(`${practices[index]!.seconds - 1} s`));
+  cards.forEach((card, index) => expect(card.querySelector(".yoga-countdown")?.textContent).toBe(formatClock(practices[index]!.seconds - 1)));
   cards[0].querySelector<HTMLButtonElement>(".yoga-timer button")!.click();
   expect(cards[0].querySelector<HTMLElement>(".yoga-timer")!.hidden).toBe(true);
   vi.advanceTimersByTime(1000);
-  expect(cards[1].querySelector(".yoga-countdown")?.textContent).toBe(`${practices[1]!.seconds - 2} s`);
+  expect(cards[1].querySelector(".yoga-countdown")?.textContent).toBe(formatClock(practices[1]!.seconds - 2));
   cards[0].querySelector<HTMLButtonElement>("button")!.click();
   vi.advanceTimersByTime(180000);
   cards.forEach((card) => {
-    expect(card.querySelector(".yoga-countdown")?.textContent).toBe("0 s");
+    expect(card.querySelector(".yoga-countdown")?.textContent).toBe("00:00");
     expect(card.querySelector(".yoga-timer-status")?.textContent).toBe("All done. Take your time coming back.");
     card.querySelector<HTMLButtonElement>(".yoga-timer button")!.click();
     card.querySelector<HTMLButtonElement>("button")!.click();

@@ -1,4 +1,5 @@
 import { YogaGroup, YOGA_GROUPS, practiceSecondsLeft } from "./yoga";
+import { formatClock } from "./format";
 import "./yoga.css";
 
 export const initPracticeGroups = (containerId: string, groups: YogaGroup[], featured = false): (() => void) => {
@@ -44,7 +45,7 @@ export const initPracticeGroups = (containerId: string, groups: YogaGroup[], fea
       const countdown = document.createElement("span");
       countdown.className = "yoga-countdown";
       countdown.setAttribute("role", "timer");
-      countdown.setAttribute("aria-label", `${practice.title} seconds remaining`);
+      countdown.setAttribute("aria-label", `${practice.title} time remaining`);
       const status = document.createElement("p");
       status.className = "yoga-timer-status";
       status.setAttribute("role", "status");
@@ -59,7 +60,7 @@ export const initPracticeGroups = (containerId: string, groups: YogaGroup[], fea
       let endsAt: number | null = null;
       const update = (): void => {
         const left = practiceSecondsLeft(endsAt, Date.now());
-        countdown.textContent = `${left ?? practice.seconds} s`;
+        countdown.textContent = formatClock(left ?? practice.seconds);
         if (left === 0) {
           window.clearInterval(interval);
           status.textContent = "All done. Take your time coming back.";
