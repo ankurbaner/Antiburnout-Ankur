@@ -53,6 +53,7 @@ export const YOGA_GROUPS: YogaGroup[] = [
       { id: "palm-tree", title: "Tadasana", english: "Palm tree stretch · arms overhead", seconds: 60, instruction: "Stand with feet comfortably apart and knees soft, then slowly lift your arms overhead only as far as feels easy. Reach gently upward with heels on the floor, breathe normally, then lower your arms." },
       { id: "side-bend", title: "Tiryaka Tadasana", english: "Standing side bend", seconds: 60, instruction: "Stand with feet apart and lift one arm if comfortable, keeping the other hand on your hip. Lean a little to the opposite side without twisting, return upright, then switch sides." },
       { id: "heels", title: "Pada Sanchalana · heel raises", english: "Calf and heel raises", seconds: 60, instruction: "Stand beside a steady desk or wall and hold it lightly for balance. Slowly lift both heels, then lower them with control; keep the movement small and quiet." },
+      { id: "walk-break", title: "Walk break", english: "Fresh air · 10-minute walk", seconds: 600, instruction: "Step away from your screen for a comfortable 10-minute walk. Head outside for fresh air if it is safe and practical, and choose an easy route." },
     ],
   },
 ];

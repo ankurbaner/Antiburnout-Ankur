@@ -21,6 +21,7 @@ export const initSteady = (): void => {
   const next = get<HTMLButtonElement>("next");
   const back = get<HTMLButtonElement>("back");
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const lastStep = STEADY_STEPS.length - 1;
   let step = -1;
   let startedAt = 0;
   let interval: number | undefined;
@@ -74,7 +75,7 @@ export const initSteady = (): void => {
     if (step < 0) return;
     const state = steadyAt(step, Math.max(0, (Date.now() - startedAt) / 1000));
     if (!state) return;
-    if (state.done) { if (step === 3) finish(true); else enter(step + 1, session.contains(document.activeElement)); return; }
+    if (state.done) { if (step === lastStep) finish(true); else enter(step + 1, session.contains(document.activeElement)); return; }
     get("time").textContent = step === 2 ? "Take your time · Next skips this step" : `${formatClock(state.remaining)} left${step < 2 ? ` · Round ${state.round} of 3` : ""}`;
     const key = `${step}-${state.round}-${state.phase}`;
     if (key === phaseKey) return;
@@ -100,14 +101,14 @@ export const initSteady = (): void => {
     step = index;
     startedAt = Date.now();
     phaseKey = "";
-    get("progress").textContent = `Step ${step + 1} of 4`;
+    get("progress").textContent = `Step ${step + 1} of ${STEADY_STEPS.length}`;
     heading.textContent = STEADY_STEPS[step].title;
-    heading.dataset.reframe = String(step === 3);
+    heading.dataset.reframe = String(step === lastStep);
     get("instruction").textContent = STEADY_STEPS[step].instruction;
     get("visual").hidden = step !== 0;
     ground.hidden = step !== 2;
     back.disabled = step === 0;
-    next.textContent = step === 3 ? "Done" : "Next";
+    next.textContent = step === lastStep ? "Done" : "Next";
     if (step === 2) renderGround();
     update();
     if (focus) heading.focus({ preventScroll: true });
@@ -122,7 +123,7 @@ export const initSteady = (): void => {
     interval = window.setInterval(update, 100);
   });
   back.addEventListener("click", () => { if (step > 0) enter(step - 1); });
-  next.addEventListener("click", () => { if (step === 3) finish(true); else if (step >= 0) enter(step + 1); });
+  next.addEventListener("click", () => { if (step === lastStep) finish(true); else if (step >= 0) enter(step + 1); });
   get("stop").addEventListener("click", () => finish(false));
   const resync = (): void => { phaseKey = ""; update(); };
   document.addEventListener("visibilitychange", resync);

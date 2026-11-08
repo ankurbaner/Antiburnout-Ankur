@@ -6,7 +6,8 @@ import { MEDITATION_PRACTICES } from "../src/meditation";
 describe("practice of the local day", () => {
   it("selects meditation and desk movements, never pranayama for yoga", () => {
     const breathing = YOGA_GROUPS.find((group) => group.id === "breathing")!.practices;
-    expect(DAILY_YOGA_PRACTICES).toEqual(YOGA_GROUPS.filter((group) => group.id !== "breathing").flatMap((group) => group.practices));
+    expect(DAILY_YOGA_PRACTICES).toEqual(YOGA_GROUPS.filter((group) => group.id !== "breathing").flatMap((group) => group.practices).filter((practice) => practice.id !== "walk-break"));
+    expect(DAILY_YOGA_PRACTICES.map((practice) => practice.id)).not.toContain("walk-break");
     expect(DAILY_YOGA_PRACTICES).toHaveLength(9);
     for (let i = 0; i < 40; i++) {
       const pair = dailyPracticePair(new Date(2026, 10, 7 + i));

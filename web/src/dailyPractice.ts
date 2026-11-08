@@ -3,7 +3,8 @@ import { YOGA_GROUPS, YogaPractice } from "./yoga";
 
 export const DAILY_YOGA_PRACTICES = YOGA_GROUPS
   .filter((group) => group.id !== "breathing")
-  .flatMap((group) => group.practices);
+  .flatMap((group) => group.practices)
+  .filter((practice) => practice.id !== "walk-break");
 
 const dailyPractice = (date: Date, practices: readonly YogaPractice[]): YogaPractice | null => {
   if (!Number.isFinite(date.getTime()) || practices.length === 0) return null;
