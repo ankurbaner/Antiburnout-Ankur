@@ -86,7 +86,13 @@ describe("simplified page copy", () => {
     expect(document.querySelector('#steady-title')?.textContent).toBe("Steady before you speak");
     expect(document.querySelector('#steady-start')?.textContent).toBe("I feel nervous now");
     expect(document.querySelector('#steady .yoga-safety')?.textContent).toBe("This is not medical advice. If panic or anxiety happens often or feels overwhelming, please speak to a doctor.");
-    expect(document.querySelectorAll('#steady .steady-tips li')).toHaveLength(7);
+    expect([...document.querySelectorAll('#steady .steady-tips li')].map((tip) => tip.textContent)).toEqual([
+      "Hold a cool glass or bottle for a moment.",
+      "Plant both feet and feel the floor beneath them.",
+      "Give your first sentence a little more time.",
+      "Find a friendly face to speak towards.",
+      "Sip water or green tea instead of coffee before a talk.",
+    ]);
     expect(document.querySelector('#steady .steady-tips')?.textContent).toContain("Sip water or green tea instead of coffee before a talk.");
     for (const id of ["steady-progress", "steady-phase", "steady-result"]) {
       expect(document.getElementById(id)?.getAttribute("aria-live")).toBe("polite");
