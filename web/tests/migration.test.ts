@@ -77,6 +77,15 @@ it("persists meeting mode and the previous card/reset without letting malformed 
   expect(loadState(storage, "2026-11-07")).toMatchObject({ meetingMode: false, lastPracticeId: null, lastProtocolId: null });
 });
 
+it.each(["kindness", "head-to-toe-scan"])("discards retired meditation ID %s while preserving other stored state", (id) => {
+  const storage = store();
+  storage.setItem("anti-burnout:state", JSON.stringify({ ...initialWebState("2026-11-08"), lastPracticeId: id, meetingMode: true }));
+  const state = loadState(storage, "2026-11-08");
+  expect(state).toMatchObject({ lastPracticeId: null, meetingMode: true });
+  saveState(storage, state);
+  expect(loadState(storage, "2026-11-08")).toEqual(state);
+});
+
 it("ignores retired day-note data, drops its config/state fields on save and clears legacy keys", () => {
   for (const retired of [null, "broken", { text: "A previous note", day: "2026-11-07" }]) {
     const storage = store();

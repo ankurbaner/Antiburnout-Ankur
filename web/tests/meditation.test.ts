@@ -10,13 +10,26 @@ afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); document.body.replace
 const render = () => initPracticeGroups("meditation-practices", [{ id: "meditation", title: "Choose a quiet moment", practices: MEDITATION_PRACTICES }]);
 
 it("defines six silent desk practices with their requested durations", () => {
-  expect(MEDITATION_PRACTICES.map((practice) => practice.title)).toEqual(["Anapanasati", "So-Hum", "Trataka", "Sakshi Bhava", "Yoga Nidra inspired", "Maitri"]);
+  expect(MEDITATION_PRACTICES.map((practice) => practice.title)).toEqual(["Anapanasati", "So-Hum", "Trataka", "Sakshi Bhava", "Yoga Nidra inspired", "Mindful listening"]);
   expect(MEDITATION_PRACTICES.map((practice) => practice.seconds)).toEqual([120, 120, 60, 120, 180, 60]);
   expect(new Set(MEDITATION_PRACTICES.map((practice) => practice.id)).size).toBe(6);
   for (const practice of MEDITATION_PRACTICES) {
     expect(practice.english.length).toBeGreaterThan(0);
     expect(practice.instruction.split(".").filter(Boolean)).toHaveLength(2);
   }
+});
+
+it("replaces retired practices with mindful listening while keeping only the original body scan", () => {
+  expect(MEDITATION_PRACTICES.some((practice) => practice.id === "kindness")).toBe(false);
+  expect(MEDITATION_PRACTICES.filter((practice) => /body scan/i.test(`${practice.title} ${practice.english}`))).toEqual([
+    expect.objectContaining({ id: "body-scan", title: "Yoga Nidra inspired", seconds: 180 }),
+  ]);
+  const listening = MEDITATION_PRACTICES.find((practice) => practice.id === "mindful-listening")!;
+  expect(listening.seconds).toBe(60);
+  expect(listening.english).toBe("Noticing sounds near and far");
+  expect(listening.instruction).toMatch(/Close your eyes or soften your gaze.*sounds near and far.*computer hum.*voices.*traffic.*your own breath/);
+  expect(listening.instruction).toMatch(/letting each come and go without naming or judging it/);
+  expect(listening.instruction).toMatch(/mind wanders.*return to listening/);
 });
 
 it("places meditation after yoga with a working navigation target", () => {
