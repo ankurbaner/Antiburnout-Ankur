@@ -13,7 +13,8 @@ describe("simplified page copy", () => {
     expect(document.querySelector("#contact .contact-email")?.textContent).toBe("ankur.banerjee014@gmail.com");
   });
   it("places the silent breath guide before desk yoga", () => {
-    expect(document.querySelector(".hero + section")?.id).toBe("practice-of-the-day");
+    expect(document.querySelector(".hero + section")?.id).toBe("steady");
+    expect(document.querySelector("#steady + section")?.id).toBe("practice-of-the-day");
     expect(document.querySelector("#practice-of-the-day + section")?.id).toBe("breathe");
     expect(document.querySelector("#breathe + section")?.id).toBe("yoga");
     expect(document.querySelector('.nav a[href="#yoga"]')?.textContent).toBe("Yoga");
@@ -35,13 +36,13 @@ describe("simplified page copy", () => {
     expect(document.querySelector("#yoga .yoga-safety")?.textContent).toBe(`Move gently and stop if anything hurts. ${disclaimer}`);
     expect(document.querySelector("#meditation .yoga-intro + .yoga-safety")?.textContent).toBe(disclaimer);
     expect(document.querySelector("body > footer .yoga-safety")?.textContent).toBe(disclaimer);
-    expect(document.querySelectorAll(".yoga-safety")).toHaveLength(3);
+    expect(document.querySelectorAll(".yoga-safety")).toHaveLength(4);
     expect(html).not.toContain("If you have a health condition, check with your doctor first.");
   });
 
   it("keeps only reminder/reset options and retained navigation", () => {
     expect(document.querySelector("#how, #privacy, .tips-title, #eye-break, #day-notice")).toBeNull();
-    expect([...document.querySelectorAll(".nav a")].map((link) => link.textContent)).toEqual(["Breathe", "Yoga", "Meditation", "Contact"]);
+    expect([...document.querySelectorAll(".nav a")].map((link) => link.textContent)).toEqual(["Calm", "Breathe", "Yoga", "Meditation", "Contact"]);
     expect([...document.querySelectorAll("#settings input")].map((input) => input.getAttribute("name"))).toEqual([
       "reminderMinutes", "snoozeMinutes", "maxSnoozes", "chime", "meetingMode",
     ]);
@@ -64,5 +65,18 @@ describe("simplified page copy", () => {
     expect(html).not.toMatch(/Today's intention|Sankalpa|Save my spot|Save your spot|Where you left off|Roots|End of day/i);
     expect(document.querySelector("#practice-of-the-day")).not.toBeNull();
     expect(document.querySelector("#install-app")).not.toBeNull();
+  });
+
+  it("places an accessible, silent Steady guide before the daily practice", () => {
+    expect(document.querySelector('#steady + section')?.id).toBe("practice-of-the-day");
+    expect(document.querySelector('.nav a[href="#steady"]')?.textContent).toBe("Calm");
+    expect(document.querySelector('#steady .eyebrow')?.textContent).toBe("When nerves hit");
+    expect(document.querySelector('#steady-title')?.textContent).toBe("Steady before you speak");
+    expect(document.querySelector('#steady-start')?.textContent).toBe("I feel nervous now");
+    expect(document.querySelector('#steady .yoga-safety')?.textContent).toBe("This is not medical advice. If panic or anxiety happens often or feels overwhelming, please speak to a doctor.");
+    expect(document.querySelectorAll('#steady .steady-tips li')).toHaveLength(6);
+    for (const id of ["steady-progress", "steady-phase", "steady-result"]) {
+      expect(document.getElementById(id)?.getAttribute("aria-live")).toBe("polite");
+    }
   });
 });

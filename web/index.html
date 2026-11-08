@@ -34,6 +34,7 @@
           <span>Anti-Burnout</span>
         </a>
         <nav class="nav" aria-label="Sections">
+          <a href="#steady">Calm</a>
           <a href="#breathe">Breathe</a>
           <a href="#yoga">Yoga</a>
           <a href="#meditation">Meditation</a>
@@ -53,6 +54,43 @@
           <button class="btn btn-ghost" type="button" data-action="preview-card">Preview a card</button>
           <button class="btn btn-ghost btn-sm" type="button" id="install-app" hidden>Install app</button>
         </div>
+      </section>
+
+      <section class="wrap" id="steady" aria-labelledby="steady-title">
+        <p class="eyebrow">When nerves hit</p>
+        <h2 id="steady-title">Steady before you speak</h2>
+        <p class="yoga-intro muted">Take a quiet moment to find your footing before your next talk.</p>
+        <div class="steady-guide">
+          <button class="btn btn-primary" id="steady-start" type="button">I feel nervous now</button>
+          <p class="muted steady-spacing">About 2 minutes, with grounding at your own pace. No sound; nothing is saved.</p>
+          <div id="steady-session" hidden>
+            <p class="steady-spacing muted" id="steady-progress" role="status" aria-live="polite" aria-atomic="true"></p>
+            <h3 id="steady-step" tabindex="-1" class="steady-spacing"></h3>
+            <p id="steady-instruction" class="steady-spacing"></p>
+            <div class="breath-stage" id="steady-visual" aria-hidden="true"><div class="breath-circle" id="steady-circle"></div></div>
+            <p class="steady-phase" id="steady-phase" role="status" aria-live="polite" aria-atomic="true"></p>
+            <p class="muted steady-spacing" id="steady-time" role="timer" aria-live="off"></p>
+            <div id="steady-ground" class="steady-spacing" hidden></div>
+            <div class="steady-actions steady-spacing">
+              <button class="btn btn-ghost" id="steady-back" type="button">Back</button>
+              <button class="btn btn-primary" id="steady-next" type="button">Next</button>
+              <button class="btn btn-ghost" id="steady-stop" type="button">Stop</button>
+            </div>
+          </div>
+          <p id="steady-result" class="steady-spacing" role="status" aria-live="polite"></p>
+          <div class="steady-tips steady-spacing">
+            <h3>Before a presentation</h3>
+            <ul>
+              <li>Rinse your wrists and palms with cool water.</li>
+              <li>Hold a cool glass or bottle for a moment.</li>
+              <li>Keep a tissue or handkerchief within reach.</li>
+              <li>Plant both feet and feel the floor beneath them.</li>
+              <li>Give your first sentence a little more time.</li>
+              <li>Find a friendly face to speak towards.</li>
+            </ul>
+          </div>
+        </div>
+        <p class="yoga-safety">This is not medical advice. If panic or anxiety happens often or feels overwhelming, please speak to a doctor.</p>
       </section>
 
       <section class="wrap" id="practice-of-the-day" aria-labelledby="daily-title">
