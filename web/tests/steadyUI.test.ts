@@ -127,3 +127,23 @@ it("does not steal focus after the user leaves the guide", () => {
   expect(element("result").textContent).toContain("Well done");
   expect(document.activeElement).toBe(outside);
 });
+
+it("preserves partial and completed grounding on Back, resetting only on Start", () => {
+  initSteady();
+  click("start"); click("next"); click("next");
+  const notice = () => element("ground").querySelector<HTMLButtonElement>("button:not(:disabled)")!.click();
+  notice();
+  click("next"); click("back");
+  expect(element("ground").querySelectorAll('[aria-pressed="true"]')).toHaveLength(1);
+  for (let i = 1; i < 15; i++) notice();
+  expect(element("progress").textContent).toBe("Step 4 of 4");
+  click("back");
+  expect(element("ground").querySelectorAll('[aria-pressed="true"]')).toHaveLength(15);
+  click("next"); click("next");
+  click("start"); click("next"); click("next");
+  expect(element("ground").querySelectorAll('[aria-pressed="true"]')).toHaveLength(0);
+  notice(); click("stop");
+  click("start"); click("next"); click("next");
+  expect(element("ground").querySelectorAll('[aria-pressed="true"]')).toHaveLength(0);
+  click("stop");
+});

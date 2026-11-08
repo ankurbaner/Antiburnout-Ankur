@@ -108,7 +108,7 @@ export const initSteady = (): void => {
     ground.hidden = step !== 2;
     back.disabled = step === 0;
     next.textContent = step === 3 ? "Done" : "Next";
-    if (step === 2) { noticed = GROUND_SENSES.map(() => 0); renderGround(); }
+    if (step === 2) renderGround();
     update();
     if (focus) heading.focus({ preventScroll: true });
   };
@@ -117,6 +117,7 @@ export const initSteady = (): void => {
     start.hidden = true;
     session.hidden = false;
     get("result").textContent = "";
+    noticed = GROUND_SENSES.map(() => 0);
     enter(0);
     interval = window.setInterval(update, 100);
   });
