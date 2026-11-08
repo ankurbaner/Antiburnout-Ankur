@@ -31,7 +31,7 @@ export const initSteady = (): void => {
       get(choice).hidden = scene !== choice;
       get(`${choice}-choice`).setAttribute("aria-pressed", String(scene === choice));
     }
-    if (step === 1) phase.textContent = STEADY_SCENES[scene];
+    if (STEADY_STEPS[step]?.kind === "smile") phase.textContent = STEADY_SCENES[scene];
   };
   const finish = (complete: boolean): void => {
     const focusInside = session.contains(document.activeElement);
@@ -47,12 +47,13 @@ export const initSteady = (): void => {
     const state = steadyAt(step, Math.max(0, (Date.now() - startedAt) / 1000));
     if (!state) return;
     if (state.done) { if (step === lastStep) finish(true); else enter(step + 1, session.contains(document.activeElement)); return; }
-    get("time").textContent = `${formatClock(state.remaining)} left${step === 0 || step === 2 ? ` · Round ${state.round} of 3` : ""}`;
+    const kind = STEADY_STEPS[step].kind;
+    get("time").textContent = `${formatClock(state.remaining)} left${kind !== "smile" ? ` · Round ${state.round} of 3` : ""}`;
     const key = `${step}-${state.round}-${state.phase}`;
     if (key === phaseKey) return;
     phaseKey = key;
-    phase.textContent = step === 1 ? STEADY_SCENES[scene] : state.label;
-    if (step !== 0) return;
+    phase.textContent = kind === "smile" ? STEADY_SCENES[scene] : state.label;
+    if (kind !== "sigh") return;
     if (reducedMotion.matches) {
       circle.style.removeProperty("transform");
       circle.style.removeProperty("transition");
@@ -74,12 +75,12 @@ export const initSteady = (): void => {
     phaseKey = "";
     get("progress").textContent = `Step ${step + 1} of ${STEADY_STEPS.length}`;
     heading.textContent = STEADY_STEPS[step].title;
-    heading.dataset.reframe = String(step === lastStep);
-    phase.dataset.smile = String(step === 1);
+    const kind = STEADY_STEPS[step].kind;
+    phase.dataset.smile = String(kind === "smile");
     get("instruction").textContent = STEADY_STEPS[step].instruction;
-    get("visual").hidden = step !== 0;
-    get("smile").hidden = step !== 1;
-    if (step === 1) renderScene();
+    get("visual").hidden = kind !== "sigh";
+    get("smile").hidden = kind !== "smile";
+    if (kind === "smile") renderScene();
     back.disabled = step === 0;
     next.textContent = step === lastStep ? "Done" : "Next";
     update();

@@ -18,22 +18,22 @@ describe("Steady timing", () => {
     }
     expect(steadyAt(2, 39.5)).toMatchObject({ phase: 1, phaseElapsed: 4.5, remaining: 6, round: 3 });
   });
-  it.each([0, 1, 2, 3])("completes timed step %s exactly at its duration and stays complete", (step) => {
+  it.each([0, 1, 2])("completes timed step %s exactly at its duration and stays complete", (step) => {
     const duration = STEADY_STEPS[step].seconds;
     expect(steadyAt(step, duration - 0.001)?.done).toBe(false);
     expect(steadyAt(step, duration)).toMatchObject({ done: true, remaining: 0 });
     expect(steadyAt(step, duration + 300)).toMatchObject({ done: true, remaining: 0 });
   });
   it("rejects invalid steps and elapsed times", () => {
-    for (const step of [-1, 4, 5, 0.5, NaN, Infinity]) expect(steadyAt(step, 0)).toBeNull();
+    for (const step of [-1, 3, 4, 0.5, NaN, Infinity]) expect(steadyAt(step, 0)).toBeNull();
     for (const elapsed of [-1, NaN, Infinity, -Infinity]) expect(steadyAt(0, elapsed)).toBeNull();
   });
-  it("orders sigh, 20-second smile, squeeze and release, and reframe in four steps", () => {
+  it("orders sigh, 20-second smile, and squeeze and release in three steps", () => {
+    expect(STEADY_STEPS.map(({ kind }) => kind)).toEqual(["sigh", "smile", "squeeze"]);
     expect(STEADY_STEPS.map(({ title, seconds }) => ({ title, seconds }))).toEqual([
       { title: "Physiological sigh", seconds: 30 },
       { title: "Picture a smile", seconds: 20 },
       { title: "Squeeze and release", seconds: 45 },
-      { title: "Say quietly: “I'm excited.”", seconds: 10 },
     ]);
     expect(steadyAt(1, 0)).toMatchObject({ remaining: 20, done: false, label: "Look at the child's smile. Smile back. All is well." });
     expect(steadyAt(1, 19.5)).toMatchObject({ remaining: 1, done: false });

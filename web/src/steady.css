@@ -2,7 +2,6 @@
 .steady-spacing { margin-top: 16px; }
 #steady-instruction, .steady-tips { max-width: 65ch; }
 #steady-step, .steady-tips h3 { font-size: var(--text-card); line-height: 1.25; }
-#steady-step[data-reframe="true"] { font-size: var(--text-group); }
 .steady-phase { font-size: 1.125rem; min-height: 2em; margin-top: 16px; }
 .steady-phase[data-smile="true"] { font-family: var(--display); font-size: var(--text-group); line-height: 1.25; text-align: center; }
 .steady-smile { margin-top: 24px; }
