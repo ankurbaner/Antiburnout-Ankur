@@ -10,13 +10,22 @@ afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); document.body.replace
 const render = () => initPracticeGroups("meditation-practices", [{ id: "meditation", title: "Choose a quiet moment", practices: MEDITATION_PRACTICES }]);
 
 it("defines six silent desk practices with their requested durations", () => {
-  expect(MEDITATION_PRACTICES.map((practice) => practice.title)).toEqual(["Anapanasati", "So-Hum", "Trataka", "Sakshi Bhava", "Yoga Nidra inspired", "Maitri"]);
-  expect(MEDITATION_PRACTICES.map((practice) => practice.seconds)).toEqual([120, 120, 60, 120, 180, 60]);
+  expect(MEDITATION_PRACTICES.map((practice) => practice.title)).toEqual(["Anapanasati", "So-Hum", "Trataka", "Sakshi Bhava", "Yoga Nidra inspired", "Body scan"]);
+  expect(MEDITATION_PRACTICES.map((practice) => practice.seconds)).toEqual([120, 120, 60, 120, 180, 120]);
   expect(new Set(MEDITATION_PRACTICES.map((practice) => practice.id)).size).toBe(6);
   for (const practice of MEDITATION_PRACTICES) {
     expect(practice.english.length).toBeGreaterThan(0);
     expect(practice.instruction.split(".").filter(Boolean)).toHaveLength(2);
   }
+});
+
+it("replaces loving-kindness with a natural-breathing head-to-feet scan", () => {
+  expect(MEDITATION_PRACTICES.some((practice) => practice.id === "kindness")).toBe(false);
+  const scan = MEDITATION_PRACTICES.find((practice) => practice.title === "Body scan")!;
+  expect(scan.seconds).toBe(120);
+  expect(scan.instruction).toMatch(/top of your head.*forehead.*jaw.*shoulders.*hands.*chest and belly.*legs and feet/);
+  expect(scan.instruction).toMatch(/noticing sensations and softening tension without judging/);
+  expect(scan.instruction).toMatch(/Breathe naturally.*eyes may stay open with a soft gaze/);
 });
 
 it("places meditation after yoga with a working navigation target", () => {
