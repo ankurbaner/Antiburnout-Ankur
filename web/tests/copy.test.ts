@@ -38,8 +38,8 @@ describe("simplified page copy", () => {
       style.remove();
     }
   });
-  it("keeps the daily mindfulness and yoga pair directly after Steady", () => {
-    expect(document.querySelector("#steady + section")?.id).toBe("practice-of-the-day");
+  it("keeps the daily mindfulness and yoga pair directly after the hero", () => {
+    expect(document.querySelector(".hero + section")?.id).toBe("practice-of-the-day");
     expect(document.querySelector("#daily-title")?.textContent).toBe("Practice of the day");
     globalThis.document.body.innerHTML = document.querySelector("#practice-of-the-day")!.outerHTML;
     initDailyPractice(new Date(2026, 10, 7));
@@ -55,11 +55,12 @@ describe("simplified page copy", () => {
     expect(document.querySelector("#contact .contact-email")?.getAttribute("href")).toBe("mailto:ankur.banerjee014@gmail.com?subject=Anti-Burnout");
     expect(document.querySelector("#contact .contact-email")?.textContent).toBe("ankur.banerjee014@gmail.com");
   });
-  it("places the silent breath guide before desk yoga", () => {
-    expect(document.querySelector(".hero + section")?.id).toBe("steady");
-    expect(document.querySelector("#steady + section")?.id).toBe("practice-of-the-day");
+  it("places eye exercises between the silent breath guide and desk yoga", () => {
+    expect(document.querySelector(".hero + section")?.id).toBe("practice-of-the-day");
     expect(document.querySelector("#practice-of-the-day + section")?.id).toBe("breathe");
-    expect(document.querySelector("#breathe + section")?.id).toBe("yoga");
+    expect(document.querySelector("#breathe + section")?.id).toBe("eyes");
+    expect(document.querySelector("#eyes + section")?.id).toBe("yoga");
+    expect(document.querySelector("#eyes-title")?.textContent).toBe("Eye exercises");
     expect(document.querySelector('.nav a[href="#yoga"]')?.textContent).toBe("Yoga");
     expect(document.querySelector("#smile, .smile-scene, #smile-practices")).toBeNull();
     expect(document.getElementById("yoga-title")?.textContent).toBe("Desk yoga");
@@ -79,13 +80,14 @@ describe("simplified page copy", () => {
     expect(document.querySelector("#yoga .yoga-safety")?.textContent).toBe(`Move gently and stop if anything hurts. ${disclaimer}`);
     expect(document.querySelector("#meditation .yoga-intro + .yoga-safety")?.textContent).toBe(disclaimer);
     expect(document.querySelector("body > footer .yoga-safety")?.textContent).toBe(disclaimer);
-    expect(document.querySelectorAll(".yoga-safety")).toHaveLength(4);
+    expect(document.querySelector("#eyes .yoga-safety")?.textContent).toBe(`Stop if your eyes feel strained. ${disclaimer}`);
+    expect(document.querySelectorAll(".yoga-safety")).toHaveLength(5);
     expect(html).not.toContain("If you have a health condition, check with your doctor first.");
   });
 
   it("keeps only reminder/reset options and retained navigation", () => {
     expect(document.querySelector("#how, #privacy, .tips-title, #eye-break, #day-notice")).toBeNull();
-    expect([...document.querySelectorAll(".nav a")].map((link) => link.textContent)).toEqual(["Calm", "Breathe", "Yoga", "Meditation", "Contact"]);
+    expect([...document.querySelectorAll(".nav a")].map((link) => link.textContent)).toEqual(["Breathe", "Eyes", "Yoga", "Meditation", "Calm", "Contact"]);
     expect([...document.querySelectorAll("#settings input")].map((input) => input.getAttribute("name"))).toEqual([
       "reminderMinutes", "snoozeMinutes", "maxSnoozes", "chime", "meetingMode",
     ]);
@@ -110,11 +112,12 @@ describe("simplified page copy", () => {
     expect(document.querySelector("#install-app")).not.toBeNull();
   });
 
-  it("places an accessible, silent Steady guide before the daily practice", () => {
+  it("places the complete accessible, silent Steady guide immediately before Contact", () => {
     expect(document.querySelector('#steady')?.textContent).not.toMatch(/About 2–3 minutes|grounding|5-4-3-2-1|reframe|excited/i);
     expect(document.querySelector('#steady-ground, .steady-dot, .steady-row')).toBeNull();
     expect(document.body.textContent).not.toMatch(/sweat/i);
-    expect(document.querySelector('#steady + section')?.id).toBe("practice-of-the-day");
+    expect(document.querySelector('#steady + section')?.id).toBe("contact");
+    expect(document.querySelector('#meditation + section')?.id).toBe("steady");
     expect(document.querySelector('.nav a[href="#steady"]')?.textContent).toBe("Calm");
     expect(document.querySelector('#steady .eyebrow')?.textContent).toBe("When nerves hit");
     expect(document.querySelector('#steady-title')?.textContent).toBe("Steady before you speak");
