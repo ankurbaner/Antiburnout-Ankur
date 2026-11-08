@@ -68,6 +68,77 @@
             <h3 id="steady-step" tabindex="-1" class="steady-spacing"></h3>
             <p id="steady-instruction" class="steady-spacing"></p>
             <div class="breath-stage" id="steady-visual" aria-hidden="true"><div class="breath-circle" id="steady-circle"></div></div>
+            <div class="steady-smile" id="steady-smile" hidden>
+              <div class="steady-scene-choices" role="group" aria-label="Scene to focus on">
+                <button class="btn btn-ghost" id="steady-child-choice" type="button" aria-pressed="true">Smiling child</button>
+                <button class="btn btn-ghost" id="steady-sun-choice" type="button" aria-pressed="false">Sun</button>
+              </div>
+              <div id="steady-child">
+                <svg viewBox="0 0 320 240" aria-hidden="true" focusable="false">
+                  <rect width="320" height="240" rx="20" fill="#ede8da" />
+                  <circle cx="58" cy="59" r="23" fill="#f4eedf" />
+                  <path d="M260 216 Q244 184 261 160 Q279 185 260 216" fill="#c2cbb2" />
+                  <path d="M260 216 Q276 190 291 192 Q287 216 260 216" fill="#b0c0a7" />
+                  <path d="M97 240 V183 Q99 142 139 140 H181 Q221 142 223 183 V240" fill="#789e8d" />
+                  <path d="M146 129 H174 V151 Q160 162 146 151Z" fill="#dba47c" />
+                  <circle cx="116" cy="91" r="10" fill="#e6b58e" />
+                  <circle cx="204" cy="91" r="10" fill="#e6b58e" />
+                  <ellipse cx="160" cy="88" rx="44" ry="49" fill="#edc39f" />
+                  <path d="M116 89 Q101 43 140 34 Q193 17 205 65 L204 91 Q193 78 190 58 Q162 76 134 62 Q123 69 116 89Z" fill="#59463c" />
+                  <path d="M134 87 Q141 80 148 87 M172 87 Q179 80 186 87" fill="none" stroke="#59463c" stroke-width="3" stroke-linecap="round" />
+                  <ellipse cx="132" cy="101" rx="8" ry="4" fill="#dfa18b" />
+                  <ellipse cx="188" cy="101" rx="8" ry="4" fill="#dfa18b" />
+                  <g class="steady-smile-mouth">
+                    <path d="M145 103 Q160 111 175 103 Q173 124 160 124 Q147 124 145 103" fill="#754a3e" />
+                    <path d="M148 105 Q160 110 172 105 L170 111 Q160 115 150 111Z" fill="#faf5e9" />
+                  </g>
+                  <path d="M78 158 H242 A82 66 0 0 1 78 158" fill="#578e7e" />
+                  <path d="M87 158 H233 A73 57 0 0 1 87 158" fill="#e4e7bd" />
+                  <path d="M94 158 H226 A66 49 0 0 1 94 158" fill="#d77e66" />
+                  <g fill="#754a3e">
+                    <ellipse cx="125" cy="172" rx="2" ry="3" transform="rotate(-28 125 172)" />
+                    <ellipse cx="151" cy="184" rx="2" ry="3" transform="rotate(-10 151 184)" />
+                    <ellipse cx="178" cy="182" rx="2" ry="3" transform="rotate(15 178 182)" />
+                    <ellipse cx="199" cy="170" rx="2" ry="3" transform="rotate(28 199 170)" />
+                  </g>
+                  <ellipse cx="92" cy="193" rx="10" ry="17" fill="#edc39f" transform="rotate(-30 92 193)" />
+                  <ellipse cx="228" cy="193" rx="10" ry="17" fill="#edc39f" transform="rotate(30 228 193)" />
+                </svg>
+              </div>
+              <div id="steady-sun" hidden>
+                <svg viewBox="0 0 320 240" aria-hidden="true" focusable="false">
+                  <defs>
+                    <linearGradient id="steady-sky" x2="0" y2="1">
+                      <stop stop-color="#f1d299" /><stop offset="1" stop-color="#d98e69" />
+                    </linearGradient>
+                    <linearGradient id="steady-water" x2="0" y2="1">
+                      <stop stop-color="#849b8b" /><stop offset="1" stop-color="#507572" />
+                    </linearGradient>
+                    <radialGradient id="steady-glow">
+                      <stop stop-color="#fff0be" stop-opacity=".9" /><stop offset="1" stop-color="#ffe4a1" stop-opacity="0" />
+                    </radialGradient>
+                    <clipPath id="steady-sunset-clip"><rect width="320" height="240" rx="20" /></clipPath>
+                  </defs>
+                  <g clip-path="url(#steady-sunset-clip)">
+                    <rect width="320" height="240" fill="url(#steady-sky)" />
+                    <circle class="steady-sun-glow" cx="160" cy="61" r="49" fill="url(#steady-glow)" />
+                    <circle cx="160" cy="61" r="22" fill="#ffedb7" />
+                    <path d="M0 151 Q80 147 160 152 T320 151 V240 H0Z" fill="url(#steady-water)" />
+                    <g fill="none" stroke="#e9c494" stroke-linecap="round" opacity=".65">
+                      <path d="M137 162 H183 M129 174 H191 M117 188 H203 M106 206 H214 M91 228 H229" stroke-width="2" />
+                      <path d="M22 177 H69 M251 169 H293 M36 215 H78 M257 206 H302" />
+                    </g>
+                    <g fill="#37443e" stroke="#37443e" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M138 240 L141 179 Q142 160 160 160 Q178 160 179 179 L182 240Z" stroke="none" />
+                      <path d="M154 143 H166 V168 H154Z" stroke="none" />
+                      <circle cx="160" cy="132" r="15" stroke="none" />
+                      <path d="M147 176 Q119 141 132 94 L138 81 M173 176 Q201 141 188 94 L182 81" fill="none" stroke-width="13" />
+                      <path d="M138 82 Q128 73 133 63 M182 82 Q192 73 187 63" fill="none" stroke-width="6" />
+                    </g>
+                  </g>
+                </svg>
+              </div>
+            </div>
             <p class="steady-phase" id="steady-phase" role="status" aria-live="polite" aria-atomic="true"></p>
             <p class="muted steady-spacing" id="steady-time" role="timer" aria-live="off"></p>
             <div id="steady-ground" class="steady-spacing" hidden></div>
