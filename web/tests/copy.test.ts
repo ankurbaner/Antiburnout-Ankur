@@ -2,6 +2,7 @@
 import { describe, expect, it } from "vitest";
 import html from "../index.html?raw";
 import { initDailyPractice } from "../src/dailyPracticeUI";
+import { initYoga } from "../src/yogaUI";
 
 const document = new DOMParser().parseFromString(html, "text/html");
 
@@ -85,9 +86,21 @@ describe("simplified page copy", () => {
     expect(document.querySelector('#steady-title')?.textContent).toBe("Steady before you speak");
     expect(document.querySelector('#steady-start')?.textContent).toBe("I feel nervous now");
     expect(document.querySelector('#steady .yoga-safety')?.textContent).toBe("This is not medical advice. If panic or anxiety happens often or feels overwhelming, please speak to a doctor.");
-    expect(document.querySelectorAll('#steady .steady-tips li')).toHaveLength(6);
+    expect(document.querySelectorAll('#steady .steady-tips li')).toHaveLength(7);
+    expect(document.querySelector('#steady .steady-tips')?.textContent).toContain("Sip water or green tea instead of coffee before a talk.");
     for (const id of ["steady-progress", "steady-phase", "steady-result"]) {
       expect(document.getElementById(id)?.getAttribute("aria-live")).toBe("polite");
     }
+  });
+  it("shows Walk break under While standing with its own ten-minute timer", () => {
+    globalThis.document.body.innerHTML = '<div id="yoga-groups"></div>';
+    initYoga();
+    const walk = globalThis.document.querySelector('[data-practice="walk-break"]')!;
+    expect(walk.closest('.yoga-group')?.querySelector('h3')?.textContent).toBe("While standing");
+    expect(walk.querySelector('h4')?.textContent).toBe("Walk break");
+    expect(walk.querySelector('.yoga-english')?.textContent).toBe("Fresh air · 10-minute walk");
+    expect(walk.querySelector('.yoga-duration')?.textContent).toBe("10 min");
+    expect(walk.querySelector('button')?.getAttribute('aria-label')).toBe("Start Walk break");
+    globalThis.document.body.replaceChildren();
   });
 });

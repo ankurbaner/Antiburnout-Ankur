@@ -1,20 +1,25 @@
 import { describe, expect, it } from "vitest";
-import { YOGA_GROUPS, practiceSecondsLeft } from "../src/yoga";
+import { MEETING_PRACTICES, YOGA_GROUPS, practiceSecondsLeft } from "../src/yoga";
+import { CARD_BANDS } from "../src/cards";
 import { PROTOCOL_ORDER, nextProtocol } from "../src/protocols";
 import { initialWebState, loadState } from "../src/storage";
 
 describe("desk yoga practices", () => {
-  it("groups twelve named, one-minute practices for breathing, sitting and standing", () => {
+  it("groups twelve one-minute practices and a ten-minute walk", () => {
     expect(YOGA_GROUPS.map((group) => group.id)).toEqual(["breathing", "sitting", "standing"]);
-    expect(YOGA_GROUPS.map((group) => group.practices.length)).toEqual([3, 6, 3]);
+    expect(YOGA_GROUPS.map((group) => group.practices.length)).toEqual([3, 6, 4]);
     const practices = YOGA_GROUPS.flatMap((group) => group.practices);
-    expect(new Set(practices.map((practice) => practice.id)).size).toBe(12);
+    expect(new Set(practices.map((practice) => practice.id)).size).toBe(13);
     for (const practice of practices) {
-      expect(practice.seconds).toBe(60);
+      expect(practice.seconds).toBe(practice.id === "walk-break" ? 600 : 60);
       expect(practice.title).not.toBe("");
       expect(practice.english).not.toBe("");
       expect(practice.instruction).not.toBe("");
     }
+  });
+  it("offers the walk while standing, never in reminder or quiet meeting pools", () => {
+    expect(YOGA_GROUPS.find((group) => group.id === "standing")!.practices.find((practice) => practice.id === "walk-break")).toMatchObject({ title: "Walk break", seconds: 600 });
+    expect([...CARD_BANDS.flat(), ...MEETING_PRACTICES].map((practice) => practice.id)).not.toContain("walk-break");
   });
   it("counts elapsed seconds, rounds up, and stops at zero", () => {
     expect(practiceSecondsLeft(61000, 1000)).toBe(60);

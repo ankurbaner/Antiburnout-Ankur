@@ -18,7 +18,7 @@ describe("Steady timing", () => {
     }
     expect(steadyAt(1, 39.5)).toMatchObject({ phase: 1, phaseElapsed: 4.5, remaining: 6, round: 3 });
   });
-  it.each([0, 1, 3])("completes timed step %s exactly at its duration and stays complete", (step) => {
+  it.each([0, 1, 3, 4])("completes timed step %s exactly at its duration and stays complete", (step) => {
     const duration = STEADY_STEPS[step].seconds;
     expect(steadyAt(step, duration - 0.001)?.done).toBe(false);
     expect(steadyAt(step, duration)).toMatchObject({ done: true, remaining: 0 });
@@ -31,7 +31,15 @@ describe("Steady timing", () => {
     expect(steadyAt(2, 3, true)?.done).toBe(true);
   });
   it("rejects invalid steps and elapsed times", () => {
-    for (const step of [-1, 4, 0.5, NaN, Infinity]) expect(steadyAt(step, 0)).toBeNull();
+    for (const step of [-1, 5, 0.5, NaN, Infinity]) expect(steadyAt(step, 0)).toBeNull();
     for (const elapsed of [-1, NaN, Infinity, -Infinity]) expect(steadyAt(0, elapsed)).toBeNull();
+  });
+  it("places the 20-second smile after grounding and before reframe in a five-step sequence", () => {
+    expect(STEADY_STEPS).toHaveLength(5);
+    expect(STEADY_STEPS[2].title).toBe("5-4-3-2-1 grounding");
+    expect(STEADY_STEPS[3]).toMatchObject({ title: "Picture a smile", seconds: 20 });
+    expect(STEADY_STEPS[4].title).toBe("Say quietly: “I'm excited.”");
+    expect(steadyAt(3, 0)).toMatchObject({ remaining: 20, done: false, label: "Let a small smile come naturally." });
+    expect(steadyAt(3, 19.5)).toMatchObject({ remaining: 1, done: false });
   });
 });
