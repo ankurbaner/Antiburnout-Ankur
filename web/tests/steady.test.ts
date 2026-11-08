@@ -13,8 +13,8 @@ describe("Steady timing", () => {
   });
   it("paces three 5-second squeezes and 10-second releases", () => {
     for (const round of [0, 1, 2]) {
-      expect(steadyAt(2, round * 15)).toMatchObject({ label: "Squeeze…", seconds: 5, round: round + 1 });
-      expect(steadyAt(2, round * 15 + 5)).toMatchObject({ label: "Let go… notice the warmth", seconds: 10 });
+      expect(steadyAt(2, round * 15)).toMatchObject({ label: "Squeeze… toes and feet (fists too, if no one can see)", seconds: 5, round: round + 1 });
+      expect(steadyAt(2, round * 15 + 5)).toMatchObject({ label: "Let go… feel the floor and the warmth", seconds: 10 });
     }
     expect(steadyAt(2, 39.5)).toMatchObject({ phase: 1, phaseElapsed: 4.5, remaining: 6, round: 3 });
   });
@@ -28,14 +28,16 @@ describe("Steady timing", () => {
     for (const step of [-1, 4, 5, 0.5, NaN, Infinity]) expect(steadyAt(step, 0)).toBeNull();
     for (const elapsed of [-1, NaN, Infinity, -Infinity]) expect(steadyAt(0, elapsed)).toBeNull();
   });
-  it("orders sigh, 20-second smile, hands and reframe in a four-step sequence", () => {
+  it("orders sigh, 20-second smile, squeeze and release, and reframe in four steps", () => {
     expect(STEADY_STEPS.map(({ title, seconds }) => ({ title, seconds }))).toEqual([
       { title: "Physiological sigh", seconds: 30 },
       { title: "Picture a smile", seconds: 20 },
-      { title: "Hands squeeze & release", seconds: 45 },
+      { title: "Squeeze and release", seconds: 45 },
       { title: "Say quietly: “I'm excited.”", seconds: 10 },
     ]);
     expect(steadyAt(1, 0)).toMatchObject({ remaining: 20, done: false, label: "Look at the child's smile. Smile back. All is well." });
     expect(steadyAt(1, 19.5)).toMatchObject({ remaining: 1, done: false });
+    expect(STEADY_STEPS[2].instruction).toContain("curl your toes and press your feet into the floor, hidden under a desk or podium");
+    expect(STEADY_STEPS[2].instruction).toContain("Squeeze your fists too if no one can see.");
   });
 });

@@ -57,7 +57,7 @@ it("keeps reduced-motion cues without inline animation, including preference cha
   click("stop");
 });
 
-it("auto-advances through sigh, smile and hands, then finishes with Done", () => {
+it("auto-advances through sigh, smile and squeeze and release, then finishes with Done", () => {
   const schedule = vi.spyOn(window, "setInterval");
   const clear = vi.spyOn(window, "clearInterval");
   initSteady();
@@ -82,10 +82,11 @@ it("auto-advances through sigh, smile and hands, then finishes with Done", () =>
   expect(element("progress").textContent).toBe("Step 3 of 4");
   expect(element("smile").hidden).toBe(true);
   expect(element("phase").dataset.smile).toBe("false");
-  expect(element("step").textContent).toBe("Hands squeeze & release");
+  expect(element("step").textContent).toBe("Squeeze and release");
+  expect(element("phase").textContent).toBe("Squeeze… toes and feet (fists too, if no one can see)");
   expect(element("time").textContent).toContain("00:45 left · Round 1 of 3");
   vi.advanceTimersByTime(5000);
-  expect(element("phase").textContent).toBe("Let go… notice the warmth");
+  expect(element("phase").textContent).toBe("Let go… feel the floor and the warmth");
   vi.advanceTimersByTime(40000);
   expect(element("progress").textContent).toBe("Step 4 of 4");
   expect(element("next").textContent).toBe("Done");

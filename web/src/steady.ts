@@ -6,7 +6,7 @@ export const STEADY_SCENES = {
 export const STEADY_STEPS = [
   { title: "Physiological sigh", instruction: "Take a comfortable breath in through your nose, add a small second inhale, then breathe out slowly. No holds or forcing; stop or skip if you feel dizzy or uncomfortable.", seconds: 30 },
   { title: "Picture a smile", instruction: "Choose a scene to focus on for a moment. Let your breathing stay comfortable.", seconds: 20 },
-  { title: "Hands squeeze & release", instruction: "Gently clench your fists for 5 seconds, then release for 10. Repeat three times without straining.", seconds: 45 },
+  { title: "Squeeze and release", instruction: "Gently curl your toes and press your feet into the floor, hidden under a desk or podium. Squeeze your fists too if no one can see. Squeeze for 5 seconds, then release for 10. Repeat three times without straining.", seconds: 45 },
   { title: "Say quietly: “I'm excited.”", instruction: "A racing heart can be energy you use for the talk. You do not have to feel perfectly calm to begin.", seconds: 10 },
 ] as const;
 
@@ -27,5 +27,5 @@ export const steadyAt = (step: number, elapsed: number) => {
   const squeeze = cycle < 5;
   return { done, remaining, round, phase: step === 2 && !squeeze ? 1 : 0,
     phaseElapsed: step === 2 ? cycle - (squeeze ? 0 : 5) : 0, seconds: step === 2 ? squeeze ? 5 : 10 : duration,
-    label: step === 2 ? squeeze ? "Squeeze…" : "Let go… notice the warmth" : step === 1 ? STEADY_SCENES.child : STEADY_STEPS[step].title, inhale: false };
+    label: step === 2 ? squeeze ? "Squeeze… toes and feet (fists too, if no one can see)" : "Let go… feel the floor and the warmth" : step === 1 ? STEADY_SCENES.child : STEADY_STEPS[step].title, inhale: false };
 };
