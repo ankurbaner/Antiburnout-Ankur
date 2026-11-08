@@ -22,11 +22,4 @@
 .steady-actions { display: flex; flex-wrap: wrap; gap: 12px; }
 .steady-tips ul { margin: 12px 0 0; padding-left: 22px; }
 .steady-tips li + li { margin-top: 8px; }
-.steady-row { padding: 12px; border: 1px solid var(--border); border-radius: 12px; margin-top: 12px; max-width: 520px; }
-.steady-row[data-active="true"] { border-color: var(--sage-dark); background: var(--surface-alt); }
-.steady-row p { font-weight: 600; }
-.steady-dots { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-.steady-dot { width: 44px; height: 44px; border: 1px solid var(--control-border); border-radius: 50%; background: var(--canvas); color: var(--ink); font: inherit; cursor: pointer; }
-.steady-dot[aria-pressed="true"] { background: var(--sage-dark); color: var(--on-accent); }
-.steady-dot:focus-visible { outline: 3px solid var(--periwinkle); outline-offset: 2px; }
 @media (max-width: 600px) { .steady-guide { padding: 18px; } }
