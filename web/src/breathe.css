@@ -1,7 +1,7 @@
 .breath-guide { margin-top: 24px; padding: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
 .breath-controls { display: flex; flex-wrap: wrap; gap: 16px; align-items: end; }
-.breath-controls label { display: grid; gap: 8px; font-size: 14px; min-width: 0; }
-.breath-controls select { font: inherit; color: var(--ink); background: var(--canvas); border: 1px solid var(--border); border-radius: 10px; padding: 10px; width: 100%; max-width: 100%; }
+.breath-controls label { display: grid; gap: 8px; font-size: var(--text-body); min-width: 0; }
+.breath-controls select { font: inherit; color: var(--ink); background: var(--canvas); border: 1px solid var(--control-border); border-radius: 10px; padding: 8px 10px; min-height: 44px; width: 100%; max-width: 100%; }
 .breath-stage { height: 260px; display: grid; place-items: center; overflow: hidden; }
 .breath-circle { width: 200px; height: 200px; border-radius: 50%; background: var(--sage); opacity: 0.65; transform: scale(0.65); }
 .breath-circle[data-inhale="true"] { opacity: 0.9; }

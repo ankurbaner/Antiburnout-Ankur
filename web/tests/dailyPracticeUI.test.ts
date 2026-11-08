@@ -13,7 +13,7 @@ it("handles absent markup and invalid dates", () => {
   expect(document.querySelector(".yoga-practice")).toBeNull();
 });
 
-it("reuses the timer, shows roots, avoids duplicate IDs and cleans up on a new day", () => {
+it("reuses the timer without Roots, avoids duplicate IDs and cleans up on a new day", () => {
   vi.useFakeTimers();
   const today = new Date(2026, 10, 7);
   document.body.innerHTML = '<div id="daily-practice"></div><div id="yoga-groups"></div>';
@@ -23,7 +23,8 @@ it("reuses the timer, shows roots, avoids duplicate IDs and cleans up on a new d
   const card = document.querySelector<HTMLElement>("#daily-practice .yoga-practice")!;
   expect(card.dataset.practice).toBe(practice.id);
   expect(card.querySelector("h3")?.textContent).toBe(practice.title);
-  expect(card.querySelector(".practice-roots")?.textContent).toBe(`Roots: ${practice.origin}`);
+  expect(card.querySelector(".practice-roots")).toBeNull();
+  expect(card.textContent).not.toContain("Roots");
   const ids = [...document.querySelectorAll("[id]")].map((node) => node.id);
   expect(new Set(ids).size).toBe(ids.length);
   card.querySelector<HTMLButtonElement>("button")!.click();
