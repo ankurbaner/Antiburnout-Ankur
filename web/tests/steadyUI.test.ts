@@ -17,6 +17,27 @@ it("handles an absent section", () => {
   expect(() => initSteady()).not.toThrow();
 });
 
+it("keeps reduced-motion cues without inline animation, including preference changes", () => {
+  const motion = { matches: true, addEventListener: vi.fn<(type: string, callback: () => void) => void>() };
+  vi.stubGlobal("matchMedia", () => motion);
+  initSteady();
+  click("start");
+  const circle = element("circle");
+  expect(circle.style.transform).toBe("");
+  expect(circle.style.transition).toBe("");
+  vi.advanceTimersByTime(2000);
+  expect(element("phase").textContent).toContain("second inhale");
+  expect(circle.style.transform).toBe("");
+  motion.matches = false;
+  motion.addEventListener.mock.calls[0][1]();
+  expect(circle.style.transform).toContain("scale");
+  motion.matches = true;
+  motion.addEventListener.mock.calls[0][1]();
+  expect(circle.style.transform).toBe("");
+  expect(circle.style.transition).toBe("");
+  click("stop");
+});
+
 it("auto-advances sigh and hands, completes keyboard-friendly sensory dots and finishes", () => {
   const schedule = vi.spyOn(window, "setInterval");
   const clear = vi.spyOn(window, "clearInterval");

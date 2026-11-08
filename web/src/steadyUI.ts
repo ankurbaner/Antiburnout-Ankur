@@ -14,6 +14,7 @@ export const initSteady = (): void => {
   const ground = get("ground");
   const next = get<HTMLButtonElement>("next");
   const back = get<HTMLButtonElement>("back");
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   let step = -1;
   let startedAt = 0;
   let interval: number | undefined;
@@ -74,6 +75,12 @@ export const initSteady = (): void => {
     phaseKey = key;
     phase.textContent = state.label;
     if (step !== 0) return;
+    if (reducedMotion.matches) {
+      circle.style.removeProperty("transform");
+      circle.style.removeProperty("transition");
+      circle.dataset.inhale = "false";
+      return;
+    }
     const from = state.phase === 0 ? 0.65 : state.phase === 1 ? 0.9 : 1;
     const to = state.phase === 0 ? 0.9 : state.phase === 1 ? 1 : 0.65;
     circle.dataset.inhale = String(state.inhale);
@@ -112,5 +119,5 @@ export const initSteady = (): void => {
   get("stop").addEventListener("click", () => finish(false));
   const resync = (): void => { phaseKey = ""; update(); };
   document.addEventListener("visibilitychange", resync);
-  window.matchMedia("(prefers-reduced-motion: reduce)").addEventListener("change", resync);
+  reducedMotion.addEventListener("change", resync);
 };
