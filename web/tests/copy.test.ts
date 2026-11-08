@@ -111,6 +111,9 @@ describe("simplified page copy", () => {
   });
 
   it("places an accessible, silent Steady guide before the daily practice", () => {
+    expect(document.querySelector('#steady')?.textContent).not.toMatch(/About 2–3 minutes|grounding|5-4-3-2-1|reframe|excited/i);
+    expect(document.querySelector('#steady-ground, .steady-dot, .steady-row')).toBeNull();
+    expect(document.body.textContent).not.toMatch(/sweat/i);
     expect(document.querySelector('#steady + section')?.id).toBe("practice-of-the-day");
     expect(document.querySelector('.nav a[href="#steady"]')?.textContent).toBe("Calm");
     expect(document.querySelector('#steady .eyebrow')?.textContent).toBe("When nerves hit");

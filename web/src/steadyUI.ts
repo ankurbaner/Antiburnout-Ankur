@@ -1,4 +1,4 @@
-import { GROUND_SENSES, STEADY_SCENES, STEADY_STEPS, steadyAt } from "./steady";
+import { STEADY_SCENES, STEADY_STEPS, steadyAt } from "./steady";
 import { formatClock } from "./format";
 import "./steady.css";
 
@@ -17,7 +17,6 @@ export const initSteady = (): void => {
   const heading = get("step");
   const phase = get("phase");
   const circle = get("circle");
-  const ground = get("ground");
   const next = get<HTMLButtonElement>("next");
   const back = get<HTMLButtonElement>("back");
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -26,14 +25,13 @@ export const initSteady = (): void => {
   let startedAt = 0;
   let interval: number | undefined;
   let phaseKey = "";
-  let noticed = GROUND_SENSES.map(() => 0);
   let scene: keyof typeof STEADY_SCENES = "child";
   const renderScene = (): void => {
     for (const choice of ["child", "sun"] as const) {
       get(choice).hidden = scene !== choice;
       get(`${choice}-choice`).setAttribute("aria-pressed", String(scene === choice));
     }
-    if (step === 3) phase.textContent = STEADY_SCENES[scene];
+    if (STEADY_STEPS[step]?.kind === "smile") phase.textContent = STEADY_SCENES[scene];
   };
   const finish = (complete: boolean): void => {
     const focusInside = session.contains(document.activeElement);
@@ -44,52 +42,18 @@ export const initSteady = (): void => {
     get("result").textContent = complete ? "Well done. Nervousness rises and passes, usually within minutes." : "Stopped. Take things at your own pace.";
     if (focusInside) start.focus();
   };
-  const renderGround = (): void => {
-    const active = noticed.findIndex((count, index) => count < GROUND_SENSES[index].count);
-    ground.replaceChildren(...GROUND_SENSES.map((sense, row) => {
-      const group = document.createElement("div");
-      group.className = "steady-row";
-      group.dataset.active = String(row === active);
-      const label = document.createElement("p");
-      label.id = `steady-sense-${row}`;
-      label.textContent = `${sense.label} ${sense.count} · ${noticed[row]} of ${sense.count} noticed`;
-      group.setAttribute("role", "group");
-      group.setAttribute("aria-labelledby", label.id);
-      const dots = document.createElement("div");
-      dots.className = "steady-dots";
-      for (let index = 0; index < sense.count; index++) {
-        const dot = document.createElement("button");
-        dot.type = "button";
-        dot.className = "steady-dot";
-        dot.textContent = noticed[row] > index ? "✓" : "○";
-        dot.setAttribute("aria-label", `${sense.label}: notice thing ${index + 1} of ${sense.count}`);
-        dot.setAttribute("aria-pressed", String(noticed[row] > index));
-        dot.disabled = row !== active || index !== noticed[row];
-        dot.addEventListener("click", () => {
-          noticed[row]++;
-          if (noticed.every((count, i) => count === GROUND_SENSES[i].count)) { enter(3); return; }
-          renderGround();
-          ground.querySelector<HTMLButtonElement>("button:not(:disabled)")?.focus();
-          const current = noticed.findIndex((count, i) => count < GROUND_SENSES[i].count);
-          phase.textContent = `Now ${GROUND_SENSES[current].label.toLowerCase()} ${GROUND_SENSES[current].count}.`;
-        });
-        dots.append(dot);
-      }
-      group.append(label, dots);
-      return group;
-    }));
-  };
   const update = (): void => {
     if (step < 0) return;
     const state = steadyAt(step, Math.max(0, (Date.now() - startedAt) / 1000));
     if (!state) return;
     if (state.done) { if (step === lastStep) finish(true); else enter(step + 1, session.contains(document.activeElement)); return; }
-    get("time").textContent = step === 2 ? "Take your time · Next skips this step" : `${formatClock(state.remaining)} left${step < 2 ? ` · Round ${state.round} of 3` : ""}`;
+    const kind = STEADY_STEPS[step].kind;
+    get("time").textContent = `${formatClock(state.remaining)} left${kind !== "smile" ? ` · Round ${state.round} of 3` : ""}`;
     const key = `${step}-${state.round}-${state.phase}`;
     if (key === phaseKey) return;
     phaseKey = key;
-    phase.textContent = step === 3 ? STEADY_SCENES[scene] : state.label;
-    if (step !== 0) return;
+    phase.textContent = kind === "smile" ? STEADY_SCENES[scene] : state.label;
+    if (kind !== "sigh") return;
     if (reducedMotion.matches) {
       circle.style.removeProperty("transform");
       circle.style.removeProperty("transition");
@@ -111,16 +75,14 @@ export const initSteady = (): void => {
     phaseKey = "";
     get("progress").textContent = `Step ${step + 1} of ${STEADY_STEPS.length}`;
     heading.textContent = STEADY_STEPS[step].title;
-    heading.dataset.reframe = String(step === lastStep);
-    phase.dataset.smile = String(step === 3);
+    const kind = STEADY_STEPS[step].kind;
+    phase.dataset.smile = String(kind === "smile");
     get("instruction").textContent = STEADY_STEPS[step].instruction;
-    get("visual").hidden = step !== 0;
-    get("smile").hidden = step !== 3;
-    if (step === 3) renderScene();
-    ground.hidden = step !== 2;
+    get("visual").hidden = kind !== "sigh";
+    get("smile").hidden = kind !== "smile";
+    if (kind === "smile") renderScene();
     back.disabled = step === 0;
     next.textContent = step === lastStep ? "Done" : "Next";
-    if (step === 2) renderGround();
     update();
     if (focus) heading.focus({ preventScroll: true });
   };
@@ -129,7 +91,6 @@ export const initSteady = (): void => {
     start.hidden = true;
     session.hidden = false;
     get("result").textContent = "";
-    noticed = GROUND_SENSES.map(() => 0);
     scene = "child";
     enter(0);
     interval = window.setInterval(update, 100);
