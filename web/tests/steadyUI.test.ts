@@ -22,6 +22,20 @@ it("reports a descriptive error for a missing required control", () => {
   expect(() => initSteady()).toThrow("Missing #steady-start");
 });
 
+it("registers listeners and a running interval only once on repeated initialization", () => {
+  const motion = { matches: false, addEventListener: vi.fn() };
+  vi.stubGlobal("matchMedia", () => motion);
+  const listen = vi.spyOn(document, "addEventListener");
+  const schedule = vi.spyOn(window, "setInterval");
+  initSteady();
+  initSteady();
+  expect(listen.mock.calls.filter(([type]) => type === "visibilitychange")).toHaveLength(1);
+  expect(motion.addEventListener).toHaveBeenCalledTimes(1);
+  click("start");
+  expect(schedule).toHaveBeenCalledTimes(1);
+  click("stop");
+});
+
 it("keeps reduced-motion cues without inline animation, including preference changes", () => {
   const motion = { matches: true, addEventListener: vi.fn<(type: string, callback: () => void) => void>() };
   vi.stubGlobal("matchMedia", () => motion);

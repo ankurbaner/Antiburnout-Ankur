@@ -2,9 +2,11 @@ import { GROUND_SENSES, STEADY_STEPS, steadyAt } from "./steady";
 import { formatClock } from "./format";
 import "./steady.css";
 
+const initialized = new WeakSet<HTMLElement>();
+
 export const initSteady = (): void => {
   const root = document.getElementById("steady");
-  if (!root) return;
+  if (!root || initialized.has(root)) return;
   const get = <T extends HTMLElement>(id: string): T => {
     const element = root.querySelector<T>(`#steady-${id}`);
     if (!element) throw new Error(`Missing #steady-${id}`);
@@ -124,4 +126,5 @@ export const initSteady = (): void => {
   const resync = (): void => { phaseKey = ""; update(); };
   document.addEventListener("visibilitychange", resync);
   reducedMotion.addEventListener("change", resync);
+  initialized.add(root);
 };
