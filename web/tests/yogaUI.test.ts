@@ -1,8 +1,25 @@
 // @vitest-environment jsdom
 import { afterEach, expect, it, vi } from "vitest";
-import { initYoga } from "../src/yogaUI";
+import { initPracticeGroups, initYoga } from "../src/yogaUI";
 
 afterEach(() => { vi.useRealTimers(); document.body.replaceChildren(); });
+
+it.each([
+  [0, "0 s"],
+  [20, "20 s"],
+  [59, "59 s"],
+  [60, "1 min"],
+  [90, "1 min 30 s"],
+  [120, "2 min"],
+  [125, "2 min 5 s"],
+  [600, "10 min"],
+])("labels a %s-second practice as %s without fractional minutes", (seconds, label) => {
+  document.body.innerHTML = '<div id="practice-groups"></div>';
+  initPracticeGroups("practice-groups", [{ id: "test", title: "Practices", practices: [
+    { id: "test", title: "Practice", english: "A quiet break", instruction: "Rest comfortably.", seconds: Number(seconds) },
+  ] }]);
+  expect(document.querySelector('.yoga-duration')?.textContent).toBe(label);
+});
 
 it("does nothing when the yoga container is absent", () => {
   expect(() => initYoga()).not.toThrow();

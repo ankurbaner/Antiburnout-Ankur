@@ -22,7 +22,9 @@ export const initPracticeGroups = (containerId: string, groups: YogaGroup[], fea
       card.dataset.practice = practice.id;
       const duration = document.createElement("p");
       duration.className = "yoga-duration";
-      duration.textContent = practice.seconds < 60 ? `${practice.seconds} s` : `${practice.seconds / 60} min`;
+      const minutes = Math.floor(practice.seconds / 60);
+      const seconds = practice.seconds % 60;
+      duration.textContent = minutes === 0 ? `${seconds} s` : seconds === 0 ? `${minutes} min` : `${minutes} min ${seconds} s`;
       const title = document.createElement("h4");
       title.id = `${containerId}-practice-${practice.id}`;
       title.textContent = practice.title;
