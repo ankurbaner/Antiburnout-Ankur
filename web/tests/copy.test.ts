@@ -1,10 +1,21 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
 import html from "../index.html?raw";
+import { initDailyPractice } from "../src/dailyPracticeUI";
 
 const document = new DOMParser().parseFromString(html, "text/html");
 
 describe("simplified page copy", () => {
+  it("keeps the daily mindfulness and yoga pair directly after Steady", () => {
+    expect(document.querySelector("#steady + section")?.id).toBe("practice-of-the-day");
+    expect(document.querySelector("#daily-title")?.textContent).toBe("Practice of the day");
+    globalThis.document.body.innerHTML = document.querySelector("#practice-of-the-day")!.outerHTML;
+    initDailyPractice(new Date(2026, 10, 7));
+    expect([...globalThis.document.querySelectorAll("#daily-practice h3")].map((heading) => heading.textContent)).toEqual(["Mindfulness", "Yoga exercise"]);
+    expect(globalThis.document.querySelectorAll("#daily-practice article")).toHaveLength(2);
+    expect(globalThis.document.body.textContent).not.toContain("Roots");
+    globalThis.document.body.replaceChildren();
+  });
   it("welcomes questions, feedback and suggestions while keeping the email link", () => {
     expect(document.querySelector("#contact .eyebrow")?.textContent).toBe("Contact me");
     expect(document.querySelector("#contact .muted")?.textContent).toBe("I welcome your questions, feedback and suggestions. Please contact me by email.");
