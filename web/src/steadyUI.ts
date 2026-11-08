@@ -1,4 +1,4 @@
-import { GROUND_SENSES, STEADY_STEPS, steadyAt } from "./steady";
+import { GROUND_SENSES, STEADY_SCENES, STEADY_STEPS, steadyAt } from "./steady";
 import { formatClock } from "./format";
 import "./steady.css";
 
@@ -27,6 +27,14 @@ export const initSteady = (): void => {
   let interval: number | undefined;
   let phaseKey = "";
   let noticed = GROUND_SENSES.map(() => 0);
+  let scene: keyof typeof STEADY_SCENES = "child";
+  const renderScene = (): void => {
+    for (const choice of ["child", "sun"] as const) {
+      get(choice).hidden = scene !== choice;
+      get(`${choice}-choice`).setAttribute("aria-pressed", String(scene === choice));
+    }
+    if (step === 3) phase.textContent = STEADY_SCENES[scene];
+  };
   const finish = (complete: boolean): void => {
     const focusInside = session.contains(document.activeElement);
     window.clearInterval(interval);
@@ -80,7 +88,7 @@ export const initSteady = (): void => {
     const key = `${step}-${state.round}-${state.phase}`;
     if (key === phaseKey) return;
     phaseKey = key;
-    phase.textContent = state.label;
+    phase.textContent = step === 3 ? STEADY_SCENES[scene] : state.label;
     if (step !== 0) return;
     if (reducedMotion.matches) {
       circle.style.removeProperty("transform");
@@ -108,6 +116,7 @@ export const initSteady = (): void => {
     get("instruction").textContent = STEADY_STEPS[step].instruction;
     get("visual").hidden = step !== 0;
     get("smile").hidden = step !== 3;
+    if (step === 3) renderScene();
     ground.hidden = step !== 2;
     back.disabled = step === 0;
     next.textContent = step === lastStep ? "Done" : "Next";
@@ -121,12 +130,16 @@ export const initSteady = (): void => {
     session.hidden = false;
     get("result").textContent = "";
     noticed = GROUND_SENSES.map(() => 0);
+    scene = "child";
     enter(0);
     interval = window.setInterval(update, 100);
   });
   back.addEventListener("click", () => { if (step > 0) enter(step - 1); });
   next.addEventListener("click", () => { if (step === lastStep) finish(true); else if (step >= 0) enter(step + 1); });
   get("stop").addEventListener("click", () => finish(false));
+  for (const choice of ["child", "sun"] as const) {
+    get(`${choice}-choice`).addEventListener("click", () => { scene = choice; renderScene(); });
+  }
   const resync = (): void => { phaseKey = ""; update(); };
   document.addEventListener("visibilitychange", resync);
   reducedMotion.addEventListener("change", resync);

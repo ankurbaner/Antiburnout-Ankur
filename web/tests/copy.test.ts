@@ -9,14 +9,34 @@ const document = new DOMParser().parseFromString(html, "text/html");
 const steadyStyles = readFileSync("src/steady.css", "utf8");
 
 describe("simplified page copy", () => {
-  it("provides a decorative inline smile with a CSS-only static reduced-motion state", () => {
+  it("provides two decorative inline scenes with CSS-only static reduced-motion states", () => {
     expect(document.querySelector('#steady-smile')?.hasAttribute('hidden')).toBe(true);
     expect(document.querySelector('#steady-smile svg')?.getAttribute('aria-hidden')).toBe('true');
     expect(document.querySelector('#steady-smile svg')?.getAttribute('focusable')).toBe('false');
     expect(document.querySelector('#steady-smile .steady-smile-mouth')).not.toBeNull();
+    expect(document.querySelectorAll('#steady-smile svg[aria-hidden="true"][focusable="false"]')).toHaveLength(2);
+    expect([...document.querySelectorAll('#steady-smile button')].map((button) => button.textContent)).toEqual(["Smiling child", "Sun"]);
+    expect(document.querySelector('#steady-child-choice')?.getAttribute('aria-pressed')).toBe('true');
+    expect(document.querySelector('#steady-sun-choice')?.getAttribute('aria-pressed')).toBe('false');
     expect(document.querySelector('#steady-smile [style], #steady-smile image')).toBeNull();
     expect(steadyStyles).toMatch(/@keyframes steady-smile-in/);
-    expect(steadyStyles).toMatch(/@media \(prefers-reduced-motion: reduce\)\s*\{\s*#steady-smile:not\(\[hidden\]\) \.steady-smile-mouth\s*\{ animation: none; transform: scaleY\(1\);/);
+    const style = globalThis.document.createElement('style');
+    style.textContent = steadyStyles;
+    globalThis.document.head.append(style);
+    try {
+      const reduced = [...style.sheet!.cssRules].find((rule) => 'conditionText' in rule && String(rule.conditionText).replace(/\s/g, '') === '(prefers-reduced-motion:reduce)') as CSSMediaRule;
+      expect(reduced).toBeDefined();
+      const rules = [...reduced.cssRules] as CSSStyleRule[];
+      const mouth = rules.find((rule) => rule.selectorText.includes('.steady-smile-mouth'))!;
+      const sun = rules.find((rule) => rule.selectorText.includes('.steady-sun-glow'))!;
+      expect(mouth.style.getPropertyValue('animation').trim()).toBe('none');
+      expect(mouth.style.getPropertyValue('transform').replace(/\s/g, '')).toBe('scaleY(1)');
+      expect(sun.style.getPropertyValue('animation').trim()).toBe('none');
+      expect(sun.style.getPropertyValue('transform').trim()).toBe('none');
+      expect(Number(sun.style.getPropertyValue('opacity'))).toBe(.8);
+    } finally {
+      style.remove();
+    }
   });
   it("keeps the daily mindfulness and yoga pair directly after Steady", () => {
     expect(document.querySelector("#steady + section")?.id).toBe("practice-of-the-day");

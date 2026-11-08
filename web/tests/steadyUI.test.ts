@@ -84,7 +84,7 @@ it("auto-advances sigh and hands, completes keyboard-friendly sensory dots and f
   expect(element("step").textContent).toBe("Picture a smile");
   expect(element("smile").hidden).toBe(false);
   expect(element("smile").querySelector("svg")?.getAttribute("aria-hidden")).toBe("true");
-  expect(element("phase").textContent).toBe("Smile. All is well.");
+  expect(element("phase").textContent).toBe("Look at the child's smile. Smile back. All is well.");
   expect(element("phase").dataset.smile).toBe("true");
   expect(element("time").textContent).toContain("00:20");
   expect(element("next").textContent).toBe("Next");
@@ -163,5 +163,38 @@ it("preserves partial and completed grounding on Back, resetting only on Start",
   notice(); click("stop");
   click("start"); click("next"); click("next");
   expect(element("ground").querySelectorAll('[aria-pressed="true"]')).toHaveLength(0);
+  click("stop");
+});
+
+it("switches decorative scenes and announces cues without resetting the countdown", () => {
+  initSteady();
+  click("start"); click("next"); click("next"); click("next");
+  expect(element("child-choice").getAttribute("aria-pressed")).toBe("true");
+  expect(element("child").hidden).toBe(false);
+  expect(element("sun").hidden).toBe(true);
+  vi.advanceTimersByTime(3000);
+  click("sun-choice");
+  expect(element("sun-choice").getAttribute("aria-pressed")).toBe("true");
+  expect(element("child-choice").getAttribute("aria-pressed")).toBe("false");
+  expect(element("sun").hidden).toBe(false);
+  expect(element("child").hidden).toBe(true);
+  expect(element("phase").textContent).toBe("Rest your gaze on the sun. Breathe slowly. All is well.");
+  expect(element("phase").getAttribute("aria-live")).toBe("polite");
+  expect(element("time").textContent).toContain("00:17");
+  vi.advanceTimersByTime(7000);
+  expect(element("phase").textContent).toBe("Rest your gaze on the sun. Breathe slowly. All is well.");
+  click("child-choice");
+  expect(element("phase").textContent).toBe("Look at the child's smile. Smile back. All is well.");
+  expect(element("child").hidden).toBe(false);
+  expect(element("sun").hidden).toBe(true);
+  click("sun-choice");
+  click("next"); click("back");
+  expect(element("sun-choice").getAttribute("aria-pressed")).toBe("true");
+  click("stop"); click("start");
+  click("next"); click("next"); click("next");
+  expect(element("child-choice").getAttribute("aria-pressed")).toBe("true");
+  expect(element("sun-choice").getAttribute("aria-pressed")).toBe("false");
+  vi.advanceTimersByTime(20000);
+  expect(element("progress").textContent).toBe("Step 5 of 5");
   click("stop");
 });
