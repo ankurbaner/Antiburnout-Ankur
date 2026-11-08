@@ -17,6 +17,11 @@ it("handles an absent section", () => {
   expect(() => initSteady()).not.toThrow();
 });
 
+it("reports a descriptive error for a missing required control", () => {
+  element("start").remove();
+  expect(() => initSteady()).toThrow("Missing #steady-start");
+});
+
 it("keeps reduced-motion cues without inline animation, including preference changes", () => {
   const motion = { matches: true, addEventListener: vi.fn<(type: string, callback: () => void) => void>() };
   vi.stubGlobal("matchMedia", () => motion);

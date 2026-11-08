@@ -5,7 +5,11 @@ import "./steady.css";
 export const initSteady = (): void => {
   const root = document.getElementById("steady");
   if (!root) return;
-  const get = <T extends HTMLElement>(id: string): T => root.querySelector<T>(`#steady-${id}`)!;
+  const get = <T extends HTMLElement>(id: string): T => {
+    const element = root.querySelector<T>(`#steady-${id}`);
+    if (!element) throw new Error(`Missing #steady-${id}`);
+    return element;
+  };
   const start = get<HTMLButtonElement>("start");
   const session = get("session");
   const heading = get("step");
