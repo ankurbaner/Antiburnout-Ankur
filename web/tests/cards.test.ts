@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { CARD_BANDS, createPreviewSelector, isCardPracticeId, needsWater, selectCardPractice } from "../src/cards";
 import { MEETING_PRACTICES } from "../src/yoga";
-import { MEETING_PROTOCOL_ORDER, PROTOCOLS, nextProtocol } from "../src/protocols";
+import { MEETING_PROTOCOL_ORDER, PROTOCOL_ORDER, PROTOCOLS, allowedProtocolOrder, isProtocolId, nextProtocol } from "../src/protocols";
 
 describe("web yoga reminder cards", () => {
   it.each([[0, false], [2700, false], [5401, false], [0, true]] as const)("cycles previews with a fixed last reminder at %s seconds with meeting=%s", (stretch, meeting) => {
@@ -82,6 +82,13 @@ describe("web yoga reminder cards", () => {
     expect(isCardPracticeId("neck")).toBe(true);
   });
   it("restricts meeting resets to the same safe pool, with no repeats", () => {
+    expect(allowedProtocolOrder(false)).toEqual(PROTOCOL_ORDER);
+    expect(allowedProtocolOrder(true)).toEqual(MEETING_PROTOCOL_ORDER);
+    expect(Object.keys(PROTOCOLS)).toHaveLength(11);
+    for (const id of ["gentle-eyes", "gentle-shoulders"]) {
+      expect(isProtocolId(id)).toBe(false);
+      expect(isCardPracticeId(id)).toBe(false);
+    }
     expect(MEETING_PROTOCOL_ORDER).toEqual(MEETING_PRACTICES.map((practice) => practice.id));
     for (const id of MEETING_PROTOCOL_ORDER) {
       const next = nextProtocol(id, MEETING_PROTOCOL_ORDER);

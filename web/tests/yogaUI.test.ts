@@ -15,6 +15,7 @@ it("renders all groups and runs, completes, closes and restarts an inline timer"
   initYoga();
   expect(document.querySelectorAll(".yoga-group")).toHaveLength(3);
   expect(document.querySelectorAll(".yoga-practice")).toHaveLength(12);
+  expect(document.querySelector('.yoga-hidden, [data-practice^="gentle-"]')).toBeNull();
   const card = document.querySelector<HTMLElement>(".yoga-practice")!;
   const start = card.querySelector<HTMLButtonElement>("button")!;
   const timer = card.querySelector<HTMLElement>(".yoga-timer")!;

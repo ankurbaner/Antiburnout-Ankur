@@ -12,7 +12,6 @@ import { ActivityMonitor } from "./activity";
 import { initBreathe } from "./breatheUI";
 import { initDailyPractice } from "./dailyPracticeUI";
 import { TIME_LABELS, timeOfDay } from "./timeOfDay";
-import { GENTLE_AREAS, loadGentle } from "./gentle";
 import { initInstall, registerWorker } from "./pwa";
 import { playChime, unlockChime } from "./chime";
 import { initPracticeGroups, initYoga } from "./yogaUI";
@@ -53,7 +52,7 @@ let config: WebConfig = loadConfig(store);
 let state: WebState = applyAbsence(loadState(store, dayKeyFor(new Date())), Date.now(), config.idleThresholdSeconds);
 const monitor = new ActivityMonitor();
 const chime = (): void => playChime(config.chime, state.meetingMode);
-const resetPool = () => allowedProtocolOrder(state.meetingMode, config.gentle);
+const resetPool = () => allowedProtocolOrder(state.meetingMode);
 
 let lastTickMs = Date.now();
 /** Whether the previous step counted time; the first counting step credits nothing. */
@@ -74,7 +73,7 @@ const persist = (): void => {
 const rollDay = (now: Date): void => {
   const today = dayKeyFor(now);
   if (state.tracker.dayKey === today) return;
-  initDailyPractice(now, config.gentle);
+  initDailyPractice(now);
   state.meetingMode = false;
   if (settingsDialog.open) {
     const meetingCheckbox = settingsForm.elements.namedItem("meetingMode");
@@ -110,8 +109,8 @@ const renderCard = (practice: CardPractice, preview: boolean, stretch = state.tr
 
 const showCard = (stretch: number, preview: boolean, advance = true): void => {
   const practice = preview
-    ? selectPreviewPractice(stretch, state.meetingMode, state.lastPracticeId, state.rotation + previewIndex, timeOfDay(new Date()), config.gentle)
-    : selectCardPractice(stretch, state.meetingMode, state.lastPracticeId, state.rotation, timeOfDay(new Date()), config.gentle);
+    ? selectPreviewPractice(stretch, state.meetingMode, state.lastPracticeId, state.rotation + previewIndex, timeOfDay(new Date()))
+    : selectCardPractice(stretch, state.meetingMode, state.lastPracticeId, state.rotation, timeOfDay(new Date()));
   if (!preview) {
     state.lastPracticeId = practice.id;
     if (advance) state.rotation += 1;
@@ -257,7 +256,6 @@ const openSettings = (): void => {
   (f.namedItem("maxSnoozes") as HTMLInputElement).value = String(config.maxSnoozes);
   (f.namedItem("chime") as HTMLInputElement).checked = config.chime;
   (f.namedItem("meetingMode") as HTMLInputElement).checked = state.meetingMode;
-  for (const area of GENTLE_AREAS) (f.namedItem(`gentle-${area}`) as HTMLInputElement).checked = config.gentle[area];
   settingsDialog.showModal();
 };
 
@@ -273,25 +271,17 @@ settingsForm.addEventListener("submit", (e) => {
 
   const f = settingsForm.elements;
   const val = (name: string): HTMLInputElement => f.namedItem(name) as HTMLInputElement;
-  const gentle = loadGentle(Object.fromEntries(GENTLE_AREAS.map((area) => [area, val(`gentle-${area}`).checked])));
-  const gentleChanged = GENTLE_AREAS.some((area) => config.gentle[area] !== gentle[area]);
   config = {
     ...config,
     reminderIntervalSeconds: clampInt(val("reminderMinutes").value, 1, 180, 20) * 60,
     snoozeMinutes: clampInt(val("snoozeMinutes").value, 1, 60, 5),
     maxSnoozes: clampInt(val("maxSnoozes").value, 0, 10, 2),
     chime: val("chime").checked,
-    gentle,
   };
   const meetingMode = val("meetingMode").checked;
   const meetingChanged = state.meetingMode !== meetingMode;
   state.meetingMode = meetingMode;
-  if (gentleChanged) {
-    initYoga(config.gentle);
-    initDailyPractice(new Date(), config.gentle);
-    updateBreatheGentle(config.gentle);
-  }
-  if (cardVisible && (gentleChanged || meetingChanged)) showCard(cardStretch, cardIsPreview, false);
+  if (cardVisible && meetingChanged) showCard(cardStretch, cardIsPreview, false);
   if (reset && !resetPool().includes(reset.protocol.id)) nextResetActivity();
   saveConfig(store, config);
   persist();
@@ -347,9 +337,8 @@ $("reset-data").addEventListener("click", () => {
   clearAll(store);
   config = loadConfig(store);
   state = loadState(store, dayKeyFor(new Date()));
-  initYoga(config.gentle);
-  initDailyPractice(new Date(), config.gentle);
-  updateBreatheGentle(config.gentle);
+  initYoga();
+  initDailyPractice(new Date());
   settingsDialog.close();
   hideCard();
   render();
@@ -379,11 +368,11 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && cardVisible) hideCard();
 });
 
-const updateBreatheGentle = initBreathe(config.gentle);
+initBreathe();
 initInstall();
 registerWorker();
-initDailyPractice(new Date(), config.gentle);
-initYoga(config.gentle);
+initDailyPractice(new Date());
+initYoga();
 initPracticeGroups("meditation-practices", [{ id: "meditation", title: "Choose a quiet moment", practices: MEDITATION_PRACTICES }]);
 render();
 window.setInterval(step, TICK_MS);

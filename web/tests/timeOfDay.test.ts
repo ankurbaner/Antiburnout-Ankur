@@ -14,6 +14,18 @@ it("prefers suitable practices within the band and falls back when none suit", (
   expect(practicePool(6000, false, "evening")).toEqual(CARD_BANDS[2]);
 });
 
+it("uses only original band practices with at least two choices in every time window", () => {
+  expect(practicePool(0, false, "morning")).toEqual(CARD_BANDS[0]);
+  for (const time of ["morning", "afternoon", "evening"] as const) {
+    for (const stretch of [0, 3600, 6000]) {
+      const band = CARD_BANDS[stretch === 0 ? 0 : stretch === 3600 ? 1 : 2];
+      const pool = practicePool(stretch, false, time);
+      expect(pool.length).toBeGreaterThanOrEqual(2);
+      expect(pool.every((practice) => band.includes(practice))).toBe(true);
+    }
+  }
+});
+
 it("cycles real and preview cards through every effective pool without repeats", () => {
   for (const time of ["morning", "afternoon", "evening"] as const) {
     for (const stretch of [0, 3600, 6000]) {

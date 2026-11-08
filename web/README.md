@@ -19,6 +19,9 @@ static site with no backend.
 - **Desk yoga and meditation** with inline Start / countdown / Done timers.
 - **Practice of the day**: one yoga or meditation practice chosen by local date,
   with its instructions and inline timer.
+- All original yoga practices and all four breath-guide patterns are available.
+  The retired body-area filtering setting is ignored in older saved configs
+  and omitted when settings are saved again. The yoga safety guidance remains.
 
 ## Where activity comes from
 
