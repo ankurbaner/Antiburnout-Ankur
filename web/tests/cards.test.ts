@@ -4,6 +4,11 @@ import { MEETING_PRACTICES } from "../src/yoga";
 import { MEETING_PROTOCOL_ORDER, PROTOCOL_ORDER, PROTOCOLS, allowedProtocolOrder, isProtocolId, nextProtocol } from "../src/protocols";
 
 describe("web yoga reminder cards", () => {
+  it("keeps at least two practices in every band and the meeting-safe pool", () => {
+    for (const pool of [...CARD_BANDS, MEETING_PRACTICES]) {
+      expect(pool.length).toBeGreaterThanOrEqual(2);
+    }
+  });
   it.each([[0, false], [2700, false], [5401, false], [0, true]] as const)("cycles previews with a fixed last reminder at %s seconds with meeting=%s", (stretch, meeting) => {
     const pool = meeting ? MEETING_PRACTICES : CARD_BANDS[stretch === 0 ? 0 : stretch === 2700 ? 1 : 2];
     for (const saved of pool) {
