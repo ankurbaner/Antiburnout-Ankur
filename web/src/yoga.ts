@@ -1,5 +1,4 @@
 import type { PracticeTime } from "./timeOfDay";
-import { DEFAULT_GENTLE, GentleSettings, filterPractices } from "./gentle";
 
 export interface CardPractice {
   id: string;
@@ -29,23 +28,7 @@ export interface YogaGroup {
   id: string;
   title: string;
   practices: YogaPractice[];
-  hidden?: string[];
 }
-
-export const GENTLE_PRACTICES: YogaPractice[] = [
-  { id: "gentle-eyes", title: "Netra Vishrama", english: "Rest your eyes, hands down", seconds: 60, instruction: "Rest your gaze on something nearby, or close your eyes if comfortable. Keep your hands resting and blink normally, without pressing on your eyes." },
-  { id: "gentle-shoulders", title: "Shoulder release", english: "Let your shoulders soften", seconds: 60, instruction: "Sit comfortably with your hands resting and your head still. Let your shoulders soften down without pulling or lifting them, and breathe naturally." },
-];
-
-export const yogaGroupsFor = (gentle: GentleSettings = DEFAULT_GENTLE): YogaGroup[] => {
-  const groups = YOGA_GROUPS.map((group) => {
-    const practices = filterPractices(group.practices, gentle);
-    return { ...group, practices, hidden: group.practices.filter((practice) => !practices.includes(practice)).map((practice) => practice.english) };
-  });
-  return groups.some((group) => group.hidden.length > 0)
-    ? [...groups, { id: "gentle", title: "Gentle alternatives", practices: GENTLE_PRACTICES, hidden: [] }]
-    : groups;
-};
 
 export const YOGA_GROUPS: YogaGroup[] = [
   {

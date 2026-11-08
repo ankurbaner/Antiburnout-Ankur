@@ -1,6 +1,5 @@
 import { expect, it } from "vitest";
 import { clearAll, initialWebState, loadConfig, loadState, saveConfig, saveState } from "../src/storage";
-import { DEFAULT_GENTLE } from "../src/gentle";
 
 const store = () => {
   const data = new Map<string, string>();
@@ -31,7 +30,7 @@ it("drops retired config and paused state without losing reminders or quiet mode
     workHours: true, workStartMinutes: 540, workEndMinutes: 1080,
   }));
   const config = loadConfig(storage);
-  expect(config).toEqual({ idleThresholdSeconds: 60, reminderIntervalSeconds: 60, snoozeMinutes: 10, maxSnoozes: 3, chime: false, gentle: DEFAULT_GENTLE });
+  expect(config).toEqual({ idleThresholdSeconds: 60, reminderIntervalSeconds: 60, snoozeMinutes: 10, maxSnoozes: 3, chime: false });
   saveConfig(storage, config);
   expect(storage.getItem("anti-burnout:config")).not.toMatch(/systemIdle|eyeBreak|headsUp|work/);
   storage.setItem("anti-burnout:state", JSON.stringify({
@@ -101,5 +100,21 @@ it("ignores retired day-note data, drops its config/state fields on save and cle
     expect(storage.getItem("anti-burnout:state")).not.toMatch(/intention|spot|promptDay/);
     clearAll(storage);
     for (const key of ["config", "state", "intention", "spot"]) expect(storage.getItem(`anti-burnout:${key}`)).toBeNull();
+  }
+});
+
+it("ignores legacy Gentle settings, drops them on save and forgets removed practice IDs", () => {
+  for (const gentle of [undefined, null, "invalid", {}, { back: true, neck: true, wrists: true, pregnancy: true }]) {
+    const storage = store();
+    storage.setItem("anti-burnout:config", JSON.stringify({ gentle, snoozeMinutes: 7 }));
+    const config = loadConfig(storage);
+    expect(config.snoozeMinutes).toBe(7);
+    expect(config).not.toHaveProperty("gentle");
+    saveConfig(storage, config);
+    expect(storage.getItem("anti-burnout:config")).not.toContain("gentle");
+    for (const id of ["gentle-eyes", "gentle-shoulders"]) {
+      storage.setItem("anti-burnout:state", JSON.stringify({ ...initialWebState("2026-11-07"), lastPracticeId: id, lastProtocolId: id, meetingMode: true }));
+      expect(loadState(storage, "2026-11-07")).toMatchObject({ lastPracticeId: null, lastProtocolId: null, meetingMode: true });
+    }
   }
 });

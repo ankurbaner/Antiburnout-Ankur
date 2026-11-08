@@ -19,7 +19,6 @@ describe("simplified page copy", () => {
     expect(document.querySelector('.nav a[href="#yoga"]')?.textContent).toBe("Yoga");
     expect(document.querySelector("#smile, .smile-scene, #smile-practices")).toBeNull();
     expect(document.getElementById("yoga-title")?.textContent).toBe("Desk yoga");
-    expect(document.querySelector(".yoga-safety")?.textContent).toBe("Move gently and stop if anything hurts. If you have a health condition, check with your doctor first.");
     expect(html).not.toMatch(/Brahma Kumaris|Art of Living|Smile break|Quick ways to feel lighter/);
   });
   it("removes the dashboard and top controls", () => {
@@ -31,16 +30,26 @@ describe("simplified page copy", () => {
     expect(document.querySelector("h1")?.textContent).toBe("Short breaks for your eyes, back and mind.");
   });
 
-  it("keeps reminder, reset and Gentle options and retained navigation", () => {
+  it("shows the exact medical disclaimer at yoga, meditation and the page footer", () => {
+    const disclaimer = "This is not medical advice. Please consult your doctor wherever possible, especially if you have a health condition or injury.";
+    expect(document.querySelector("#yoga .yoga-safety")?.textContent).toBe(`Move gently and stop if anything hurts. ${disclaimer}`);
+    expect(document.querySelector("#meditation .yoga-intro + .yoga-safety")?.textContent).toBe(disclaimer);
+    expect(document.querySelector("body > footer .yoga-safety")?.textContent).toBe(disclaimer);
+    expect(document.querySelectorAll(".yoga-safety")).toHaveLength(3);
+    expect(html).not.toContain("If you have a health condition, check with your doctor first.");
+  });
+
+  it("keeps only reminder/reset options and retained navigation", () => {
     expect(document.querySelector("#how, #privacy, .tips-title, #eye-break, #day-notice")).toBeNull();
     expect([...document.querySelectorAll(".nav a")].map((link) => link.textContent)).toEqual(["Breathe", "Yoga", "Meditation", "Contact"]);
     expect([...document.querySelectorAll("#settings input")].map((input) => input.getAttribute("name"))).toEqual([
       "reminderMinutes", "snoozeMinutes", "maxSnoozes", "chime", "meetingMode",
-      "gentle-back", "gentle-neck", "gentle-wrists", "gentle-pregnancy",
     ]);
     expect(document.querySelector("#settings")?.textContent).toContain("Quiet practices only (for meetings)");
     expect(document.querySelector("#reset #reset-action")).not.toBeNull();
     expect(document.querySelector("#reset-data")).not.toBeNull();
+    expect(document.querySelector('[name^="gentle-"]')).toBeNull();
+    expect(html).not.toMatch(/Go gently|Gentle alternatives|Hide practices that may put extra strain/i);
   });
 
   it("keeps every navigation link pointing at an existing section", () => {

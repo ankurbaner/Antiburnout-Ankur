@@ -80,7 +80,7 @@
         <p class="eyebrow">A quiet desk break</p>
         <h2 id="yoga-title">Desk yoga</h2>
         <p class="yoga-intro muted">Quiet practices you can do at your desk, sitting or standing, without disturbing anyone. Pick one and take a minute.</p>
-        <p class="yoga-safety">Move gently and stop if anything hurts. If you have a health condition, check with your doctor first.</p>
+        <p class="yoga-safety">Move gently and stop if anything hurts. This is not medical advice. Please consult your doctor wherever possible, especially if you have a health condition or injury.</p>
         <div id="yoga-groups"></div>
       </section>
 
@@ -88,6 +88,7 @@
         <p class="eyebrow">A little space in your day</p>
         <h2 id="meditation-title">Meditation at work</h2>
         <p class="yoga-intro muted">Quiet moments you can take while sitting at your desk. Keep your eyes open or closed, whatever feels comfortable. Everything here is silent.</p>
+        <p class="yoga-safety">This is not medical advice. Please consult your doctor wherever possible, especially if you have a health condition or injury.</p>
         <div id="meditation-practices"></div>
       </section>
 
@@ -103,6 +104,10 @@
         </div>
       </section>
     </main>
+
+    <footer class="wrap page-footer">
+      <p class="yoga-safety">This is not medical advice. Please consult your doctor wherever possible, especially if you have a health condition or injury.</p>
+    </footer>
 
 
     <!-- Recovery card: small non-modal overlay in the corner; never steals focus. -->
@@ -166,14 +171,6 @@
           </div>
           <label class="check"><input type="checkbox" name="chime" /> Play a soft chime for cards (silent with quiet practices)</label>
           <label class="check"><input type="checkbox" name="meetingMode" /> Quiet practices only (for meetings)</label>
-        </fieldset>
-        <fieldset class="settings-group">
-          <legend>Go gently for</legend>
-          <p class="muted">Hide practices that may put extra strain on these areas. This is not medical advice; check with your doctor if needed.</p>
-          <label class="check"><input type="checkbox" name="gentle-back" /> Back</label>
-          <label class="check"><input type="checkbox" name="gentle-neck" /> Neck</label>
-          <label class="check"><input type="checkbox" name="gentle-wrists" /> Wrists</label>
-          <label class="check"><input type="checkbox" name="gentle-pregnancy" /> Pregnancy</label>
         </fieldset>
         <footer class="settings-foot">
           <button class="btn btn-link danger" type="button" id="reset-data">Clear all data</button>
