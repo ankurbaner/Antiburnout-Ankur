@@ -4,6 +4,17 @@
 #steady-step, .steady-tips h3 { font-size: var(--text-card); line-height: 1.25; }
 #steady-step[data-reframe="true"] { font-size: var(--text-group); }
 .steady-phase { font-size: 1.125rem; min-height: 2em; margin-top: 16px; }
+.steady-phase[data-smile="true"] { font-family: var(--display); font-size: var(--text-group); line-height: 1.25; text-align: center; }
+.steady-smile { margin-top: 24px; }
+.steady-smile svg { display: block; width: 200px; max-width: 100%; height: auto; margin-inline: auto; }
+.steady-smile-face { fill: var(--canvas); stroke: var(--border); stroke-width: 2; }
+.steady-smile-features { fill: none; stroke: var(--sage-dark); stroke-width: 3; stroke-linecap: round; }
+.steady-smile-mouth { transform-box: fill-box; transform-origin: center top; vector-effect: non-scaling-stroke; }
+#steady-smile:not([hidden]) .steady-smile-mouth { animation: steady-smile-in 4s ease-in-out both; }
+@keyframes steady-smile-in { from { transform: scaleY(0.01); } to { transform: scaleY(1); } }
+@media (prefers-reduced-motion: reduce) {
+  #steady-smile:not([hidden]) .steady-smile-mouth { animation: none; transform: scaleY(1); }
+}
 .steady-actions { display: flex; flex-wrap: wrap; gap: 12px; }
 .steady-tips ul { margin: 12px 0 0; padding-left: 22px; }
 .steady-tips li + li { margin-top: 8px; }

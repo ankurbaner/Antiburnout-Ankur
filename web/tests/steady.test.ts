@@ -39,7 +39,7 @@ describe("Steady timing", () => {
     expect(STEADY_STEPS[2].title).toBe("5-4-3-2-1 grounding");
     expect(STEADY_STEPS[3]).toMatchObject({ title: "Picture a smile", seconds: 20 });
     expect(STEADY_STEPS[4].title).toBe("Say quietly: “I'm excited.”");
-    expect(steadyAt(3, 0)).toMatchObject({ remaining: 20, done: false, label: "Let a small smile come naturally." });
+    expect(steadyAt(3, 0)).toMatchObject({ remaining: 20, done: false, label: "Smile. All is well." });
     expect(steadyAt(3, 19.5)).toMatchObject({ remaining: 1, done: false });
   });
 });

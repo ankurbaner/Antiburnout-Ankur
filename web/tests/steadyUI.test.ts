@@ -82,6 +82,10 @@ it("auto-advances sigh and hands, completes keyboard-friendly sensory dots and f
   }
   expect(element("progress").textContent).toBe("Step 4 of 5");
   expect(element("step").textContent).toBe("Picture a smile");
+  expect(element("smile").hidden).toBe(false);
+  expect(element("smile").querySelector("svg")?.getAttribute("aria-hidden")).toBe("true");
+  expect(element("phase").textContent).toBe("Smile. All is well.");
+  expect(element("phase").dataset.smile).toBe("true");
   expect(element("time").textContent).toContain("00:20");
   expect(element("next").textContent).toBe("Next");
   vi.advanceTimersByTime(19900);
@@ -89,6 +93,8 @@ it("auto-advances sigh and hands, completes keyboard-friendly sensory dots and f
   expect(element("progress").textContent).toBe("Step 4 of 5");
   vi.advanceTimersByTime(100);
   expect(element("progress").textContent).toBe("Step 5 of 5");
+  expect(element("smile").hidden).toBe(true);
+  expect(element("phase").dataset.smile).toBe("false");
   expect(element("next").textContent).toBe("Done");
   click("next");
   expect(element("result").textContent).toBe("Well done. Nervousness rises and passes, usually within minutes.");

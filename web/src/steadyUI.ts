@@ -104,8 +104,10 @@ export const initSteady = (): void => {
     get("progress").textContent = `Step ${step + 1} of ${STEADY_STEPS.length}`;
     heading.textContent = STEADY_STEPS[step].title;
     heading.dataset.reframe = String(step === lastStep);
+    phase.dataset.smile = String(step === 3);
     get("instruction").textContent = STEADY_STEPS[step].instruction;
     get("visual").hidden = step !== 0;
+    get("smile").hidden = step !== 3;
     ground.hidden = step !== 2;
     back.disabled = step === 0;
     next.textContent = step === lastStep ? "Done" : "Next";

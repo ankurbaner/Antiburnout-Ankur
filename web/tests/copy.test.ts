@@ -3,10 +3,21 @@ import { describe, expect, it } from "vitest";
 import html from "../index.html?raw";
 import { initDailyPractice } from "../src/dailyPracticeUI";
 import { initYoga } from "../src/yogaUI";
+import { readFileSync } from "node:fs";
 
 const document = new DOMParser().parseFromString(html, "text/html");
+const steadyStyles = readFileSync("src/steady.css", "utf8");
 
 describe("simplified page copy", () => {
+  it("provides a decorative inline smile with a CSS-only static reduced-motion state", () => {
+    expect(document.querySelector('#steady-smile')?.hasAttribute('hidden')).toBe(true);
+    expect(document.querySelector('#steady-smile svg')?.getAttribute('aria-hidden')).toBe('true');
+    expect(document.querySelector('#steady-smile svg')?.getAttribute('focusable')).toBe('false');
+    expect(document.querySelector('#steady-smile .steady-smile-mouth')).not.toBeNull();
+    expect(document.querySelector('#steady-smile [style], #steady-smile image')).toBeNull();
+    expect(steadyStyles).toMatch(/@keyframes steady-smile-in/);
+    expect(steadyStyles).toMatch(/@media \(prefers-reduced-motion: reduce\)\s*\{\s*#steady-smile:not\(\[hidden\]\) \.steady-smile-mouth\s*\{ animation: none; transform: scaleY\(1\);/);
+  });
   it("keeps the daily mindfulness and yoga pair directly after Steady", () => {
     expect(document.querySelector("#steady + section")?.id).toBe("practice-of-the-day");
     expect(document.querySelector("#daily-title")?.textContent).toBe("Practice of the day");

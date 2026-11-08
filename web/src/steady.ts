@@ -28,5 +28,5 @@ export const steadyAt = (step: number, elapsed: number, grounded = false) => {
   const squeeze = cycle < 5;
   return { done, remaining, round, phase: step === 1 && !squeeze ? 1 : 0,
     phaseElapsed: step === 1 ? cycle - (squeeze ? 0 : 5) : 0, seconds: step === 1 ? squeeze ? 5 : 10 : duration,
-    label: step === 1 ? squeeze ? "Squeeze…" : "Let go… notice the warmth" : step === 2 ? "Notice one thing at a time." : step === 3 ? "Let a small smile come naturally." : STEADY_STEPS[step].title, inhale: false };
+    label: step === 1 ? squeeze ? "Squeeze…" : "Let go… notice the warmth" : step === 2 ? "Notice one thing at a time." : step === 3 ? "Smile. All is well." : STEADY_STEPS[step].title, inhale: false };
 };
