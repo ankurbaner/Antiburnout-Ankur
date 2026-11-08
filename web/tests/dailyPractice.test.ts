@@ -4,11 +4,11 @@ import { YOGA_GROUPS } from "../src/yoga";
 import { MEDITATION_PRACTICES } from "../src/meditation";
 
 describe("practice of the local day", () => {
-  it("uses the new two-minute Body scan in the retired practice's daily slot", () => {
+  it("uses one-minute Mindful listening in the retired practice's daily slot", () => {
     const date = new Date(2026, 10, 8);
     const day = Math.floor(Date.UTC(2026, 10, 8) / 86_400_000);
     expect(day % MEDITATION_PRACTICES.length).toBe(5);
-    expect(dailyPracticePair(date).mindfulness).toMatchObject({ id: "head-to-toe-scan", title: "Body scan", seconds: 120 });
+    expect(dailyPracticePair(date).mindfulness).toMatchObject({ id: "mindful-listening", title: "Mindful listening", seconds: 60 });
     expect(dailyPracticePair(new Date(2026, 10, 8, 23, 59)).mindfulness).toEqual(dailyPracticePair(date).mindfulness);
   });
   it("selects meditation and desk movements, never pranayama for yoga", () => {

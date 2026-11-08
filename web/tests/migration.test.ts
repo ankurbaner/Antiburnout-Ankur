@@ -77,9 +77,9 @@ it("persists meeting mode and the previous card/reset without letting malformed 
   expect(loadState(storage, "2026-11-07")).toMatchObject({ meetingMode: false, lastPracticeId: null, lastProtocolId: null });
 });
 
-it("discards a retired meditation ID while preserving other stored state", () => {
+it.each(["kindness", "head-to-toe-scan"])("discards retired meditation ID %s while preserving other stored state", (id) => {
   const storage = store();
-  storage.setItem("anti-burnout:state", JSON.stringify({ ...initialWebState("2026-11-08"), lastPracticeId: "kindness", meetingMode: true }));
+  storage.setItem("anti-burnout:state", JSON.stringify({ ...initialWebState("2026-11-08"), lastPracticeId: id, meetingMode: true }));
   const state = loadState(storage, "2026-11-08");
   expect(state).toMatchObject({ lastPracticeId: null, meetingMode: true });
   saveState(storage, state);
