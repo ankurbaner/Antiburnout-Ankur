@@ -10,6 +10,7 @@ import { tick } from "../../src/tracker";
 import { CardPractice, createPreviewSelector, needsWater, selectCardPractice } from "./cards";
 import { ActivityMonitor } from "./activity";
 import { initBreathe } from "./breatheUI";
+import { initSteady } from "./steadyUI";
 import { initDailyPractice } from "./dailyPracticeUI";
 import { TIME_LABELS, timeOfDay } from "./timeOfDay";
 import { initInstall, registerWorker } from "./pwa";
@@ -369,6 +370,7 @@ document.addEventListener("keydown", (e) => {
 });
 
 initBreathe();
+initSteady();
 initInstall();
 registerWorker();
 initDailyPractice(new Date());
