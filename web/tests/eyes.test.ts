@@ -3,8 +3,6 @@ import { afterEach, expect, it, vi } from "vitest";
 import { EYE_PRACTICES } from "../src/eyes";
 import { initPracticeGroups } from "../src/yogaUI";
 import { formatClock } from "../src/format";
-import { CARD_BANDS } from "../src/cards";
-import { MEETING_PRACTICES } from "../src/yoga";
 import { DAILY_YOGA_PRACTICES } from "../src/dailyPractice";
 import { MEDITATION_PRACTICES } from "../src/meditation";
 
@@ -23,7 +21,7 @@ it("defines five eye practices with the requested durations, separate from exist
   expect(new Set(EYE_PRACTICES.map(({ id }) => id)).size).toBe(5);
   for (const practice of EYE_PRACTICES) {
     expect(practice.instruction.length).toBeGreaterThan(0);
-    for (const pool of [...CARD_BANDS, MEETING_PRACTICES, DAILY_YOGA_PRACTICES, MEDITATION_PRACTICES]) {
+    for (const pool of [DAILY_YOGA_PRACTICES, MEDITATION_PRACTICES]) {
       expect(pool.some(({ id }) => id === practice.id)).toBe(false);
     }
   }

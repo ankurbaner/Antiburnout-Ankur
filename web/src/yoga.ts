@@ -1,21 +1,3 @@
-import type { PracticeTime } from "./timeOfDay";
-
-export interface CardPractice {
-  id: string;
-  title: string;
-  english: string;
-  instruction: string;
-  times?: PracticeTime[];
-}
-
-export const MEETING_PRACTICES: CardPractice[] = [
-  { id: "meeting-eyes", title: "Netra Sanchalana", english: "Gentle eye movements", instruction: "Keep your head still and slowly look left, right, up and down without straining." },
-  { id: "meeting-palming", title: "Netra Vishrama", english: "Palming · rest your eyes", instruction: "Close your eyes and lightly cup clean palms over them without pressing on your eyes." },
-  { id: "meeting-equal", title: "Sama Vritti", english: "Equal breathing", instruction: "Breathe quietly in for 4 counts and out for 4, using a shorter equal count if needed, without holding your breath." },
-  { id: "meeting-shoulders", title: "Skandha Shithilikarana", english: "Shoulder release", instruction: "Keep your hands resting and gently let your shoulders drop away from your ears as you breathe out." },
-  { id: "meeting-ankles", title: "Gulpha Chakra", english: "Ankle circles under the desk", instruction: "With your feet under the desk, lift one foot slightly and make small ankle circles, then switch feet." },
-];
-
 export interface YogaPractice {
   id: string;
   title: string;
@@ -53,7 +35,7 @@ export const YOGA_GROUPS: YogaGroup[] = [
       { id: "palm-tree", title: "Tadasana", english: "Palm tree stretch · arms overhead", seconds: 60, instruction: "Stand with feet comfortably apart and knees soft, then slowly lift your arms overhead only as far as feels easy. Reach gently upward with heels on the floor, breathe normally, then lower your arms." },
       { id: "side-bend", title: "Tiryaka Tadasana", english: "Standing side bend", seconds: 60, instruction: "Stand with feet apart and lift one arm if comfortable, keeping the other hand on your hip. Lean a little to the opposite side without twisting, return upright, then switch sides." },
       { id: "heels", title: "Pada Sanchalana · heel raises", english: "Calf and heel raises", seconds: 60, instruction: "Stand beside a steady desk or wall and hold it lightly for balance. Slowly lift both heels, then lower them with control; keep the movement small and quiet." },
-      { id: "walk-break", title: "Walk break", english: "Fresh air · 10-minute walk", seconds: 600, instruction: "Step away from your screen for a comfortable 10-minute walk. Head outside for fresh air if it is safe and practical, and choose an easy route." },
+      { id: "walk-break", title: "Walk break", english: "Fresh air · 15-minute walk", seconds: 900, instruction: "Step away from your screen for a comfortable 15-minute walk. Head outside for fresh air if it is safe and practical, and choose an easy route." },
     ],
   },
 ];

@@ -5,9 +5,7 @@
  * one back to back, so a reset never turns into a checklist.
  */
 
-import { MEETING_PRACTICES } from "./yoga";
-
-export type ProtocolId = "water" | "posture" | "mobility" | "breathwork" | "alternate" | "desk-stretch" | "meeting-eyes" | "meeting-palming" | "meeting-equal" | "meeting-shoulders" | "meeting-ankles";
+export type ProtocolId = "water" | "posture" | "mobility" | "breathwork" | "alternate" | "desk-stretch";
 
 export interface Protocol {
   id: ProtocolId;
@@ -18,15 +16,7 @@ export interface Protocol {
   why: string;
 }
 
-export const MEETING_PROTOCOL_ORDER: ProtocolId[] = ["meeting-eyes", "meeting-palming", "meeting-equal", "meeting-shoulders", "meeting-ankles"];
-
-const meetingProtocols = Object.fromEntries(MEETING_PRACTICES.map((practice) => [practice.id, {
-  id: practice.id, icon: "🌿", title: `${practice.title} · ${practice.english}`, durationLabel: "1 min",
-  action: practice.instruction, why: "Meeting mode: nothing anyone will notice",
-}])) as Record<typeof MEETING_PROTOCOL_ORDER[number], Protocol>;
-
 export const PROTOCOLS: Record<ProtocolId, Protocol> = {
-  ...meetingProtocols,
   water: {
     id: "water",
     icon: "💧",
@@ -79,30 +69,9 @@ export const PROTOCOLS: Record<ProtocolId, Protocol> = {
 
 export const PROTOCOL_ORDER: ProtocolId[] = ["breathwork", "water", "posture", "mobility", "alternate", "desk-stretch"];
 
-export const allowedProtocolOrder = (meeting: boolean): ProtocolId[] => meeting ? MEETING_PROTOCOL_ORDER : PROTOCOL_ORDER;
-
-export const isProtocolId = (value: unknown): value is ProtocolId =>
-  typeof value === "string" && Object.prototype.hasOwnProperty.call(PROTOCOLS, value);
-
-/** Length of a Bio-Reset, in seconds. */
 export const RESET_SECONDS = 5 * 60;
 
-export const countsAsReset = (elapsedSeconds: number): boolean => elapsedSeconds >= 60;
-
-/**
- * Pick the activity that follows `lastId` in the rotation.
- *
- * @param lastId - The previously shown activity, if any.
- * @param enabled - Activities the user allows; falls back to all when empty.
- * @returns The next activity, never equal to `lastId` when more than one is enabled.
- */
-export const nextProtocol = (
-  lastId: ProtocolId | null | undefined,
-  enabled: ProtocolId[] = PROTOCOL_ORDER,
-): Protocol => {
-  const pool = enabled.length > 0 ? enabled : PROTOCOL_ORDER;
-  if (lastId && pool.includes(lastId) && pool.length > 1) {
-    return PROTOCOLS[pool[(pool.indexOf(lastId) + 1) % pool.length]];
-  }
-  return PROTOCOLS[pool[0]];
+export const nextProtocol = (lastId: ProtocolId | null | undefined): Protocol => {
+  const index = lastId ? PROTOCOL_ORDER.indexOf(lastId) : -1;
+  return PROTOCOLS[PROTOCOL_ORDER[(index + 1) % PROTOCOL_ORDER.length]];
 };

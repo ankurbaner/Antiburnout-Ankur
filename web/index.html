@@ -3,12 +3,12 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Quiet desk-yoga reminders for your eyes, back and mind. Meeting mode keeps breaks call-safe. Private by design: nothing leaves your browser." />
+    <meta name="description" content="Self-paced breaks for your eyes, back and mind. Explore quiet eye exercises, desk yoga, meditation and breathing guides. No tracking or automatic reminders." />
     <link rel="canonical" href="https://ankurbaner.github.io/Antiburnout-Ankur/" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Anti-Burnout" />
     <meta property="og:title" content="Anti-Burnout: breaks for your eyes, your back and a glass of water" />
-    <meta property="og:description" content="Quiet desk-yoga reminders for your eyes, back and mind. Meeting mode keeps breaks call-safe. Private by design: nothing leaves your browser." />
+    <meta property="og:description" content="Self-paced breaks for your eyes, back and mind. Explore quiet eye exercises, desk yoga, meditation and breathing guides. No tracking or automatic reminders." />
     <meta property="og:url" content="https://ankurbaner.github.io/Antiburnout-Ankur/" />
     <meta property="og:image" content="https://ankurbaner.github.io/Antiburnout-Ankur/og-image.png" />
     <meta property="og:image:width" content="1200" />
@@ -16,7 +16,7 @@
     <meta property="og:image:alt" content="Anti-Burnout: short breaks for your eyes, back and mind." />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Anti-Burnout" />
-    <meta name="twitter:description" content="Quiet desk-yoga reminders for your eyes, back and mind. Meeting mode keeps breaks call-safe. Private by design: nothing leaves your browser." />
+    <meta name="twitter:description" content="Self-paced breaks for your eyes, back and mind. Explore quiet eye exercises, desk yoga, meditation and breathing guides. No tracking or automatic reminders." />
     <meta name="twitter:image" content="https://ankurbaner.github.io/Antiburnout-Ankur/og-image.png" />
     <title>Anti-Burnout</title>
     <link rel="manifest" href="./manifest.webmanifest" />
@@ -41,18 +41,15 @@
           <a href="#steady">Calm</a>
           <a href="#contact">Contact</a>
         </nav>
-        <button class="btn btn-ghost btn-sm" id="open-settings" type="button" aria-haspopup="dialog">Settings</button>
       </div>
     </header>
 
     <main id="top">
       <section class="hero wrap">
-        <p class="eyebrow">Small breaks, less strain</p>
-        <h1>Short breaks for your eyes, back and mind.</h1>
-        <p class="lead">Every 20 minutes of screen use, a small card suggests one quiet desk-yoga move. After a long stretch, it also reminds you to drink water. No sign-up. Nothing leaves your browser.</p>
+        <h1>Small breaks, less strain</h1>
+        <p class="hero-tagline">Short breaks for your eyes, back and mind.</p>
         <div class="hero-actions">
           <button class="btn btn-primary" type="button" data-action="start-reset">Take a 5-minute reset</button>
-          <button class="btn btn-ghost" type="button" data-action="preview-card">Preview a card</button>
           <button class="btn btn-ghost btn-sm" type="button" id="install-app" hidden>Install app</button>
         </div>
       </section>
@@ -225,23 +222,6 @@
     </footer>
 
 
-    <!-- Recovery card: small non-modal overlay in the corner; never steals focus. -->
-    <aside class="recovery-card" id="card" hidden aria-live="polite" aria-labelledby="card-heading">
-      <div class="card-eyebrow">
-        <span id="card-meta">at the screen</span>
-        <span class="chip chip-accent" id="card-chip">now</span>
-      </div>
-      <h2 id="card-heading">Rest your eyes</h2>
-      <p class="card-footnote" id="card-time" hidden></p>
-      <ul class="card-steps" id="card-steps"></ul>
-      <p class="card-footnote" id="card-footnote" hidden></p>
-      <p class="card-reminder">This break is for you, not for more work.</p>
-      <div class="card-actions">
-        <button class="btn btn-primary" type="button" id="card-done">Done</button>
-        <button class="btn btn-ghost" type="button" id="card-snooze">Snooze</button>
-      </div>
-    </aside>
-
     <!-- 5-minute reset overlay. -->
     <div class="overlay overlay-reset" id="reset" hidden role="dialog" aria-modal="true" aria-labelledby="reset-title">
       <div class="overlay-inner">
@@ -262,37 +242,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Settings. -->
-    <dialog class="settings" id="settings" aria-labelledby="settings-title">
-      <form method="dialog" id="settings-form">
-        <header class="settings-head">
-          <h2 id="settings-title">Settings</h2>
-          <button class="btn btn-ghost btn-sm" type="submit" value="cancel" formnovalidate aria-label="Close settings">Close</button>
-        </header>
-        <fieldset class="settings-group">
-          <legend>Reminders</legend>
-          <div class="field-grid">
-            <label>Card every
-              <span class="input-suffix"><input type="number" name="reminderMinutes" min="1" max="180" step="1" required /> active min</span>
-            </label>
-            <label>Snooze for
-              <span class="input-suffix"><input type="number" name="snoozeMinutes" min="1" max="60" step="1" required /> min</span>
-            </label>
-            <label>Snoozes allowed in a row
-              <input type="number" name="maxSnoozes" min="0" max="10" step="1" required aria-describedby="snooze-limit-hint" />
-              <span id="snooze-limit-hint">0 = no limit</span>
-            </label>
-          </div>
-          <label class="check"><input type="checkbox" name="chime" /> Play a soft chime for cards (silent with quiet practices)</label>
-          <label class="check"><input type="checkbox" name="meetingMode" /> Quiet practices only (for meetings)</label>
-        </fieldset>
-        <footer class="settings-foot">
-          <button class="btn btn-link danger" type="button" id="reset-data">Clear all data</button>
-          <button class="btn btn-primary" type="submit" value="save">Save</button>
-        </footer>
-      </form>
-    </dialog>
 
     <script type="module" src="./src/main.ts"></script>
   </body>
