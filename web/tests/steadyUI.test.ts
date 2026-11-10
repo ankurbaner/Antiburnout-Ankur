@@ -83,10 +83,10 @@ it("auto-advances through all three steps and finishes when squeeze and release 
   expect(element("smile").hidden).toBe(true);
   expect(element("phase").dataset.smile).toBe("false");
   expect(element("step").textContent).toBe("Squeeze and release");
-  expect(element("phase").textContent).toBe("Squeeze… toes and feet (fists too, if no one can see)");
+  expect(element("phase").textContent).toBe("Squeeze feet and fists");
   expect(element("time").textContent).toContain("00:45 left · Round 1 of 3");
   vi.advanceTimersByTime(5000);
-  expect(element("phase").textContent).toBe("Let go… feel the floor and the warmth");
+  expect(element("phase").textContent).toBe("Release feet and fists");
   vi.advanceTimersByTime(40000);
   expect(element("result").textContent).toBe("Well done. Nervousness rises and passes, usually within minutes.");
   expect(element("session").hidden).toBe(true);

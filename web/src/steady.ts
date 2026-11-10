@@ -6,7 +6,7 @@ export const STEADY_SCENES = {
 export const STEADY_STEPS = [
   { kind: "sigh", title: "Physiological sigh", instruction: "Take a comfortable breath in through your nose, add a small second inhale, then breathe out slowly. No holds or forcing; stop or skip if you feel dizzy or uncomfortable.", seconds: 30 },
   { kind: "smile", title: "Picture a smile", instruction: "Choose a scene to focus on for a moment. Let your breathing stay comfortable.", seconds: 20 },
-  { kind: "squeeze", title: "Squeeze and release", instruction: "Gently curl your toes and press your feet into the floor, hidden under a desk or podium. Squeeze your fists too if no one can see. Squeeze for 5 seconds, then release for 10. Repeat three times without straining.", seconds: 45 },
+  { kind: "squeeze", title: "Squeeze and release", instruction: "Gently curl your toes and press your feet into the floor, hidden under a desk or podium, and squeeze your fists at the same time. Squeeze for 5 seconds, then release for 10. Repeat three times without straining.", seconds: 45 },
 ] as const;
 
 export const steadyAt = (step: number, elapsed: number) => {
@@ -27,5 +27,5 @@ export const steadyAt = (step: number, elapsed: number) => {
   const squeeze = cycle < 5;
   return { done, remaining, round, phase: squeeze ? 0 : 1,
     phaseElapsed: cycle - (squeeze ? 0 : 5), seconds: squeeze ? 5 : 10,
-    label: squeeze ? "Squeeze… toes and feet (fists too, if no one can see)" : "Let go… feel the floor and the warmth", inhale: false };
+    label: squeeze ? "Squeeze feet and fists" : "Release feet and fists", inhale: false };
 };

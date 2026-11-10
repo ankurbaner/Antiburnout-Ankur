@@ -13,8 +13,8 @@ describe("Steady timing", () => {
   });
   it("paces three 5-second squeezes and 10-second releases", () => {
     for (const round of [0, 1, 2]) {
-      expect(steadyAt(2, round * 15)).toMatchObject({ label: "Squeeze… toes and feet (fists too, if no one can see)", seconds: 5, round: round + 1 });
-      expect(steadyAt(2, round * 15 + 5)).toMatchObject({ label: "Let go… feel the floor and the warmth", seconds: 10 });
+      expect(steadyAt(2, round * 15)).toMatchObject({ label: "Squeeze feet and fists", seconds: 5, round: round + 1 });
+      expect(steadyAt(2, round * 15 + 5)).toMatchObject({ label: "Release feet and fists", seconds: 10 });
     }
     expect(steadyAt(2, 39.5)).toMatchObject({ phase: 1, phaseElapsed: 4.5, remaining: 6, round: 3 });
   });
@@ -37,7 +37,6 @@ describe("Steady timing", () => {
     ]);
     expect(steadyAt(1, 0)).toMatchObject({ remaining: 20, done: false, label: "Look at the child's smile. Smile back. All is well." });
     expect(steadyAt(1, 19.5)).toMatchObject({ remaining: 1, done: false });
-    expect(STEADY_STEPS[2].instruction).toContain("curl your toes and press your feet into the floor, hidden under a desk or podium");
-    expect(STEADY_STEPS[2].instruction).toContain("Squeeze your fists too if no one can see.");
+    expect(STEADY_STEPS[2].instruction).toBe("Gently curl your toes and press your feet into the floor, hidden under a desk or podium, and squeeze your fists at the same time. Squeeze for 5 seconds, then release for 10. Repeat three times without straining.");
   });
 });
