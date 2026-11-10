@@ -30,7 +30,7 @@ describe("simplified page copy", () => {
       const mouth = rules.find((rule) => rule.selectorText.includes('.steady-smile-mouth'))!;
       const sun = rules.find((rule) => rule.selectorText.includes('.steady-sun-glow'))!;
       expect(mouth.style.getPropertyValue('animation').trim()).toBe('none');
-      expect(mouth.style.getPropertyValue('transform').replace(/\s/g, '')).toBe('scaleY(1)');
+      expect(mouth.style.getPropertyValue('transform').trim()).toBe('none');
       expect(sun.style.getPropertyValue('animation').trim()).toBe('none');
       expect(sun.style.getPropertyValue('transform').trim()).toBe('none');
       expect(Number(sun.style.getPropertyValue('opacity'))).toBe(.8);
