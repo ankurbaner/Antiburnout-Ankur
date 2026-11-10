@@ -1,7 +1,7 @@
-.steady-guide { margin-top: 24px; padding: 24px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+.steady-guide { margin-top: 1.5rem; padding: var(--panel-padding); border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
 .steady-spacing { margin-top: 16px; }
 #steady-instruction, .steady-tips { max-width: 65ch; }
-#steady-step, .steady-tips h3 { font-size: var(--text-card); line-height: 1.25; }
+#steady-step, .steady-tips h3 { font-size: var(--text-group); line-height: 1.25; }
 .steady-phase { font-size: 1.125rem; min-height: 2em; margin-top: 16px; }
 .steady-phase[data-smile="true"] { font-family: var(--display); font-size: var(--text-group); line-height: 1.25; text-align: center; }
 .steady-smile { margin-top: 24px; }
@@ -15,10 +15,9 @@
 @keyframes steady-sun-glow { 0%, 100% { opacity: .45; transform: scale(.96); } 50% { opacity: .9; transform: scale(1.04); } }
 @keyframes steady-smile-in { from { transform: scaleY(0.01); } to { transform: scaleY(1); } }
 @media (prefers-reduced-motion: reduce) {
-  #steady-smile:not([hidden]) #steady-child:not([hidden]) .steady-smile-mouth { animation: none; transform: scaleY(1); }
+  #steady-smile:not([hidden]) #steady-child:not([hidden]) .steady-smile-mouth { animation: none; transform: none; }
   #steady-smile:not([hidden]) #steady-sun:not([hidden]) .steady-sun-glow { animation: none; transform: none; opacity: .8; }
 }
 .steady-actions { display: flex; flex-wrap: wrap; gap: 12px; }
 .steady-tips ul { margin: 12px 0 0; padding-left: 22px; }
 .steady-tips li + li { margin-top: 8px; }
-@media (max-width: 600px) { .steady-guide { padding: 18px; } }
