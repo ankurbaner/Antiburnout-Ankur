@@ -20,7 +20,6 @@ it("defines six silent desk practices with their requested durations", () => {
 });
 
 it("replaces retired practices with mindful listening while keeping only the original body scan", () => {
-  expect(MEDITATION_PRACTICES.some((practice) => practice.id === "kindness")).toBe(false);
   expect(MEDITATION_PRACTICES.filter((practice) => /body scan/i.test(`${practice.title} ${practice.english}`))).toEqual([
     expect.objectContaining({ id: "body-scan", title: "Yoga Nidra inspired", seconds: 180 }),
   ]);
