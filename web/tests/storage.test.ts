@@ -1,7 +1,7 @@
 import { expect, it, vi } from "vitest";
 import { clearLegacyStorage } from "../src/storage";
 
-it.each(["{bad json", "[]", JSON.stringify({ meetingMode: true, lastPracticeId: "kindness", tracker: { currentStretchSeconds: 7200 } })])("removes obsolete data without parsing it: %s", (raw) => {
+it.each(["{bad json", "[]", JSON.stringify({ meetingMode: true, lastPracticeId: "retired-practice", tracker: { currentStretchSeconds: 7200 } })])("removes obsolete data without parsing it: %s", (raw) => {
   const data = new Map([
     ["anti-burnout:config", raw], ["anti-burnout:state", raw],
     ["anti-burnout:intention", raw], ["anti-burnout:spot", raw], ["unrelated", "keep"],
