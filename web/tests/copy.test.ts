@@ -73,8 +73,8 @@ describe("simplified page copy", () => {
     expect(document.querySelector('[name="dailyGoalMinutes"]')).toBeNull();
     expect(document.querySelector('[name="idleThresholdSeconds"]')).toBeNull();
     expect(document.querySelectorAll("h1")).toHaveLength(1);
-    expect(document.querySelector("h1")?.textContent).toBe("Calm your mind, rest your eyes, ease your back, right at your desk.");
-    expect(document.querySelector(".hero-tagline")?.textContent).toBe("Short breaks for your eyes, back and mind.");
+    expect(document.querySelector("h1")?.textContent).toBe("Small breaks, less strain");
+    expect(document.querySelector(".hero-tagline")?.textContent).toBe("Short breaks for your eyes, back and mind at your desk.");
     expect(document.querySelector(".hero .lead")).toBeNull();
     expect(html).not.toContain("Every 20 minutes of screen use, a small card suggests");
   });
