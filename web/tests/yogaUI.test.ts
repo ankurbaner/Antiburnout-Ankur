@@ -57,20 +57,20 @@ it("renders all groups and runs, completes, closes and restarts an inline timer"
   expect(timer.hidden).toBe(true);
 });
 
-it("starts, completes and restarts the ten-minute walk using the shared timer", () => {
+it("starts, completes and restarts the fifteen-minute walk using the shared timer", () => {
   vi.useFakeTimers();
   document.body.innerHTML = '<div id="yoga-groups"></div>';
   initYoga();
   const card = document.querySelector<HTMLElement>('[data-practice="walk-break"]')!;
-  expect(card.querySelector(".yoga-duration")?.textContent).toBe("10 min");
+  expect(card.querySelector(".yoga-duration")?.textContent).toBe("15 min");
   const start = card.querySelector<HTMLButtonElement>("button")!;
   start.click();
-  expect(card.querySelector(".yoga-countdown")?.textContent).toBe("10:00");
+  expect(card.querySelector(".yoga-countdown")?.textContent).toBe("15:00");
   vi.advanceTimersByTime(1000);
-  expect(card.querySelector(".yoga-countdown")?.textContent).toBe("09:59");
+  expect(card.querySelector(".yoga-countdown")?.textContent).toBe("14:59");
   vi.advanceTimersByTime(1000);
-  expect(card.querySelector(".yoga-countdown")?.textContent).toBe("09:58");
-  vi.advanceTimersByTime(539000);
+  expect(card.querySelector(".yoga-countdown")?.textContent).toBe("14:58");
+  vi.advanceTimersByTime(839000);
   expect(card.querySelector(".yoga-countdown")?.textContent).toBe("00:59");
   vi.advanceTimersByTime(59000);
   expect(card.querySelector(".yoga-countdown")?.textContent).toBe("00:00");
@@ -78,6 +78,6 @@ it("starts, completes and restarts the ten-minute walk using the shared timer", 
   card.querySelector<HTMLButtonElement>(".yoga-timer button")!.click();
   expect(document.activeElement).toBe(start);
   start.click();
-  expect(card.querySelector(".yoga-countdown")?.textContent).toBe("10:00");
+  expect(card.querySelector(".yoga-countdown")?.textContent).toBe("15:00");
   card.querySelector<HTMLButtonElement>(".yoga-timer button")!.click();
 });

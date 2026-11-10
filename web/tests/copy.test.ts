@@ -72,7 +72,11 @@ describe("simplified page copy", () => {
     expect(document.querySelector(".control-area, #pause-btn, #source-chip, #enable-system, #meeting-btn, #source-text")).toBeNull();
     expect(document.querySelector('[name="dailyGoalMinutes"]')).toBeNull();
     expect(document.querySelector('[name="idleThresholdSeconds"]')).toBeNull();
-    expect(document.querySelector("h1")?.textContent).toBe("Short breaks for your eyes, back and mind.");
+    expect(document.querySelectorAll("h1")).toHaveLength(1);
+    expect(document.querySelector("h1")?.textContent).toBe("Small breaks, less strain");
+    expect(document.querySelector(".hero-tagline")?.textContent).toBe("Short breaks for your eyes, back and mind.");
+    expect(document.querySelector(".hero .lead")).toBeNull();
+    expect(html).not.toContain("Every 20 minutes of screen use, a small card suggests");
   });
 
   it("shows the exact medical disclaimer at yoga, meditation and the page footer", () => {
@@ -85,15 +89,13 @@ describe("simplified page copy", () => {
     expect(html).not.toContain("If you have a health condition, check with your doctor first.");
   });
 
-  it("keeps only reminder/reset options and retained navigation", () => {
+  it("keeps manual resets and navigation without reminder cards or settings", () => {
     expect(document.querySelector("#how, #privacy, .tips-title, #eye-break, #day-notice")).toBeNull();
     expect([...document.querySelectorAll(".nav a")].map((link) => link.textContent)).toEqual(["Breathe", "Eyes", "Yoga", "Meditation", "Calm", "Contact"]);
-    expect([...document.querySelectorAll("#settings input")].map((input) => input.getAttribute("name"))).toEqual([
-      "reminderMinutes", "snoozeMinutes", "maxSnoozes", "chime", "meetingMode",
-    ]);
-    expect(document.querySelector("#settings")?.textContent).toContain("Quiet practices only (for meetings)");
+    expect(document.querySelector('#settings, #open-settings, #card, .recovery-card, [data-action="preview-card"]')).toBeNull();
+    expect(html).not.toMatch(/Preview a card|Settings|Snooze/);
     expect(document.querySelector("#reset #reset-action")).not.toBeNull();
-    expect(document.querySelector("#reset-data")).not.toBeNull();
+    expect(document.querySelector("#reset-data")).toBeNull();
     expect(document.querySelector('[name^="gentle-"]')).toBeNull();
     expect(html).not.toMatch(/Go gently|Gentle alternatives|Hide practices that may put extra strain/i);
   });
@@ -135,14 +137,14 @@ describe("simplified page copy", () => {
       expect(document.getElementById(id)?.getAttribute("aria-live")).toBe("polite");
     }
   });
-  it("shows Walk break under While standing with its own ten-minute timer", () => {
+  it("shows Walk break under While standing with its own fifteen-minute timer", () => {
     globalThis.document.body.innerHTML = '<div id="yoga-groups"></div>';
     initYoga();
     const walk = globalThis.document.querySelector('[data-practice="walk-break"]')!;
     expect(walk.closest('.yoga-group')?.querySelector('h3')?.textContent).toBe("While standing");
     expect(walk.querySelector('h4')?.textContent).toBe("Walk break");
-    expect(walk.querySelector('.yoga-english')?.textContent).toBe("Fresh air · 10-minute walk");
-    expect(walk.querySelector('.yoga-duration')?.textContent).toBe("10 min");
+    expect(walk.querySelector('.yoga-english')?.textContent).toBe("Fresh air · 15-minute walk");
+    expect(walk.querySelector('.yoga-duration')?.textContent).toBe("15 min");
     expect(walk.querySelector('button')?.getAttribute('aria-label')).toBe("Start Walk break");
     globalThis.document.body.replaceChildren();
   });
